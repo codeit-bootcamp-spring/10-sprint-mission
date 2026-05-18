@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.authDto.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
@@ -9,14 +8,13 @@ import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.exception.file.FileUploadFailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.exception.userStatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,10 +30,10 @@ import java.util.*;
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     @Override
     @Transactional
@@ -73,11 +71,6 @@ public class BasicUserService implements UserService {
         // 유저 저장
         userRepository.save(user);
 
-        // 유저 상태 생성
-        UserStatus userStatus = new UserStatus(user);
-        userStatusRepository.save(userStatus);
-        log.info("유저 회원가입 성공: userId = {}", user.getId());
-
         return userMapper.toDto(user,true);
     }
 
@@ -85,10 +78,9 @@ public class BasicUserService implements UserService {
     @Transactional(readOnly = true)
     public UserDto findUser(UUID userId) {
         User user = getUser(userId);
-        UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new UserStatusNotFoundException(userId));
 
-        boolean online = isOnline(userStatus.getLastActiveAt());
+        UserDto dummyDto = userMapper.toDto(user,true);
+        boolean online =  authService.isOnline(dummyDto);
         log.trace("유저 조회 성공: 사용자 id = {}, 이름 = {}, 온라인 상태 = {}",user.getId(), user.getUsername(), online);
         return userMapper.toDto(user,online);
     }
@@ -101,10 +93,9 @@ public class BasicUserService implements UserService {
             // 가져온 객체들을 dto로 변환
             return userList.stream()
                     .map(user -> {
-                        // n + 1 문제 지점
-                        boolean online = userStatusRepository.findByUserId(user.getId())
-                                .map(us -> isOnline(us.getLastActiveAt()))
-                                .orElseThrow(() -> new UserStatusNotFoundException(user.getId()));
+                        UserDto dummyDto = userMapper.toDto(user,true);
+                        boolean online =  authService.isOnline(dummyDto);
+
                         return userMapper.toDto(user, online);
                     })
                     .toList();
@@ -153,14 +144,7 @@ public class BasicUserService implements UserService {
         return findUser(userId);
     }
 
-    @Override
-    @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
-    public UserDto updateRole(UserRoleUpdateRequest request) {
-        User user = getUser(request.getUserId());
-        user.updateRole(request.getNewRole());
-        return userMapper.toDto(user, true);
-    }
+
 
     @Override
     @Transactional
