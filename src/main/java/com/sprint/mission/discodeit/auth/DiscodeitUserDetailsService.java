@@ -26,7 +26,9 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
     //discodeit은 로그인시 사용자이름이 ID에 해당됨.
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User findUser = userRepository.findByUsername(username)
+
+        /// profile이 LAZY로 돼있어서 fetch join으로 profile 바로 가져오도록 했다.
+        User findUser = userRepository.findByUsernameWithProfileAndStatus(username)
                 .orElseThrow(() -> UserNotFoundException.withUsername(username));
 
         UserDto userDto = userMapper.toDto(findUser);
