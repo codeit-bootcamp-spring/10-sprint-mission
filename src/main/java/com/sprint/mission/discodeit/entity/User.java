@@ -60,10 +60,10 @@ public class User extends BaseUpdatableEntity {
     this.password = password;
   }
 
-  public void update(UserUpdateRequest request) {
-    updateIfChanged(this.username, request.newUsername(), val -> this.username = val);
-    updateIfChanged(this.email, request.newEmail(), val -> this.email = val);
-    updateIfChanged(this.password, request.newPassword(), val -> this.password = val);
+  public void update(String newUsername, String newEmail, String encodedPassword) {
+    updateIfChanged(this.username, newUsername, val -> this.username = val);
+    updateIfChanged(this.email, newEmail, val -> this.email = val);
+    updateIfChanged(this.password, encodedPassword, val -> this.password = val);
   }
 
   public void updateRole(Role role) {

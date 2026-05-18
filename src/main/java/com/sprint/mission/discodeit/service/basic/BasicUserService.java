@@ -64,10 +64,13 @@ public class BasicUserService implements UserService {
       }
     }
 
-    User user = userMapper.toEntity(request, profile);
-
-    String encryptedPassword = passwordEncoder.encode(user.getPassword());
-    user.encodePassword(encryptedPassword);
+    String encodedPassword = passwordEncoder.encode(request.password());
+    User user = new User(
+        request.username(),
+        request.email(),
+        encodedPassword,
+        profile
+    );
 
     UserStatus userStatus = new UserStatus(user);
     user.setStatus(userStatus); // 편의 메서드
@@ -101,7 +104,12 @@ public class BasicUserService implements UserService {
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
 
     validateUpdate(user, request);
-    user.update(request);
+
+    String encodedPassword = null;
+    if (request.newPassword() != null) {
+      encodedPassword = passwordEncoder.encode(request.newPassword());
+    }
+    user.update(request.newUsername(), request.newEmail(), encodedPassword);
 
     if (file != null && !file.isEmpty()) { //요청에 프로필 파일이 있는지 확인
       try {

@@ -13,9 +13,4 @@ public interface UserMapper {
   @Mapping(target = "profile", source = "profile")
   @Mapping(target = "online", source = "status.online")
   UserDto toDto(User user);
-
-  @Mapping(target = "id", ignore = true)
-  @Mapping(target = "status", ignore = true)
-  @Mapping(target = "profile", source = "profile")
-  User toEntity(UserCreateRequest request, BinaryContent profile);
 }
