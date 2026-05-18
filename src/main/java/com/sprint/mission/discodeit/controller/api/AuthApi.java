@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 @Tag(name = "Auth", description = "인증 API")
 public interface AuthApi {
 
+    /*
   @Operation(summary = "로그인")
   @ApiResponses(value = {
       @ApiResponse(
@@ -33,4 +34,6 @@ public interface AuthApi {
   ResponseEntity<UserDto> login(
       @Parameter(description = "로그인 정보") LoginRequest loginRequest
   );
+
+     */
 } 

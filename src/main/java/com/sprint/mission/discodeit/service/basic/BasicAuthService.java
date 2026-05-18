@@ -21,6 +21,7 @@ public class BasicAuthService implements AuthService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
 
+  /*
   @Transactional(readOnly = true)
   @Override
   public UserDto login(LoginRequest loginRequest) {
@@ -39,4 +40,5 @@ public class BasicAuthService implements AuthService {
     log.info("로그인 성공: userId={}, username={}", user.getId(), username);
     return userMapper.toDto(user);
   }
+   */
 }

@@ -55,6 +55,23 @@ public class UserController implements UserApi {
         .body(createdUser);
   }
 
+  // 회원가입
+  @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+  public ResponseEntity<UserDto> registerUser(
+          @RequestPart("userCreateRequest") @Valid UserCreateRequest userCreateRequest,
+          @RequestPart(value = "profile", required = false) MultipartFile profile
+  ) {
+    log.info("사용자 생성 요청: {}", userCreateRequest);
+    Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
+            .flatMap(this::resolveProfileRequest);
+
+    UserDto createdUser = userService.create(userCreateRequest, profileRequest);
+    log.debug("사용자 생성 응답: {}", createdUser);
+    return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(createdUser);
+  }
+
   @PatchMapping(
       path = "{userId}",
       consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
