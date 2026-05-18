@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 @Getter
 @RequiredArgsConstructor
@@ -49,5 +50,23 @@ public class DiscodeitUserDetails implements UserDetails {
     @Override
     public String getUsername() {
         return userDto.getEmail();
+    }
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.userDto.getId());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        // 주소 값이 아예 같으면 무조건 같으므로 true
+        if(this == obj) return true;
+
+        // 객체가 null이거나
+        if(obj == null || getClass() != obj.getClass()) return false;
+
+        DiscodeitUserDetails that = (DiscodeitUserDetails) obj;
+        return Objects.equals(that.getUserDto().getId(), this.userDto.getId());
     }
 }

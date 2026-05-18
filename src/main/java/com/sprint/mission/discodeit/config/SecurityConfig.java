@@ -8,12 +8,15 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @RequiredArgsConstructor
@@ -55,6 +58,10 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/actuator/**").permitAll()
                         .anyRequest().authenticated())
+                .sessionManagement(session -> session
+                        .sessionConcurrency(conCurrency -> conCurrency
+                                .maximumSessions(1)
+                                .sessionRegistry(sessionRegistry())))
                 .exceptionHandling(ex -> ex
                         // 로그인 안한 상태에서 다른 작업 요청 시 예외
                         .authenticationEntryPoint(discodeitAuthenticationEntryPoint)
@@ -74,5 +81,16 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
+    }
+
+    // 세션 수명 주기 이벤트에 대한 최신 정보를 Spring Security에 제공
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher(){
+        return new HttpSessionEventPublisher();
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry(){
+        return new SessionRegistryImpl();
     }
 }
