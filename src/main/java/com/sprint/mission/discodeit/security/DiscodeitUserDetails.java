@@ -3,9 +3,11 @@ package com.sprint.mission.discodeit.security;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Getter
@@ -17,7 +19,8 @@ public class DiscodeitUserDetails implements UserDetails {
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return Collections.emptyList(); // 추후 권한 추가 예정
+    // Spring Security 표준을 맞추기 위해 'ROLE_' 접두사를 붙여서 반환
+    return List.of(new SimpleGrantedAuthority("ROLE_" + userDto.role().name()));
   }
 
   @Override

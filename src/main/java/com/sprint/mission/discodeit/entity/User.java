@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -36,6 +38,10 @@ public class User extends BaseUpdatableEntity {
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private UserStatus userStatus;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 20)
+  private Role role = Role.USER; // 회원가입 시 기본적으로 USER 권한 부여
+
   public User(String username, String email, String password, BinaryContent profile) {
     super();
     this.username = username;
@@ -63,5 +69,9 @@ public class User extends BaseUpdatableEntity {
 
   public void updatePassword(String password) {
     this.password = password;
+  }
+
+  public void updateRole(Role role) {
+    this.role = role;
   }
 }
