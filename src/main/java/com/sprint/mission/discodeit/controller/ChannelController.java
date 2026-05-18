@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,6 +40,7 @@ public class ChannelController {
 
   private final ChannelService channelService;
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @PostMapping("/public")
   @Operation(summary = "Public Channel 생성")
   @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨")
@@ -59,6 +61,7 @@ public class ChannelController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @PatchMapping("/{channelId}")
   @Operation(summary = "Channel 정보 수정")
   @ApiResponses({
@@ -66,7 +69,6 @@ public class ChannelController {
       @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음"),
       @ApiResponse(responseCode = "400", description = "Private Channel은 수정할 수 없음")
   })
-
   public ResponseEntity<ChannelDto> update(
       @Parameter(description = "수정할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @NotNull @PathVariable UUID channelId,
@@ -77,6 +79,7 @@ public class ChannelController {
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @DeleteMapping("/{channelId}")
   @Operation(summary = "Channel 삭제")
   @ApiResponses({
