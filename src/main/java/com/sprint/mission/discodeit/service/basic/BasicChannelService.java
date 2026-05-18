@@ -140,6 +140,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     @Transactional
+    @PreAuthorize("@channelChecker.isPublic(#channelId) and hasRole('CHANNEL_MANGER')")
     public void delete(UUID channelId) {
         Channel channel = getChannel(channelId);
 
