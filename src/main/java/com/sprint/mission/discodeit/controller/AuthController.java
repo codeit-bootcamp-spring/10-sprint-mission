@@ -84,7 +84,7 @@ public class AuthController {
   //사용자 권한 수정 API
   @PutMapping("/role")
   public ResponseEntity<UserDto> roleUpdate(@Valid @RequestBody UserRoleUpdateRequest request) {
-    UserDto userDto = userService.updateRole(request.userId(), request.role());
+    UserDto userDto = userService.updateRole(request.userId(), request.newRole());
     return ResponseEntity.status(HttpStatus.OK).body(userDto);
   }
 }

@@ -9,6 +9,6 @@ public record UserRoleUpdateRequest(
     UUID userId,
 
     @NotNull(message = "newRole is required.")
-    Role role
+    Role newRole
 ) {
 }
