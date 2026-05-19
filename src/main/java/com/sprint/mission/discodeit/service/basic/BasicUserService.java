@@ -235,6 +235,7 @@ public class BasicUserService implements UserService {
     }
 
     private void updatePassword(UpdateUserRequestDTO dto, User user) {
-        user.updatePassword(dto.newPassword());
+        String encodedPassword = passwordEncoder.encode(dto.newPassword());
+        user.updatePassword(encodedPassword);
     }
 }
