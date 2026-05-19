@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.security.DiscodeitAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.DiscodeitAuthenticationEntryPoint;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.HttpStatusReturningLogoutSuccessHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
@@ -33,6 +34,7 @@ public class SecurityConfig {
   private final HttpStatusReturningLogoutSuccessHandler logoutSuccessHandler;
   private final DiscodeitAuthenticationEntryPoint authenticationEntryPoint;
   private final DiscodeitAccessDeniedHandler accessDeniedHandler;
+  private final DiscodeitUserDetailsService userDetailsService;
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -67,9 +69,15 @@ public class SecurityConfig {
         .sessionManagement(management -> management
             .sessionConcurrency(concurrency -> concurrency
                 .maximumSessions(1)
-                .maxSessionsPreventsLogin(true)
+                .maxSessionsPreventsLogin(false)
                 .sessionRegistry(sessionRegistry())
             )
+        )
+        .rememberMe(remember -> remember
+            .key("discodeit-remember-me")
+            .tokenValiditySeconds(7 * 24 * 60 * 60)
+            .rememberMeParameter("remember-me")
+            .userDetailsService(userDetailsService)
         );
 
     return http.build();
