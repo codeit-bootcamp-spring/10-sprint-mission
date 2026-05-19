@@ -131,6 +131,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     @Transactional
+    @PreAuthorize("@messageChecker.isMyMessage(#messageId, principal)")
     public void delete(UUID messageId) {
         Message message = getMessage(messageId);
 
