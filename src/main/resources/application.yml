@@ -3,3 +3,10 @@ spring:
     name: discodeit
   profiles:
     active: dev
+logging:
+  level:
+    org.springframework.security: DEBUG
+admin:
+  init:
+    email: ${ADMIN_EMAIL}
+    password: ${ADMIN_PASSWORD}

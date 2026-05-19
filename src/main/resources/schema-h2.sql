@@ -35,19 +35,10 @@ CREATE TABLE users
     username  VARCHAR(50) UNIQUE  NOT NULL,
     email      VARCHAR(100) UNIQUE NOT NULL,
     password   VARCHAR(60)         NOT NULL,
+    role       VARCHAR(20)         NOT NULL,
     profile_id UUID UNIQUE REFERENCES binary_contents (id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE         NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE
-);
-
--- 5. 유저 온라인 상태 확인 테이블
-CREATE TABLE user_statuses
-(
-    id             UUID PRIMARY KEY,
-    user_id        UUID UNIQUE NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    last_active_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at     TIMESTAMP WITH TIME ZONE
 );
 
 -- 6. 메시지 관리 테이블
