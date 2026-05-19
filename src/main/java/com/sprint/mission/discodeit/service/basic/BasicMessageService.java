@@ -62,7 +62,6 @@ public class BasicMessageService implements MessageService {
 
         Message message = new Message(user, channel, dto.content(), attachmentEntities);
 
-        user.getUserStatus().updateLastActiveAt(Instant.now());
         // id를 만들기 위해 저장
         Message savedMessage = messageRepository.saveAndFlush(message);
         // storage에 반영

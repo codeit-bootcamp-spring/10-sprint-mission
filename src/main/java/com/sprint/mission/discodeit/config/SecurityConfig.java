@@ -17,11 +17,14 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import java.time.Instant;
 import java.util.Map;
@@ -37,7 +40,10 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(
+            HttpSecurity http,
+            SessionRegistry sessionRegistry
+    ) throws Exception {
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(
@@ -113,7 +119,17 @@ public class SecurityConfig {
                         .logoutSuccessHandler(
                                 new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
                         )
-                );
+                )
+                .sessionManagement(management -> management
+                        .sessionConcurrency(concurrency -> concurrency
+                                // 계정 하나당 세션 하나만 허용
+                                .maximumSessions(1)
+                                // 새 로그인이 들어오면 기존 세션을 만료시키고 새로운 로그인을 허용
+                                .maxSessionsPreventsLogin(false)
+                                .sessionRegistry(sessionRegistry)
+                        )
+                )
+        ;
 
         return http.build();
     }
@@ -140,5 +156,15 @@ public class SecurityConfig {
 
         handler.setRoleHierarchy(roleHierarchy);
         return handler;
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 }

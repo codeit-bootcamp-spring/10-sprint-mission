@@ -3,31 +3,31 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
-import com.sprint.mission.discodeit.dto.user.UpdateUserStatusRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UpdateUserRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.global.DuplicateResourceException;
 import com.sprint.mission.discodeit.exception.global.InvalidInputException;
 import com.sprint.mission.discodeit.exception.global.UnchangedValueException;
-import com.sprint.mission.discodeit.exception.status.user.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.UserOnlineStatusChecker;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -36,7 +36,6 @@ import java.util.*;
 @Slf4j
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
 
@@ -44,6 +43,8 @@ public class BasicUserService implements UserService {
     private final BinaryContentMapper binaryContentMapper;
 
     private final PasswordEncoder passwordEncoder;
+    private final SessionRegistry sessionRegistry;
+    private final UserOnlineStatusChecker checker;
 
     @Override
     public UserDto createUser(CreateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
@@ -73,9 +74,6 @@ public class BasicUserService implements UserService {
             user.updateProfile(profile);
         }
 
-        UserStatus status = new UserStatus(user, Instant.now());
-        user.updateStatus(status);
-
         User savedUser = userRepository.saveAndFlush(user);
 
         if (profileImage != null && savedUser.getProfile() != null) {
@@ -83,7 +81,7 @@ public class BasicUserService implements UserService {
         }
 
         log.info("[USER_CREATE_SUCCESS] 유저 생성 성공: userId={}", savedUser.getId());
-        return userMapper.toDto(savedUser);
+        return userMapper.toDto(savedUser, checker.isOnline(savedUser.getId()));
     }
 
     @Override
@@ -91,13 +89,13 @@ public class BasicUserService implements UserService {
     public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
 
-        return userMapper.toDtoList(users);
+        return userMapper.toDtoList(users, checker::isOnline);
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserDto findByUserId(UUID userId) {
-        return userMapper.toDto(findUserOrThrow(userId));
+        return userMapper.toDto(findUserOrThrow(userId), checker.isOnline(userId));
     }
 
     @Override
@@ -125,20 +123,7 @@ public class BasicUserService implements UserService {
         }
 
         log.info("[USER_UPDATE_SUCCESS] 유저 정보 수정 성공: userId={}", user.getId());
-        return userMapper.toDto(user);
-    }
-
-    @Override
-    public UserDto updateUserStatus(UUID userId, UpdateUserStatusRequestDTO dto) {
-        User user = findUserOrThrow(userId);
-        UserStatus status = userStatusRepository.findByUser_Id(userId)
-                .orElseThrow(() -> new UserStatusNotFoundException(user.getUserStatus().getId()));
-
-        // 갱신
-        status.updateLastActiveAt(dto.newLastActiveAt());
-
-        log.info("[USER_STATUS_UPDATE_SUCCESS] 유저 상태 수정 성공: userId={}", user.getId());
-        return userMapper.toDto(user);
+        return userMapper.toDto(user, checker.isOnline(user.getId()));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -147,9 +132,11 @@ public class BasicUserService implements UserService {
         User user = findUserOrThrow(dto.userId());
 
         user.updateRole(dto.newRole());
+        // 권한 업데이트 성공 후 로그인 세션 만료시키기
+        expiredUserSessions(user.getId());
 
         log.info("[USER_ROLE_UPDATE_SUCCESS] 유저 역할 수정 성공: userId={}, role={}", user.getId(), user.getRole());
-        return userMapper.toDto(user);
+        return userMapper.toDto(user, checker.isOnline(user.getId()));
     }
 
     @Override
@@ -237,5 +224,15 @@ public class BasicUserService implements UserService {
     private void updatePassword(UpdateUserRequestDTO dto, User user) {
         String encodedPassword = passwordEncoder.encode(dto.newPassword());
         user.updatePassword(encodedPassword);
+    }
+
+    private void expiredUserSessions(UUID userId) {
+        sessionRegistry.getAllPrincipals().stream()
+                .filter(principal -> principal instanceof DiscodeitUserDetails)
+                .map(principal -> (DiscodeitUserDetails) principal)
+                .filter(userDetails -> userDetails.getUserDto().id().equals(userId))
+                .forEach(userDetails ->
+                        sessionRegistry.getAllSessions(userDetails, false)
+                                .forEach(SessionInformation::expireNow));
     }
 }

@@ -29,7 +29,8 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        UserDto dto = userDetails.getUserDto();
+        // 현재 사용자의 online 상태를 반영하기 위함
+        UserDto dto = userService.findByUserId(userDetails.getUserDto().id());
         log.debug("[USER INFO] 사용자 정보 요청: userId={}", dto.id());
 
         return ResponseEntity.ok(dto);

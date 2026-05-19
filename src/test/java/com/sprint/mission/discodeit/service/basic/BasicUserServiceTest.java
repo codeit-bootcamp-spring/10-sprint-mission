@@ -13,7 +13,6 @@ import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,7 +58,7 @@ class BasicUserServiceTest {
                 new CreateUserRequestDTO("test@test.com", "test", "1234");
 
         User savedUser = new User("test", "test@test.com", "1234", null);
-        UserDto response = new UserDto(null, "test", "test@test.com", null, null);
+        UserDto response = new UserDto(null, "test", "test@test.com", null, null, null);
 
         given(userRepository.existsByUsername("test")).willReturn(false);
         given(userRepository.existsByEmail("test@test.com")).willReturn(false);

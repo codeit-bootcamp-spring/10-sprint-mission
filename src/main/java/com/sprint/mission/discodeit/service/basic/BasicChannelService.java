@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.UserOnlineStatusChecker;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,8 @@ public class BasicChannelService implements ChannelService {
 
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
+
+    private final UserOnlineStatusChecker checker;
 
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
@@ -249,7 +252,7 @@ public class BasicChannelService implements ChannelService {
                         java.util.stream.Collectors.collectingAndThen(
                                 java.util.stream.Collectors.toMap(
                                         rs -> rs.getUser().getId(),
-                                        rs -> userMapper.toDto(rs.getUser()),
+                                        rs -> userMapper.toDto(rs.getUser(), checker.isOnline(rs.getUser().getId())),
                                         (a, b) -> a,
                                         LinkedHashMap::new
                                 ),

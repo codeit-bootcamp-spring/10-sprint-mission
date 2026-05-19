@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.security.UserOnlineStatusChecker;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -23,6 +24,9 @@ public abstract class MessageMapper {
     @Autowired
     protected UserMapper userMapper;
 
+    @Autowired
+    protected UserOnlineStatusChecker checker;
+
     @Mapping(target = "channelId", source = "message.channel.id")
     public MessageDto toDto(Message message) {
         return new MessageDto(
@@ -31,7 +35,7 @@ public abstract class MessageMapper {
                 message.getUpdatedAt(),
                 message.getContent(),
                 message.getChannel().getId(),
-                userMapper.toDto(message.getAuthor()),
+                userMapper.toDto(message.getAuthor(), checker.isOnline(message.getAuthor().getId())),
                 binaryContentMapper.toDtoList(message.getAttachments())
         );
     }

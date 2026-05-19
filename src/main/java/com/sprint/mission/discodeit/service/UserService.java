@@ -22,8 +22,6 @@ public interface UserService {
 
     UserDto updateUserInfo(UUID userId, UpdateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage);
 
-    UserDto updateUserStatus(UUID userId, UpdateUserStatusRequestDTO dto);
-
     UserDto updateRole(UserRoleUpdateRequest dto);
 
     void deleteUser(UUID userId);

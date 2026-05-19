@@ -46,9 +46,6 @@ public enum ErrorCode {
     READ_STATUS_ALREADY_EXISTS(400, "RS200", "이미 존재하는 ReadStatus입니다."),
     LAST_READ_AT_IS_NULL(400, "RS300", "lastReadAt은 null값일 수 없습니다."),
 
-    // UserStatus
-    USER_STATUS_NOT_FOUND(404, "US100", "UserStatus를 찾을 수 없습니다."),
-
     // Invalid input
     ID_CAN_NOT_BE_NULL(400, "I100", "id값은 null일 수 없습니다."),
     DTO_CAN_NOT_BE_NULL(400, "I101", "dto는 null일 수 없습니다."),

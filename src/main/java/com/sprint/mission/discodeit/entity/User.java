@@ -5,10 +5,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 @Getter
 @Entity
 @Table(name = "users")
@@ -26,10 +22,6 @@ public class User extends BaseUpdatableEntity {
     // 사용자의 프로필 이미지
     @OneToOne(optional = true, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private BinaryContent profile;
-
-    // 사용자 상태 -> userStatus는 자식 엔티티
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserStatus userStatus;
 
     // 사용자 역할 지정 -> 유저 생성시 자동으로 USER 역할 할당
     @Enumerated(EnumType.STRING)
@@ -62,10 +54,6 @@ public class User extends BaseUpdatableEntity {
 
     public void updateProfile(BinaryContent profile) {
         this.profile = profile;
-    }
-
-    public void updateStatus(UserStatus userStatus) {
-        this.userStatus = userStatus;
     }
 
     public void updateRole(Role role) {

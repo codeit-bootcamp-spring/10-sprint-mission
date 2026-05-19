@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,6 +33,17 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
-        objectMapper.writeValue(response.getWriter(), userDetails.getUserDto());
+        UserDto dto = userDetails.getUserDto();
+        // 로그인 성공 응답은 이미 인증이 완료된 상태이므로 online=true로 내려주기 위함
+        UserDto loginResponse = new UserDto(
+                dto.id(),
+                dto.username(),
+                dto.email(),
+                dto.profile(),
+                true,
+                dto.role()
+        );
+
+        objectMapper.writeValue(response.getWriter(), loginResponse);
     }
 }

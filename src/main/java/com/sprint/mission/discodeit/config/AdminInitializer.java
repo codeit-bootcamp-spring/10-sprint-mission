@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,8 +10,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.time.Instant;
 
 @Configuration
 @RequiredArgsConstructor
@@ -53,9 +50,6 @@ public class AdminInitializer {
                                         null
                                 );
                                 admin.updateRole(Role.ADMIN);
-
-                                UserStatus status = new UserStatus(admin, Instant.now());
-                                admin.updateStatus(status);
 
                                 userRepository.save(admin);
                                 log.info("[ADMIN_INIT_SUCCESS] ADMIN 계정이 초기화되었습니다.");
