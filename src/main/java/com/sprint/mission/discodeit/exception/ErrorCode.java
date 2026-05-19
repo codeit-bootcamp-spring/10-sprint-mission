@@ -35,7 +35,9 @@ public enum ErrorCode {
 
   // ==== 공통 ====
   INVALID_INPUT_VALUE("G001", "잘못된 입력값입니다.", HttpStatus.BAD_REQUEST),
-  INTERNAL_SERVER_ERROR("G002", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+  INTERNAL_SERVER_ERROR("G002", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+  GLOBAL_ACCESS_DENIED("G003", "접근 권한이 없습니다.", HttpStatus.FORBIDDEN);
 
   private final String code;
   private final String message;

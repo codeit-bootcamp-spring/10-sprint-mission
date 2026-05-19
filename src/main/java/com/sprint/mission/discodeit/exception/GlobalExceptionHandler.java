@@ -5,7 +5,9 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -71,5 +73,24 @@ public class GlobalExceptionHandler {
     );
 
     return ResponseEntity.status(errorCode.getStatus()).body(response);
+  }
+
+  // 메서드 시큐리티 예외를 가로채서 403으로 반환
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+    log.warn("Access denied: {}", ex.getMessage());
+
+    ErrorCode errorCode = ErrorCode.GLOBAL_ACCESS_DENIED;
+
+    ErrorResponse response = new ErrorResponse(
+        Instant.now(),
+        errorCode.getCode(),
+        errorCode.getMessage(),
+        null,
+        ex.getClass().getSimpleName(),
+        errorCode.getStatus().value()
+    );
+
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
   }
 }

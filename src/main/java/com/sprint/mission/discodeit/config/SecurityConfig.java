@@ -1,11 +1,18 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.security.CustomAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,15 +23,34 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
   private final LoginSuccessHandler loginSuccessHandler;
   private final LoginFailureHandler loginFailureHandler;
+  private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
+  }
+
+  // 권한 계층 정의
+  @Bean
+  public RoleHierarchy roleHierarchy() {
+    RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
+    hierarchy.setHierarchy("ROLE_ADMIN > ROLE_CHANNEL_MANAGER\nROLE_CHANNEL_MANAGER > ROLE_USER");
+    return hierarchy;
+  }
+
+  // 정의한 권한 체계를 메서드 시큐리티(AOP)에 주입
+  @Bean
+  static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
+      RoleHierarchy roleHierarchy) {
+    DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+    handler.setRoleHierarchy(roleHierarchy);
+    return handler;
   }
 
   @Bean
@@ -39,7 +65,35 @@ public class SecurityConfig {
         )
         // 인가 설정
         .authorizeHttpRequests(auth -> auth
-            .anyRequest().permitAll()
+            .requestMatchers(org.springframework.http.HttpMethod.GET, "/", "/index.html",
+                "/assets/**", "/favicon.ico")
+            .permitAll() // 프론트엔드 정적 리소스
+
+            .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/auth/csrf-token")
+            .permitAll() // Csrf Token 발급
+            .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/users")
+            .permitAll() // 회원가입
+            .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/login")
+            .permitAll() // 로그인
+            .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/logout")
+            .permitAll() // 로그아웃
+            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**",
+                "/actuator/**").permitAll() // API가 아닌 요청(Swagger, Actuator)
+            // 그 외의 모든 요청은 반드시 인증되어야 함
+            .anyRequest().authenticated()
+        )
+        // 403 예외 핸들러 등록
+        .exceptionHandling(ex -> ex
+            // 권한 없음 (403)
+            .accessDeniedHandler(customAccessDeniedHandler)
+            // 인증 안 됨 (401)
+            .authenticationEntryPoint((request, response, authException) -> {
+              response.setStatus(HttpStatus.UNAUTHORIZED.value());
+              response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+              response.setCharacterEncoding("UTF-8");
+              response.getWriter()
+                  .write("{\"error\": \"Unauthorized\", \"message\": \"로그인이 필요한 서비스입니다.\"}");
+            })
         )
         // 로그인 설정
         .formLogin(login -> login
