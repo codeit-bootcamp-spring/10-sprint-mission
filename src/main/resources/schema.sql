@@ -9,6 +9,7 @@ CREATE TABLE users
     email      varchar(100) UNIQUE      NOT NULL,
     password   varchar(60)              NOT NULL,
     profile_id uuid
+    role varchar(20) NOT NULL
 );
 
 -- BinaryContent
@@ -74,6 +75,8 @@ CREATE TABLE read_statuses
     UNIQUE (user_id, channel_id)
 );
 
+ALTER TABLE users
+    ADD role varchar(20) NOT NULL;
 
 -- 제약 조건
 -- User (1) -> BinaryContent (1)

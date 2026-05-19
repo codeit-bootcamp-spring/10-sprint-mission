@@ -13,7 +13,7 @@ spring:
     open-in-view: false
   profiles:
     active:
-      - prod
+      - dev
 
 management:
   endpoints:

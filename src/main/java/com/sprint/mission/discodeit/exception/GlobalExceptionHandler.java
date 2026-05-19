@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -53,11 +54,20 @@ public class GlobalExceptionHandler {
         "요청 데이터 유효성 검사에 실패했습니다",
         validationErrors,
         ex.getClass().getSimpleName(),
-        HttpStatus.BAD_REQUEST.value()
+        HttpStatus.FORBIDDEN.value()
     );
     
     return ResponseEntity
-        .status(HttpStatus.BAD_REQUEST)
+        .status(HttpStatus.FORBIDDEN)
+        .body(response);
+  }
+
+  @ExceptionHandler(AuthorizationDeniedException.class)
+  public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
+    ErrorResponse response = new ErrorResponse(ex, HttpStatus.FORBIDDEN.value());
+
+    return ResponseEntity
+        .status(HttpStatus.FORBIDDEN)
         .body(response);
   }
 

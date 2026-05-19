@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
+import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.details.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -54,5 +56,11 @@ public class AuthController implements AuthApi {
     }
 
     return ResponseEntity.status(HttpStatus.OK).body(userDetails.getUserDto());
+  }
+
+  @PutMapping("/role")
+  public ResponseEntity<UserDto> updateUserRole(@RequestBody RoleUpdateRequest userRoleUpdateRequest) {
+    UserDto userDto = authService.updateUserRole(userRoleUpdateRequest);
+    return ResponseEntity.status(HttpStatus.OK).body(userDto);
   }
 }
