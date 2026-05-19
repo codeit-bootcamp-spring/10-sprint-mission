@@ -15,14 +15,12 @@ import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserEmailDuplicateException;
 import com.sprint.mission.discodeit.exception.user.UserNameDuplicateException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -40,8 +38,6 @@ class BasicUserServiceTest {
 
     @Mock
     private UserRepository userRepository;
-    @Mock
-    private UserStatusRepository userStatusRepository;
     @Mock
     UserMapper userMapper;
     @Mock
@@ -72,10 +68,6 @@ class BasicUserServiceTest {
             when(userRepository.save(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-            // UserStatus 레포지토리에 save를 호출하여 성공하면 첫 번째 파라미터(any(UserStatus.class))를 반환
-            when(userStatusRepository.save(any(UserStatus.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
             // 서비스 생성 요청에 사용될 CreateRequestDto
             UserCreateRequestDTO req = new UserCreateRequestDTO(username, email, password);
 
@@ -95,7 +87,6 @@ class BasicUserServiceTest {
             verify(userRepository).existsByEmail(email); // verify : 이 메서드가 실제로 호출됐는지 검사하는 함수
             verify(userRepository).existsByUsername(username);
             verify(userRepository).save(any(User.class));
-            verify(userStatusRepository).save(any(UserStatus.class));
             verify(userMapper).toDto(any(User.class));
             assertEquals(expected, result); // 마지막으로 예상 결과 값과 실제 값이 같은지 검증
         }
@@ -115,10 +106,6 @@ class BasicUserServiceTest {
 
             // User 영속화 스터빙
             when(userRepository.save(any(User.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-            // UserStatus 영속화 스터빙
-            when(userStatusRepository.save(any(UserStatus.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
             // 더미 데이터
@@ -157,7 +144,6 @@ class BasicUserServiceTest {
             verify(userRepository).existsByEmail(email);
             verify(userRepository).existsByUsername(name);
             verify(userRepository).save(any(User.class));
-            verify(userStatusRepository).save(any(UserStatus.class));
             verify(userMapper).toDto(any(User.class));
         }
 
@@ -180,8 +166,6 @@ class BasicUserServiceTest {
             // 첫 번째 생성은 통과(false), 두 번째 생성은 중복(true)
             when(userRepository.existsByEmail(email1)).thenReturn(false, true);
             when(userRepository.save(any(User.class))).thenAnswer(
-                invocation -> invocation.getArgument(0));
-            when(userStatusRepository.save(any(UserStatus.class))).thenAnswer(
                 invocation -> invocation.getArgument(0));
             when(userMapper.toDto(any(User.class)))
                 .thenReturn(new UserDto(UUID.randomUUID(), username1, email1, null, false));
@@ -209,8 +193,6 @@ class BasicUserServiceTest {
 
             when(userRepository.existsByUsername(name1)).thenReturn(false, true);
             when(userRepository.save(any(User.class))).thenAnswer(
-                invocation -> invocation.getArgument(0));
-            when(userStatusRepository.save(any(UserStatus.class))).thenAnswer(
                 invocation -> invocation.getArgument(0));
             when(userMapper.toDto(any(User.class))).thenReturn(
                 new UserDto(UUID.randomUUID(), name1, email1, null, false));
@@ -381,8 +363,6 @@ class BasicUserServiceTest {
             // when + then
             assertDoesNotThrow(
                 () -> basicUserService.delete(userId)); // service의 delete 호출 시 아무 예외도 던져지지 않음을 검증
-            verify(userStatusRepository).findByUserId(userId);
-            verify(userStatusRepository).flush();
             verify(userRepository).delete(existingUser);
             verify(userRepository).flush();
             verify(userRepository).findById(userId);

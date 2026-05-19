@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.authdto.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.entity.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +20,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AuthController {
 
   private final BasicAuthService basicAuthService;
+  private final UserService userService;
 
   @GetMapping("/me")
   public ResponseEntity<UserDto> getUserViaSession(
       @AuthenticationPrincipal DiscodeitUserDetails userDetails
   ) {
-    return ResponseEntity.ok(userDetails.getUserDto());
+    return ResponseEntity.ok(userService.find(userDetails.getUserDto().id()));
   }
 
   @PutMapping("/role")

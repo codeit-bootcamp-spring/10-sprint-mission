@@ -9,7 +9,6 @@ import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.nio.charset.StandardCharsets;
@@ -32,9 +31,6 @@ public class UserIntegrationTest {
 
     @Autowired
     UserRepository userRepository;
-
-    @Autowired
-    UserStatusRepository userStatusRepository;
 
     @Autowired
     BinaryContentRepository binaryContentRepository;
@@ -60,7 +56,6 @@ public class UserIntegrationTest {
         assertThat(saved.id()).isEqualTo(userId);
         assertThat(saved.username()).isEqualTo(user.getUsername());
         assertThat(saved.email()).isEqualTo(user.getEmail());
-        assertThat(userStatusRepository.findByUserId(userId)).isPresent();
     }
 
     @Test
@@ -76,7 +71,6 @@ public class UserIntegrationTest {
         userService.delete(userId);
 
         // then
-        assertThat(userStatusRepository.findByUserId(userId)).isEmpty();
         assertThat(userRepository.existsByEmail(userDto.email())).isFalse();
         assertThat(userRepository.findById(userId)).isEmpty();
         assertThat(userRepository.existsByUsername(userDto.username())).isFalse();

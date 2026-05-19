@@ -140,7 +140,7 @@ public class BasicUserService implements UserService {
 
   // 유저 업데이트 DTO를 받아 해당 객체를 업데이트하고 UserResponseDTO를 반환하는 메소드
   @Override
-  @PreAuthorize("authentication.principal.userDto.id == #userId")
+  @PreAuthorize("isAuthenticated() and principal.getUserDto().id().equals(#p0)")
   public UserDto update(UUID userId, UserUpdateDTO req, BinaryContentDto profileDto) {
 
     if (userId == null) {
@@ -197,7 +197,7 @@ public class BasicUserService implements UserService {
   // 지우고자 하는 유저를 지우면서 관련된 객체와 정보(채널 가입 여부 및 메시지)도 같이 삭제하는 메소드
   @Override
   @Transactional
-  @PreAuthorize("athentication.principal.userDto.userId == #userId")
+  @PreAuthorize("isAuthenticated() and principal.getUserDto().id().equals(#p0)")
   public void delete(UUID userId) {
 
     if (userId == null) {

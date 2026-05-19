@@ -178,7 +178,7 @@ public class BasicMessageService implements MessageService {
 
   @Transactional
   @Override
-  @PreAuthorize("@messagePermissionEvaluator.isAuthor(#messageId, authentication.principal.userDto.id())")
+  @PreAuthorize("isAuthenticated() and @messagePermissionEvaluator.isAuthor(#p0, principal.getUserDto().id())")
   public MessageDto update(UUID messageId, MessageUpdateRequestDto req) {
     // 파라미터 null 체크
     if (messageId == null) {
@@ -211,7 +211,7 @@ public class BasicMessageService implements MessageService {
 
   @Transactional
   @Override
-  @PreAuthorize("@messagePermissionEvaluator.isAuthor(#messageId, authentication.principal.userDto.id())")
+  @PreAuthorize("isAuthenticated() and @messagePermissionEvaluator.isAuthor(#p0, principal.getUserDto().id())")
 
   public void delete(UUID messageId) {
 

@@ -16,7 +16,6 @@ import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.exception.user.UserNameDuplicateException;
 import com.sprint.mission.discodeit.exceptionhandler.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -43,9 +42,6 @@ class UserControllerWebMvcTest {
 
     @MockBean
     private UserService userService;
-
-    @MockBean
-    private UserStatusService userStatusService;
 
     @MockBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
