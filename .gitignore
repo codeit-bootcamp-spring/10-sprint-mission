@@ -46,7 +46,7 @@ out/
 ### log file ##
 ./logs
 ./.logs
-./uploads
+/uploads
 
 .env
 discodeit.env
