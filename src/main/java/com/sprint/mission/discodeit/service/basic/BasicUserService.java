@@ -112,6 +112,7 @@ public class BasicUserService implements UserService {
 
   @Transactional
   @Override
+  @PreAuthorize("#userId == authentication.principal.userDto.id")
   public UserDto update(
       UUID userId,
       UserUpdateRequest userUpdateRequest,
@@ -161,6 +162,7 @@ public class BasicUserService implements UserService {
 
   @Transactional
   @Override
+  @PreAuthorize("#userId == authentication.principal.userDto.id")
   public void delete(UUID userId) {
     log.debug("사용자 삭제 시작: id={}", userId);
 
