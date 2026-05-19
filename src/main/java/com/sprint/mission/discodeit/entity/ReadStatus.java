@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 
 @Getter
 @Setter
@@ -56,8 +57,8 @@ public class ReadStatus extends BaseUpdatableEntity {
         return lastReadAt.isAfter(Instant.EPOCH);
     }
 
-    public void update() {
-        this.lastReadAt = Instant.now();
+    public void update(Instant lastReadAt) {
+        this.lastReadAt = lastReadAt;
         this.updatedAt = Instant.now();
     }
 

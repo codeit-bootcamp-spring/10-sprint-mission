@@ -1,50 +1,51 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.authdto.LoginRequestDTO;
+import com.sprint.mission.discodeit.dto.authdto.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.userdto.UserDto;
+import com.sprint.mission.discodeit.entity.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
-import java.util.Optional;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.NoSuchElementException;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
 
-    private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
-    private final UserMapper userMapper;
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
+  private final SessionRegistry sessionRegistry;
 
-    @Override
-    @Transactional
-    public UserDto login(LoginRequestDTO req) {
-        // req에 담긴 username을 조회 및 존재여부 파악.
-        if (userRepository.findByUsername(req.username()).isEmpty()) {
-            throw new NoSuchElementException("해당 유저는 존재하지 않음.");
-        }
+  @Transactional
+  @PreAuthorize("hasRole('ADMIN')")
+  public UserDto updateRole(
+      RoleUpdateRequest req
+  ) {
+    Objects.requireNonNull(req, "유효하지 않은 요청입니다!");
 
-        // username이 존재할 때, password를 검증하고 예외를 던짐
-        Optional<User> optUser = userRepository.findByUsernameAndPassword(req.username(),
-            req.password());
-        if (optUser.isEmpty()) {
-            throw new IllegalStateException("로그인 정보가 옳바르지 않습니다!");
-        }
+    User user = userRepository.findById(req.userId())
+        .orElseThrow(() -> new UserNotFoundException(req.userId()));
 
-        User user = optUser.get();
+    user.updateRole(req.newRole());
+    expireUserSessions(user);
 
-        UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-            .orElseThrow(() -> new NoSuchElementException("해당 User Status가 없습니다."));
-        userStatus.update(Instant.now());
-        return userMapper.toDto(user);
+    return userMapper.toDto(user);
+  }
 
-    }
+  private void expireUserSessions(User user) {
+    sessionRegistry.getAllPrincipals().stream()
+        .filter(DiscodeitUserDetails.class::isInstance)
+        .map(DiscodeitUserDetails.class::cast)
+        .filter(principal -> Objects.equals(principal.getUserDto().id(), user.getId()))
+        .forEach(principal -> sessionRegistry.getAllSessions(principal, false)
+            .forEach(sessionInformation -> sessionInformation.expireNow()));
+  }
+
 }

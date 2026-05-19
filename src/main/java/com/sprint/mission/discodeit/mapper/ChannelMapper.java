@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.mapstruct.Mapper;
@@ -27,6 +28,7 @@ public abstract class ChannelMapper {
     public abstract ChannelDto toDto(Channel channel, Message lastMessage);
 
     protected List<UserDto> mapParticipants(Channel channel) {
+
         return channel.getReadStatuses()
             .stream()
             .map(ReadStatus::getUser)
