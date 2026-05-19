@@ -15,13 +15,12 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -106,6 +105,7 @@ public class BasicUserService implements UserService {
 
     @Override
     @Transactional
+    @PreAuthorize("#userId == principal.userDto.id")
     public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile profile) {
         User user = getUser(userId);
         // 이름 수정
@@ -146,6 +146,7 @@ public class BasicUserService implements UserService {
 
     @Override
     @Transactional
+    @PreAuthorize("#userId == principal.userDto.id")
     public void delete(UUID userId) {
         User user = getUser(userId);
         BinaryContent profileImg = user.getProfile();
