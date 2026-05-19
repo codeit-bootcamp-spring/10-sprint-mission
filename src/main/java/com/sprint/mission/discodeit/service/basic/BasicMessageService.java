@@ -212,7 +212,6 @@ public class BasicMessageService implements MessageService {
   @Transactional
   @Override
   @PreAuthorize("isAuthenticated() and @messagePermissionEvaluator.isAuthor(#p0, principal.getUserDto().id())")
-
   public void delete(UUID messageId) {
 
     if (messageId == null) {

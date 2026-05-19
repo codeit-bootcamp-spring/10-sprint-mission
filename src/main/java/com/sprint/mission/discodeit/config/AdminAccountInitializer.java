@@ -18,7 +18,7 @@ public class AdminAccountInitializer implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) throws Exception {
-    if (userRepository.existsByUsername("admin")) {
+    if (userRepository.existsByRole(Role.ADMIN)) {
       return;
     }
     User admin = new User(

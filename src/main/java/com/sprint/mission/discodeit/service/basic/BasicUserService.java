@@ -176,16 +176,26 @@ public class BasicUserService implements UserService {
     // 유저 도메인 객체의 update 메소드를 통해 업데이트.
     log.trace("user 엔티티의 update 메소드 실행");
 
-    if (userRepository.existsByEmailAndIdNot(req.newEmail(), user.getId())) {
-      throw new UserEmailDuplicateException(req.newEmail());
+    String newUsername = req.newUsername() == null || req.newUsername().isBlank()
+        ? null
+        : req.newUsername();
+    String newEmail = req.newEmail() == null || req.newEmail().isBlank()
+        ? null
+        : req.newEmail();
+    String newPassword = req.newPassword() == null || req.newPassword().isBlank()
+        ? null
+        : passwordEncoder.encode(req.newPassword());
+
+    if (newEmail != null && userRepository.existsByEmailAndIdNot(newEmail, user.getId())) {
+      throw new UserEmailDuplicateException(newEmail);
     }
 
-    if (userRepository.existsByUsernameAndIdNot(req.newUsername(), user.getId())) {
-      throw new UserNameDuplicateException(req.newUsername());
+    if (newUsername != null && userRepository.existsByUsernameAndIdNot(newUsername, user.getId())) {
+      throw new UserNameDuplicateException(newUsername);
     }
 
     // 검증을 마치고 나서 요청 값들을 조회한 user 엔티티에 update로 반영
-    user.update(req.newUsername(), req.newEmail(), req.newPassword(), saved);
+    user.update(newUsername, newEmail, newPassword, saved);
 
     User savedUser = userRepository.save(user); // 영속화
 

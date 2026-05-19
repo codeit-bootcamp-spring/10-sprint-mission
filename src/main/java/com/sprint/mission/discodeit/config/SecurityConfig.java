@@ -112,7 +112,17 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.PUT, "/api/auth/role").hasRole("ADMIN")
             .requestMatchers("/api/auth/me").authenticated()
 
-            .anyRequest().permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/users").authenticated()
+            .requestMatchers(HttpMethod.PATCH, "/api/users/**").authenticated()
+            .requestMatchers(HttpMethod.DELETE, "/api/users/**").authenticated()
+            .requestMatchers("/api/messages/**").authenticated()
+            .requestMatchers("/api/readStatuses/**").authenticated()
+            .requestMatchers(HttpMethod.POST, "/api/channels/public").hasRole("CHANNEL_MANAGER")
+            .requestMatchers("/api/channels/**").authenticated()
+            .requestMatchers("/api/binaryContents/**").authenticated()
+            .requestMatchers(HttpMethod.DELETE, "/api/messages/").hasRole("ADMIN")
+
+            .anyRequest().denyAll()
         )
         .exceptionHandling(exception -> exception
             .authenticationEntryPoint((request, response, authException) ->

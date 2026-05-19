@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
 
+import com.sprint.mission.discodeit.enums.Role;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,18 +11,20 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-    boolean existsByUsername(String username);
+  boolean existsByUsername(String username);
 
-    boolean existsByEmail(String email);
+  boolean existsByEmail(String email);
 
-    @EntityGraph(attributePaths = {"profile"})
-    List<User> findAll();
+  boolean existsByRole(Role role);
 
-    Optional<User> findByUsername(String username);
+  @EntityGraph(attributePaths = {"profile"})
+  List<User> findAll();
 
-    Optional<User> findByUsernameAndPassword(String username, String password);
+  Optional<User> findByUsername(String username);
 
-    boolean existsByUsernameAndIdNot(String username, UUID id);
+  Optional<User> findByUsernameAndPassword(String username, String password);
 
-    boolean existsByEmailAndIdNot(String email, UUID id);
+  boolean existsByUsernameAndIdNot(String username, UUID id);
+
+  boolean existsByEmailAndIdNot(String email, UUID id);
 }
