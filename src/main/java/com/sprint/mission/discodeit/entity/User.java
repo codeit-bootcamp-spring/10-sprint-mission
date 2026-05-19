@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "users")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)  // JPA를 위한 기본 생성자
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA를 위한 기본 생성자
 public class User extends BaseUpdatableEntity {
 
   @Column(length = 50, nullable = false, unique = true)
@@ -34,7 +34,7 @@ public class User extends BaseUpdatableEntity {
   private BinaryContent profile;
 
   @Enumerated(EnumType.STRING)
-  @Column(length=20, nullable = false)
+  @Column(length = 20, nullable = false)
   private Role role;
 
   public User(String username, String email, String password, BinaryContent profile) {
@@ -45,15 +45,15 @@ public class User extends BaseUpdatableEntity {
     this.role = Role.USER;
   }
 
-  public void update(String newUsername, String newEmail, String newPassword,
-      BinaryContent newProfile) {
+  public void update(
+      String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
     if (newUsername != null && !newUsername.equals(this.username)) {
       this.username = newUsername;
     }
     if (newEmail != null && !newEmail.equals(this.email)) {
       this.email = newEmail;
     }
-    if (newPassword != null && !newPassword.equals(this.password)) {
+    if (newPassword != null) {
       this.password = newPassword;
     }
     if (newProfile != null) {

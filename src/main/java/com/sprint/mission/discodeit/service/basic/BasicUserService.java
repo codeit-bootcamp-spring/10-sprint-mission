@@ -125,10 +125,6 @@ public class BasicUserService implements UserService {
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
 
-    if (userRepository.existsByEmail(newEmail)) {
-      throw UserAlreadyExistsException.withEmail(newEmail);
-    }
-
     if (userRepository.existsByUsername(newUsername)) {
       throw UserAlreadyExistsException.withUsername(newUsername);
     }
@@ -148,8 +144,11 @@ public class BasicUserService implements UserService {
                 })
             .orElse(null);
 
+    // 수정 시에도 인도딩된 패스워드 저장
     String newPassword = userUpdateRequest.newPassword();
-    user.update(newUsername, newEmail, newPassword, nullableProfile);
+    String encodedNewPassword = newPassword != null ? passwordEncoder.encode(newPassword) : null;
+
+    user.update(newUsername, newEmail, encodedNewPassword, nullableProfile);
 
     return userMapper.toDto(user);
   }
