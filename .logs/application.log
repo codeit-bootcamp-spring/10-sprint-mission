@@ -101963,3 +101963,203 @@ Caused by: com.fasterxml.jackson.databind.exc.InvalidFormatException: Cannot des
 26-05-19 14:42:04.752 [SpringApplicationShutdownHook] [32mINFO [0;39m o.s.o.j.LocalContainerEntityManagerFactoryBean [ |  | ] - Closing JPA EntityManagerFactory for persistence unit 'default'
 26-05-19 14:42:04.756 [SpringApplicationShutdownHook] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Shutdown initiated...
 26-05-19 14:42:04.769 [SpringApplicationShutdownHook] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Shutdown completed.
+26-05-19 14:51:02.269 [background-preinit] [32mINFO [0;39m o.h.validator.internal.util.Version  [ |  | ] - HV000001: Hibernate Validator 8.0.1.Final
+26-05-19 14:51:02.353 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Starting DiscodeitApplication using Java 17.0.17 with PID 30640 (C:\Users\jongin\codeit\10-sprint-mission\build\classes\java\main started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
+26-05-19 14:51:02.354 [main] [32mDEBUG[0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Running with Spring Boot v3.4.0, Spring v6.2.0
+26-05-19 14:51:02.355 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - The following 1 profile is active: "dev"
+26-05-19 14:51:04.805 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+26-05-19 14:51:04.966 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Finished Spring Data repository scanning in 148 ms. Found 6 JPA repository interfaces.
+26-05-19 14:51:06.314 [main] [32mINFO [0;39m o.s.b.w.e.tomcat.TomcatWebServer     [ |  | ] - Tomcat initialized with port 8080 (http)
+26-05-19 14:51:06.332 [main] [32mINFO [0;39m o.a.coyote.http11.Http11NioProtocol  [ |  | ] - Initializing ProtocolHandler ["http-nio-8080"]
+26-05-19 14:51:06.335 [main] [32mINFO [0;39m o.a.catalina.core.StandardService    [ |  | ] - Starting service [Tomcat]
+26-05-19 14:51:06.336 [main] [32mINFO [0;39m o.a.catalina.core.StandardEngine     [ |  | ] - Starting Servlet engine: [Apache Tomcat/10.1.33]
+26-05-19 14:51:06.476 [main] [32mINFO [0;39m o.a.c.c.C.[Tomcat].[localhost].[/]   [ |  | ] - Initializing Spring embedded WebApplicationContext
+26-05-19 14:51:06.476 [main] [32mINFO [0;39m o.s.b.w.s.c.ServletWebServerApplicationContext [ |  | ] - Root WebApplicationContext: initialization completed in 4059 ms
+26-05-19 14:51:07.067 [main] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Starting...
+26-05-19 14:51:07.389 [main] [32mINFO [0;39m com.zaxxer.hikari.pool.HikariPool    [ |  | ] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@8315e4a
+26-05-19 14:51:07.394 [main] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Start completed.
+26-05-19 14:51:07.557 [main] [32mINFO [0;39m o.h.jpa.internal.util.LogHelper      [ |  | ] - HHH000204: Processing PersistenceUnitInfo [name: default]
+26-05-19 14:51:07.676 [main] [32mINFO [0;39m org.hibernate.Version                [ |  | ] - HHH000412: Hibernate ORM core version 6.6.2.Final
+26-05-19 14:51:07.743 [main] [32mINFO [0;39m o.h.c.i.RegionFactoryInitiator       [ |  | ] - HHH000026: Second-level cache disabled
+26-05-19 14:51:08.311 [main] [32mINFO [0;39m o.s.o.j.p.SpringPersistenceUnitInfo  [ |  | ] - No LoadTimeWeaver setup: ignoring JPA class transformer
+26-05-19 14:51:08.475 [main] [32mINFO [0;39m o.hibernate.orm.connections.pooling  [ |  | ] - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 18.2
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+26-05-19 14:51:10.386 [main] [32mINFO [0;39m o.h.e.t.j.p.i.JtaPlatformInitiator   [ |  | ] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+26-05-19 14:51:10.489 [main] [32mINFO [0;39m o.s.o.j.LocalContainerEntityManagerFactoryBean [ |  | ] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+26-05-19 14:51:11.088 [main] [32mINFO [0;39m o.s.d.j.r.query.QueryEnhancerFactory [ |  | ] - Hibernate is in classpath; If applicable, HQL parser will be used.
+26-05-19 14:51:12.436 [main] [32mINFO [0;39m o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer [ |  | ] - Global AuthenticationManager configured with UserDetailsService bean with name discodeitUserDetailsService
+26-05-19 14:51:12.570 [main] [32mINFO [0;39m o.s.b.a.w.s.WelcomePageHandlerMapping [ |  | ] - Adding welcome page: class path resource [static/index.html]
+26-05-19 14:51:13.134 [main] [32mINFO [0;39m o.s.b.a.e.web.EndpointLinksResolver  [ |  | ] - Exposing 4 endpoints beneath base path '/actuator'
+26-05-19 14:51:14.343 [main] [32mINFO [0;39m o.a.coyote.http11.Http11NioProtocol  [ |  | ] - Starting ProtocolHandler ["http-nio-8080"]
+26-05-19 14:51:14.378 [main] [32mINFO [0;39m o.s.b.w.e.tomcat.TomcatWebServer     [ |  | ] - Tomcat started on port 8080 (http) with context path '/'
+26-05-19 14:51:14.408 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Started DiscodeitApplication in 13.126 seconds (process running for 14.461)
+26-05-19 14:51:14.504 [http-nio-8080-exec-1] [32mINFO [0;39m o.a.c.c.C.[Tomcat].[localhost].[/]   [ |  | ] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+26-05-19 14:51:14.505 [http-nio-8080-exec-1] [32mINFO [0;39m o.s.web.servlet.DispatcherServlet    [ |  | ] - Initializing Servlet 'dispatcherServlet'
+26-05-19 14:51:14.507 [http-nio-8080-exec-1] [32mINFO [0;39m o.s.web.servlet.DispatcherServlet    [ |  | ] - Completed initialization in 2 ms
+26-05-19 14:51:14.585 [main] [32mDEBUG[0;39m org.hibernate.SQL                    [ |  | ] - 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.password,
+        u1_0.profile_id,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+26-05-19 14:51:14.588 [main] [32mTRACE[0;39m org.hibernate.orm.jdbc.bind          [ |  | ] - binding parameter (1:VARCHAR) <- [admin]
+26-05-19 14:51:14.651 [main] [32mDEBUG[0;39m org.hibernate.SQL                    [ |  | ] - 
+    select
+        us1_0.id,
+        us1_0.created_at,
+        us1_0.last_active_at,
+        us1_0.updated_at,
+        us1_0.user_id 
+    from
+        user_statuses us1_0 
+    where
+        us1_0.user_id=?
+26-05-19 14:51:14.651 [main] [32mTRACE[0;39m org.hibernate.orm.jdbc.bind          [ |  | ] - binding parameter (1:UUID) <- [6ec4f506-d340-4c04-b48f-2022f4b43153]
+26-05-19 14:51:14.752 [http-nio-8080-exec-3] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [6815446d6b7946a0850c1570d2f7f6f9 | GET | /api/auth/csrf-token] - Request started
+26-05-19 14:51:14.774 [http-nio-8080-exec-3] [32mDEBUG[0;39m c.s.m.d.controller.AuthController    [6815446d6b7946a0850c1570d2f7f6f9 | GET | /api/auth/csrf-token] - CSRF 토큰 요청: lmmkcRkCKp5UU0VAXnedLlNzRFt7ZwLibShnM0OQcTx1gOOUoQiTSCkwTK55Y3N4alqpG2QQaTlDVjbPDElSB3OlFwhBt4Wt
+26-05-19 14:51:14.790 [http-nio-8080-exec-3] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [6815446d6b7946a0850c1570d2f7f6f9 | GET | /api/auth/csrf-token] - Request completed
+26-05-19 14:51:16.880 [http-nio-8080-exec-6] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [01a696142b3948d2a9980dc94cdedf47 | GET | /api/auth/csrf-token] - Request started
+26-05-19 14:51:16.881 [http-nio-8080-exec-6] [32mDEBUG[0;39m c.s.m.d.controller.AuthController    [01a696142b3948d2a9980dc94cdedf47 | GET | /api/auth/csrf-token] - CSRF 토큰 요청: RqJuoGISQ36Bg30hrtTIjIkBa1vYCqbLyZU9HC7N2LVlS_mrdJUIlAB0dE6s5U1Fm_n8vL1jRmPoPcPmq6MJfhv774VXKprJ
+26-05-19 14:51:16.883 [http-nio-8080-exec-6] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [01a696142b3948d2a9980dc94cdedf47 | GET | /api/auth/csrf-token] - Request completed
+26-05-19 14:59:48.354 [SpringApplicationShutdownHook] [32mINFO [0;39m o.s.b.w.e.tomcat.GracefulShutdown    [ |  | ] - Commencing graceful shutdown. Waiting for active requests to complete
+26-05-19 14:59:49.415 [tomcat-shutdown] [32mINFO [0;39m o.s.b.w.e.tomcat.GracefulShutdown    [ |  | ] - Graceful shutdown complete
+26-05-19 14:59:49.427 [SpringApplicationShutdownHook] [32mINFO [0;39m o.s.o.j.LocalContainerEntityManagerFactoryBean [ |  | ] - Closing JPA EntityManagerFactory for persistence unit 'default'
+26-05-19 14:59:49.430 [SpringApplicationShutdownHook] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Shutdown initiated...
+26-05-19 14:59:49.444 [SpringApplicationShutdownHook] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Shutdown completed.
+26-05-19 15:02:26.566 [background-preinit] [32mINFO [0;39m o.h.validator.internal.util.Version  [ |  | ] - HV000001: Hibernate Validator 8.0.1.Final
+26-05-19 15:02:26.782 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Starting DiscodeitApplication using Java 17.0.17 with PID 37044 (C:\Users\jongin\codeit\10-sprint-mission\build\classes\java\main started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
+26-05-19 15:02:26.785 [main] [32mDEBUG[0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Running with Spring Boot v3.4.0, Spring v6.2.0
+26-05-19 15:02:26.788 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - The following 1 profile is active: "dev"
+26-05-19 15:02:31.290 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+26-05-19 15:02:31.824 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Finished Spring Data repository scanning in 509 ms. Found 6 JPA repository interfaces.
+26-05-19 15:02:36.273 [main] [32mINFO [0;39m o.s.b.w.e.tomcat.TomcatWebServer     [ |  | ] - Tomcat initialized with port 8080 (http)
+26-05-19 15:02:36.300 [main] [32mINFO [0;39m o.a.coyote.http11.Http11NioProtocol  [ |  | ] - Initializing ProtocolHandler ["http-nio-8080"]
+26-05-19 15:02:36.303 [main] [32mINFO [0;39m o.a.catalina.core.StandardService    [ |  | ] - Starting service [Tomcat]
+26-05-19 15:02:36.305 [main] [32mINFO [0;39m o.a.catalina.core.StandardEngine     [ |  | ] - Starting Servlet engine: [Apache Tomcat/10.1.33]
+26-05-19 15:02:36.520 [main] [32mINFO [0;39m o.a.c.c.C.[Tomcat].[localhost].[/]   [ |  | ] - Initializing Spring embedded WebApplicationContext
+26-05-19 15:02:36.524 [main] [32mINFO [0;39m o.s.b.w.s.c.ServletWebServerApplicationContext [ |  | ] - Root WebApplicationContext: initialization completed in 9558 ms
+26-05-19 15:02:37.551 [main] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Starting...
+26-05-19 15:02:38.228 [main] [32mINFO [0;39m com.zaxxer.hikari.pool.HikariPool    [ |  | ] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7c5ac0
+26-05-19 15:02:38.234 [main] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Start completed.
+26-05-19 15:02:38.636 [main] [32mINFO [0;39m o.h.jpa.internal.util.LogHelper      [ |  | ] - HHH000204: Processing PersistenceUnitInfo [name: default]
+26-05-19 15:02:38.915 [main] [32mINFO [0;39m org.hibernate.Version                [ |  | ] - HHH000412: Hibernate ORM core version 6.6.2.Final
+26-05-19 15:02:39.070 [main] [32mINFO [0;39m o.h.c.i.RegionFactoryInitiator       [ |  | ] - HHH000026: Second-level cache disabled
+26-05-19 15:02:40.214 [main] [32mINFO [0;39m o.s.o.j.p.SpringPersistenceUnitInfo  [ |  | ] - No LoadTimeWeaver setup: ignoring JPA class transformer
+26-05-19 15:02:40.513 [main] [32mINFO [0;39m o.hibernate.orm.connections.pooling  [ |  | ] - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 18.2
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+26-05-19 15:02:43.550 [main] [32mINFO [0;39m o.h.e.t.j.p.i.JtaPlatformInitiator   [ |  | ] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+26-05-19 15:02:43.831 [main] [32mINFO [0;39m o.s.o.j.LocalContainerEntityManagerFactoryBean [ |  | ] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+26-05-19 15:02:44.860 [main] [32mINFO [0;39m o.s.d.j.r.query.QueryEnhancerFactory [ |  | ] - Hibernate is in classpath; If applicable, HQL parser will be used.
+26-05-19 15:02:47.945 [main] [32mINFO [0;39m o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer [ |  | ] - Global AuthenticationManager configured with UserDetailsService bean with name discodeitUserDetailsService
+26-05-19 15:02:48.208 [main] [32mINFO [0;39m o.s.b.a.w.s.WelcomePageHandlerMapping [ |  | ] - Adding welcome page: class path resource [static/index.html]
+26-05-19 15:02:49.403 [main] [32mINFO [0;39m o.s.b.a.e.web.EndpointLinksResolver  [ |  | ] - Exposing 4 endpoints beneath base path '/actuator'
+26-05-19 15:02:52.291 [main] [32mINFO [0;39m o.a.coyote.http11.Http11NioProtocol  [ |  | ] - Starting ProtocolHandler ["http-nio-8080"]
+26-05-19 15:02:52.335 [main] [32mINFO [0;39m o.s.b.w.e.tomcat.TomcatWebServer     [ |  | ] - Tomcat started on port 8080 (http) with context path '/'
+26-05-19 15:02:52.368 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Started DiscodeitApplication in 27.764 seconds (process running for 32.569)
+26-05-19 15:02:52.594 [main] [32mDEBUG[0;39m org.hibernate.SQL                    [ |  | ] - 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.password,
+        u1_0.profile_id,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+26-05-19 15:02:52.601 [main] [32mTRACE[0;39m org.hibernate.orm.jdbc.bind          [ |  | ] - binding parameter (1:VARCHAR) <- [admin]
+26-05-19 15:02:52.697 [main] [32mDEBUG[0;39m org.hibernate.SQL                    [ |  | ] - 
+    select
+        us1_0.id,
+        us1_0.created_at,
+        us1_0.last_active_at,
+        us1_0.updated_at,
+        us1_0.user_id 
+    from
+        user_statuses us1_0 
+    where
+        us1_0.user_id=?
+26-05-19 15:02:52.698 [main] [32mTRACE[0;39m org.hibernate.orm.jdbc.bind          [ |  | ] - binding parameter (1:UUID) <- [6ec4f506-d340-4c04-b48f-2022f4b43153]
+26-05-19 15:03:03.559 [SpringApplicationShutdownHook] [32mINFO [0;39m o.s.b.w.e.tomcat.GracefulShutdown    [ |  | ] - Commencing graceful shutdown. Waiting for active requests to complete
+26-05-19 15:03:06.469 [tomcat-shutdown] [32mINFO [0;39m o.s.b.w.e.tomcat.GracefulShutdown    [ |  | ] - Graceful shutdown complete
+26-05-19 15:03:06.487 [SpringApplicationShutdownHook] [32mINFO [0;39m o.s.o.j.LocalContainerEntityManagerFactoryBean [ |  | ] - Closing JPA EntityManagerFactory for persistence unit 'default'
+26-05-19 15:03:06.492 [SpringApplicationShutdownHook] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Shutdown initiated...
+26-05-19 15:03:06.504 [SpringApplicationShutdownHook] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Shutdown completed.
+26-05-19 16:47:28.975 [background-preinit] [32mINFO [0;39m o.h.validator.internal.util.Version  [ |  | ] - HV000001: Hibernate Validator 8.0.1.Final
+26-05-19 16:47:29.105 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Starting DiscodeitApplication using Java 17.0.17 with PID 37048 (C:\Users\jongin\codeit\10-sprint-mission\build\classes\java\main started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
+26-05-19 16:47:29.106 [main] [32mDEBUG[0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Running with Spring Boot v3.4.0, Spring v6.2.0
+26-05-19 16:47:29.107 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - The following 1 profile is active: "dev"
+26-05-19 16:47:32.239 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+26-05-19 16:47:32.475 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Finished Spring Data repository scanning in 216 ms. Found 5 JPA repository interfaces.
+26-05-19 16:47:34.438 [main] [32mINFO [0;39m o.s.b.w.e.tomcat.TomcatWebServer     [ |  | ] - Tomcat initialized with port 8080 (http)
+26-05-19 16:47:34.479 [main] [32mINFO [0;39m o.a.coyote.http11.Http11NioProtocol  [ |  | ] - Initializing ProtocolHandler ["http-nio-8080"]
+26-05-19 16:47:34.484 [main] [32mINFO [0;39m o.a.catalina.core.StandardService    [ |  | ] - Starting service [Tomcat]
+26-05-19 16:47:34.485 [main] [32mINFO [0;39m o.a.catalina.core.StandardEngine     [ |  | ] - Starting Servlet engine: [Apache Tomcat/10.1.33]
+26-05-19 16:47:34.801 [main] [32mINFO [0;39m o.a.c.c.C.[Tomcat].[localhost].[/]   [ |  | ] - Initializing Spring embedded WebApplicationContext
+26-05-19 16:47:34.801 [main] [32mINFO [0;39m o.s.b.w.s.c.ServletWebServerApplicationContext [ |  | ] - Root WebApplicationContext: initialization completed in 5589 ms
+26-05-19 16:47:35.627 [main] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Starting...
+26-05-19 16:47:36.169 [main] [32mINFO [0;39m com.zaxxer.hikari.pool.HikariPool    [ |  | ] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@2a510e0e
+26-05-19 16:47:36.174 [main] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Start completed.
+26-05-19 16:47:36.538 [main] [32mINFO [0;39m o.h.jpa.internal.util.LogHelper      [ |  | ] - HHH000204: Processing PersistenceUnitInfo [name: default]
+26-05-19 16:47:36.919 [main] [32mINFO [0;39m org.hibernate.Version                [ |  | ] - HHH000412: Hibernate ORM core version 6.6.2.Final
+26-05-19 16:47:37.016 [main] [32mINFO [0;39m o.h.c.i.RegionFactoryInitiator       [ |  | ] - HHH000026: Second-level cache disabled
+26-05-19 16:47:37.968 [main] [32mINFO [0;39m o.s.o.j.p.SpringPersistenceUnitInfo  [ |  | ] - No LoadTimeWeaver setup: ignoring JPA class transformer
+26-05-19 16:47:38.240 [main] [32mINFO [0;39m o.hibernate.orm.connections.pooling  [ |  | ] - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 18.2
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+26-05-19 16:47:40.506 [main] [32mINFO [0;39m o.h.e.t.j.p.i.JtaPlatformInitiator   [ |  | ] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+26-05-19 16:47:40.647 [main] [32mINFO [0;39m o.s.o.j.LocalContainerEntityManagerFactoryBean [ |  | ] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+26-05-19 16:47:41.291 [main] [32mINFO [0;39m o.s.d.j.r.query.QueryEnhancerFactory [ |  | ] - Hibernate is in classpath; If applicable, HQL parser will be used.
+26-05-19 16:47:43.136 [main] [32mINFO [0;39m o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer [ |  | ] - Global AuthenticationManager configured with UserDetailsService bean with name discodeitUserDetailsService
+26-05-19 16:47:43.380 [main] [32mINFO [0;39m o.s.b.a.w.s.WelcomePageHandlerMapping [ |  | ] - Adding welcome page: class path resource [static/index.html]
+26-05-19 16:47:44.189 [main] [32mINFO [0;39m o.s.b.a.e.web.EndpointLinksResolver  [ |  | ] - Exposing 4 endpoints beneath base path '/actuator'
+26-05-19 16:47:45.905 [main] [32mINFO [0;39m o.s.b.w.e.tomcat.TomcatWebServer     [ |  | ] - Tomcat started on port 8080 (http) with context path '/'
+26-05-19 16:47:45.941 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Started DiscodeitApplication in 18.246 seconds (process running for 20.046)
+26-05-19 16:47:45.948 [SpringApplicationShutdownHook] [32mINFO [0;39m o.s.b.w.e.tomcat.GracefulShutdown    [ |  | ] - Commencing graceful shutdown. Waiting for active requests to complete
+26-05-19 16:47:46.135 [main] [32mDEBUG[0;39m org.hibernate.SQL                    [ |  | ] - 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.password,
+        u1_0.profile_id,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+26-05-19 16:47:46.138 [main] [32mTRACE[0;39m org.hibernate.orm.jdbc.bind          [ |  | ] - binding parameter (1:VARCHAR) <- [admin]
+26-05-19 16:47:47.127 [tomcat-shutdown] [32mINFO [0;39m o.s.b.w.e.tomcat.GracefulShutdown    [ |  | ] - Graceful shutdown complete
+26-05-19 16:47:47.141 [SpringApplicationShutdownHook] [32mINFO [0;39m o.s.o.j.LocalContainerEntityManagerFactoryBean [ |  | ] - Closing JPA EntityManagerFactory for persistence unit 'default'
+26-05-19 16:47:47.145 [SpringApplicationShutdownHook] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Shutdown initiated...
+26-05-19 16:47:47.155 [SpringApplicationShutdownHook] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Shutdown completed.

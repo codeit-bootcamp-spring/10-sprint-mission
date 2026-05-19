@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -17,23 +16,17 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 
-/**
- * UserRepository 슬라이스 테스트
- */
+/** UserRepository 슬라이스 테스트 */
 @DataJpaTest
 @EnableJpaAuditing
 @ActiveProfiles("test")
 class UserRepositoryTest {
 
-  @Autowired
-  private UserRepository userRepository;
+  @Autowired private UserRepository userRepository;
 
-  @Autowired
-  private TestEntityManager entityManager;
+  @Autowired private TestEntityManager entityManager;
 
-  /**
-   * TestFixture: 테스트에서 일관된 상태를 제공하기 위한 고정된 객체 세트 여러 테스트에서 재사용할 수 있는 테스트 데이터를 생성하는 메서드
-   */
+  /** TestFixture: 테스트에서 일관된 상태를 제공하기 위한 고정된 객체 세트 여러 테스트에서 재사용할 수 있는 테스트 데이터를 생성하는 메서드 */
   private User createTestUser(String username, String email) {
     BinaryContent profile = new BinaryContent("profile.jpg", 1024L, "image/jpeg");
     User user = new User(username, email, "password123!@#", profile);
@@ -124,10 +117,10 @@ class UserRepositoryTest {
     assertThat(users).extracting("username").containsExactlyInAnyOrder("user1", "user2");
 
     // 프로필과 상태 정보가 함께 조회되었는지 확인 - 프록시 초기화 없이도 접근 가능한지 테스트
-    User foundUser1 = users.stream().filter(u -> u.getUsername().equals("user1")).findFirst()
-        .orElseThrow();
-    User foundUser2 = users.stream().filter(u -> u.getUsername().equals("user2")).findFirst()
-        .orElseThrow();
+    User foundUser1 =
+        users.stream().filter(u -> u.getUsername().equals("user1")).findFirst().orElseThrow();
+    User foundUser2 =
+        users.stream().filter(u -> u.getUsername().equals("user2")).findFirst().orElseThrow();
 
     // 프록시 초기화 여부 확인
     assertThat(Hibernate.isInitialized(foundUser1.getProfile())).isTrue();
@@ -135,4 +128,4 @@ class UserRepositoryTest {
     assertThat(Hibernate.isInitialized(foundUser2.getProfile())).isTrue();
     assertThat(Hibernate.isInitialized(foundUser2.getStatus())).isTrue();
   }
-} 
+}

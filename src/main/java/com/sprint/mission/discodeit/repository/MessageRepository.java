@@ -15,7 +15,6 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
   @Query(
       "SELECT m FROM Message m "
           + "LEFT JOIN FETCH m.author a "
-          + "JOIN FETCH a.status "
           + "LEFT JOIN FETCH a.profile "
           + "WHERE m.channel.id=:channelId AND m.createdAt < :createdAt")
   Slice<Message> findAllByChannelIdWithAuthor(

@@ -7,7 +7,6 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -26,29 +25,21 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * MessageRepository 슬라이스 테스트
- */
+/** MessageRepository 슬라이스 테스트 */
 @DataJpaTest
 @EnableJpaAuditing
 @ActiveProfiles("test")
 class MessageRepositoryTest {
 
-  @Autowired
-  private MessageRepository messageRepository;
+  @Autowired private MessageRepository messageRepository;
 
-  @Autowired
-  private ChannelRepository channelRepository;
+  @Autowired private ChannelRepository channelRepository;
 
-  @Autowired
-  private UserRepository userRepository;
+  @Autowired private UserRepository userRepository;
 
-  @Autowired
-  private TestEntityManager entityManager;
+  @Autowired private TestEntityManager entityManager;
 
-  /**
-   * TestFixture: 테스트용 사용자 생성
-   */
+  /** TestFixture: 테스트용 사용자 생성 */
   private User createTestUser(String username, String email) {
     BinaryContent profile = new BinaryContent("profile.jpg", 1024L, "image/jpeg");
     User user = new User(username, email, "password123!@#", profile);
@@ -57,19 +48,15 @@ class MessageRepositoryTest {
     return userRepository.save(user);
   }
 
-  /**
-   * TestFixture: 테스트용 채널 생성
-   */
+  /** TestFixture: 테스트용 채널 생성 */
   private Channel createTestChannel(ChannelType type, String name) {
     Channel channel = new Channel(type, name, "설명: " + name);
     return channelRepository.save(channel);
   }
 
-  /**
-   * TestFixture: 테스트용 메시지 생성 ReflectionTestUtils를 사용하여 createdAt 필드를 직접 설정
-   */
-  private Message createTestMessage(String content, Channel channel, User author,
-      Instant createdAt) {
+  /** TestFixture: 테스트용 메시지 생성 ReflectionTestUtils를 사용하여 createdAt 필드를 직접 설정 */
+  private Message createTestMessage(
+      String content, Channel channel, User author, Instant createdAt) {
     Message message = new Message(content, channel, author, new ArrayList<>());
 
     // 생성 시간이 지정된 경우, ReflectionTestUtils로 설정
@@ -104,16 +91,16 @@ class MessageRepositoryTest {
     entityManager.clear();
 
     // when - 최신 메시지보다 이전 시간으로 조회
-    Slice<Message> messages = messageRepository.findAllByChannelIdWithAuthor(
-        channel.getId(),
-        now.plus(1, ChronoUnit.MINUTES),  // 현재 시간보다 더 미래
-        PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "createdAt"))
-    );
+    Slice<Message> messages =
+        messageRepository.findAllByChannelIdWithAuthor(
+            channel.getId(),
+            now.plus(1, ChronoUnit.MINUTES), // 현재 시간보다 더 미래
+            PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "createdAt")));
 
     // then
     assertThat(messages).isNotNull();
     assertThat(messages.hasContent()).isTrue();
-    assertThat(messages.getNumberOfElements()).isEqualTo(2);  // 페이지 크기 만큼만 반환
+    assertThat(messages.getNumberOfElements()).isEqualTo(2); // 페이지 크기 만큼만 반환
     assertThat(messages.hasNext()).isTrue();
 
     // 시간 역순(최신순)으로 정렬되어 있는지 확인
@@ -148,8 +135,8 @@ class MessageRepositoryTest {
     entityManager.clear();
 
     // when
-    Optional<Instant> lastMessageAt = messageRepository.findLastMessageAtByChannelId(
-        channel.getId());
+    Optional<Instant> lastMessageAt =
+        messageRepository.findLastMessageAtByChannelId(channel.getId());
 
     // then
     assertThat(lastMessageAt).isPresent();
@@ -169,8 +156,8 @@ class MessageRepositoryTest {
     entityManager.clear();
 
     // when
-    Optional<Instant> lastMessageAt = messageRepository.findLastMessageAtByChannelId(
-        emptyChannel.getId());
+    Optional<Instant> lastMessageAt =
+        messageRepository.findLastMessageAtByChannelId(emptyChannel.getId());
 
     // then
     assertThat(lastMessageAt).isEmpty();
@@ -203,19 +190,21 @@ class MessageRepositoryTest {
 
     // then
     // 해당 채널의 메시지는 삭제되었는지 확인
-    List<Message> channelMessages = messageRepository.findAllByChannelIdWithAuthor(
-        channel.getId(), 
-        Instant.now().plus(1, ChronoUnit.DAYS), 
-        PageRequest.of(0, 100)
-    ).getContent();
+    List<Message> channelMessages =
+        messageRepository
+            .findAllByChannelIdWithAuthor(
+                channel.getId(), Instant.now().plus(1, ChronoUnit.DAYS), PageRequest.of(0, 100))
+            .getContent();
     assertThat(channelMessages).isEmpty();
 
     // 다른 채널의 메시지는 그대로인지 확인
-    List<Message> otherChannelMessages = messageRepository.findAllByChannelIdWithAuthor(
-        otherChannel.getId(), 
-        Instant.now().plus(1, ChronoUnit.DAYS),
-        PageRequest.of(0, 100)
-    ).getContent();
+    List<Message> otherChannelMessages =
+        messageRepository
+            .findAllByChannelIdWithAuthor(
+                otherChannel.getId(),
+                Instant.now().plus(1, ChronoUnit.DAYS),
+                PageRequest.of(0, 100))
+            .getContent();
     assertThat(otherChannelMessages).hasSize(1);
   }
-} 
+}

@@ -7,17 +7,14 @@ import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
   private final UserMapper userMapper;
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
@@ -79,8 +75,6 @@ public class BasicUserService implements UserService {
     String encodedPassword = passwordEncoder.encode(userCreateRequest.password());
 
     User user = new User(username, email, encodedPassword, nullableProfile);
-    Instant now = Instant.now();
-    UserStatus userStatus = new UserStatus(user, now);
 
     userRepository.save(user);
 
@@ -105,7 +99,7 @@ public class BasicUserService implements UserService {
   public List<UserDto> findAll() {
     log.debug("모든 사용자 조회 시작");
     List<UserDto> userDtos =
-        userRepository.findAllWithProfileAndStatus().stream().map(userMapper::toDto).toList();
+        userRepository.findAllWithProfile().stream().map(userMapper::toDto).toList();
 
     return userDtos;
   }
