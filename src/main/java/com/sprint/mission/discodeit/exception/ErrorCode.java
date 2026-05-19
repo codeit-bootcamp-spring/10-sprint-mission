@@ -27,8 +27,8 @@ public enum ErrorCode {
     @Schema(description = "메시지 읽음 상태가 이미 존재합니다. (400)")
     READ_STATUS_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "메시지 읽음 상태가 이미 존재합니다."),
 
-    @Schema(description = "유저 이름 또는 비밀번호가 올바르지 않습니다. (400)")
-    INVALID_CREDENTIALS(HttpStatus.BAD_REQUEST, "유저 이름 또는 비밀번호가 올바르지 않습니다."),
+    @Schema(description = "유저 이름 또는 비밀번호가 올바르지 않습니다. (401)")
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "유저 이름 또는 비밀번호가 올바르지 않습니다."),
 
     @Schema(description = "비공개 채널은 수정할 수 없습니다. (400)")
     PRIVATE_CHANNEL_UPDATE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "비공개 채널은 수정할 수 없습니다."),

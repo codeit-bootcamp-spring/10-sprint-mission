@@ -9,10 +9,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
+import com.sprint.mission.discodeit.security.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Configuration
 public class SecurityConfig {
+
+	private final LoginSuccessHandler loginSuccessHandler;
+	private final LoginFailureHandler loginFailureHandler;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -20,6 +28,12 @@ public class SecurityConfig {
 			.csrf(csrf -> csrf
 				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 				.csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+			)
+			.formLogin(login -> login
+				.loginProcessingUrl("/api/auth/login")
+				.successHandler(loginSuccessHandler)
+				.failureHandler(loginFailureHandler)
+				.permitAll()
 			)
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/", "/index.html", "/favicon.ico", "/assets/**").permitAll()
