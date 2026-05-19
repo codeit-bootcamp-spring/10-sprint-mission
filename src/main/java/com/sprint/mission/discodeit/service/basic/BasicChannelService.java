@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,7 @@ public class BasicChannelService implements ChannelService {
 	private final UserRepository userRepository;
 	private final ChannelMapper channelMapper;
 
+	@PreAuthorize("hasRole('CHANNEL_MANAGER')")
 	@Transactional
 	@Override
 	public ChannelDto create(PublicChannelCreateRequest request) {
@@ -92,6 +94,7 @@ public class BasicChannelService implements ChannelService {
 			.toList();
 	}
 
+	@PreAuthorize("hasRole('CHANNEL_MANAGER')")
 	@Transactional
 	@Override
 	public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
@@ -110,6 +113,7 @@ public class BasicChannelService implements ChannelService {
 		return channelMapper.toDto(channel);
 	}
 
+	@PreAuthorize("hasRole('CHANNEL_MANAGER')")
 	@Transactional
 	@Override
 	public void delete(UUID channelId) {
