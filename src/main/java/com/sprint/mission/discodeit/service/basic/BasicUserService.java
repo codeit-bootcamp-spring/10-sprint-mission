@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
@@ -132,6 +133,18 @@ public class BasicUserService implements UserService {
 		user.update(newUsername, newEmail, encryptedNewPassword, nullableProfile);
 
 		log.info("[USER_UPDATE] 사용자 수정 완료. userId={}", userId);
+		return userMapper.toDto(user);
+	}
+
+	@Transactional
+	@Override
+	public UserDto updateRole(UserRoleUpdateRequest request) {
+		UUID userId = request.userId();
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new UserNotFoundException(userId));
+
+		user.updateRole(request.newRole());
+		log.info("[USER_ROLE_UPDATE] 사용자 권한 수정 완료: userId={}, role={}", userId, user.getRole());
 		return userMapper.toDto(user);
 	}
 

@@ -6,6 +6,8 @@ import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -30,6 +32,10 @@ public class User extends BaseUpdatableEntity {
 	@Column(length = 60, nullable = false)
 	private String password;
 
+	@Enumerated(EnumType.STRING)
+	@Column(length = 20, nullable = false)
+	private Role role;
+
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "profile_id", columnDefinition = "uuid")
 	private BinaryContent profile;
@@ -40,10 +46,15 @@ public class User extends BaseUpdatableEntity {
 	private UserStatus status;
 
 	public User(String username, String email, String password, BinaryContent profile) {
+		this(username, email, password, profile, Role.USER);
+	}
+
+	public User(String username, String email, String password, BinaryContent profile, Role role) {
 		this.username = username;
 		this.email = email;
 		this.password = password;
 		this.profile = profile;
+		this.role = role == null ? Role.USER : role;
 	}
 
 	public void update(String newUsername, String newEmail, String newPassword,
@@ -59,6 +70,12 @@ public class User extends BaseUpdatableEntity {
 		}
 		if (newProfile != null) {
 			this.profile = newProfile;
+		}
+	}
+
+	public void updateRole(Role newRole) {
+		if (newRole != null && !newRole.equals(this.role)) {
+			this.role = newRole;
 		}
 	}
 }

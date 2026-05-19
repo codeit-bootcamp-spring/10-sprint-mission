@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 
 public interface UserService {
@@ -20,6 +21,8 @@ public interface UserService {
 
 	UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
 		Optional<BinaryContentCreateRequest> profileCreateRequest);
+
+	UserDto updateRole(UserRoleUpdateRequest request);
 
 	void delete(UUID userId);
 }
