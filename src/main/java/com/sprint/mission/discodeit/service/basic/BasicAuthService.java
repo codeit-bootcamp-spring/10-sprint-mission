@@ -46,12 +46,11 @@ public class BasicAuthService implements AuthService {
 
   // Role 변경
   @PreAuthorize( "hasRole('ADMIN')")
-  @Transactional(readOnly = true)
   public UserDto updateUserRole(RoleUpdateRequest request) {
     User user = userRepository.findById(request.userId())
             .orElseThrow(() -> UserNotFoundException.withId(request.userId()));
 
-    user.updateRole(request.role());
+    user.updateRole(request.newRole());
 
     return userMapper.toDto(user);
   }

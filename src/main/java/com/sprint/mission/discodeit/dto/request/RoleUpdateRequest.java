@@ -6,6 +6,6 @@ import java.util.UUID;
 
 public record RoleUpdateRequest(
         UUID userId,
-        Role role
+        Role newRole
 ) {
 }
