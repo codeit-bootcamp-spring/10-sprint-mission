@@ -121,6 +121,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest dto) {
         Channel channel = getChannel(channelId);
         if(channel.getType() == ChannelType.PRIVATE){
