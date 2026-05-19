@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.UserDto;
+import java.util.UUID;
 
 public interface AuthService {
-    UserDto.Response login(UserDto.Login request);
+
+  void expireUserSessions(UUID userId);
+
+  boolean isUserLoggedIn(UUID userId);
 }

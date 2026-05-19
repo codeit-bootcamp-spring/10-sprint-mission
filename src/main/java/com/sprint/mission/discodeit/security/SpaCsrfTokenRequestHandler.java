@@ -1,0 +1,34 @@
+package com.sprint.mission.discodeit.security;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.function.Supplier;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
+import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+@Component
+public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
+
+  // 폼 기반 (XOR 인코딩) 처리용
+  private final CsrfTokenRequestHandler plain = new CsrfTokenRequestAttributeHandler();
+  // SPA 헤더 기반 (평문) 처리용
+  private final CsrfTokenRequestHandler xor = new XorCsrfTokenRequestAttributeHandler();
+
+  @Override
+  public void handle(HttpServletRequest request, HttpServletResponse response,
+      Supplier<CsrfToken> csrfToken) {
+    this.xor.handle(request, response, csrfToken);
+    csrfToken.get();
+  }
+
+  @Override
+  public String resolveCsrfTokenValue(HttpServletRequest request, CsrfToken csrfToken) {
+    String headerValue = request.getHeader(csrfToken.getHeaderName());
+    return (StringUtils.hasText(headerValue) ? this.plain : this.xor).resolveCsrfTokenValue(request,
+        csrfToken);
+  }
+}

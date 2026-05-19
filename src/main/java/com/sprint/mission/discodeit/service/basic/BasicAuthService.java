@@ -1,40 +1,47 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.UserDto;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
-
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BasicAuthService implements AuthService {
 
-    private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
+  private final SessionRegistry sessionRegistry;
 
-    @Override
-    public UserDto.Response login(UserDto.Login request) {
-        User user = userRepository.findAll().stream()
-                .filter(u -> u.getUsername().equals(request.username()))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
-
-        if (!user.getPassword().equals(request.password())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+  @Override
+  public void expireUserSessions(UUID userId) {
+    for (Object principal : sessionRegistry.getAllPrincipals()) {
+      if (principal instanceof DiscodeitUserDetails userDetails) {
+        if (userDetails.getUserDto().id().equals(userId)) {
+          List<SessionInformation> sessions = sessionRegistry.getAllSessions(principal, false);
+          for (SessionInformation session : sessions) {
+            session.expireNow();
+            log.debug("권한 변경 유저의 세션 만료 처리 완료: sessionId={}", session.getSessionId());
+          }
         }
-
-        UserStatus status = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
-
-        status.updateOnline();
-        userStatusRepository.save(status);
-
-        return UserDto.Response.of(user, status);
+      }
     }
+  }
+
+  @Override
+  public boolean isUserLoggedIn(UUID userId) {
+    for (Object principal : sessionRegistry.getAllPrincipals()) {
+      if (principal instanceof DiscodeitUserDetails userDetails) {
+        if (userDetails.getUserDto().id().equals(userId)) {
+          List<SessionInformation> sessions = sessionRegistry.getAllSessions(principal, false);
+          return !sessions.isEmpty();
+        }
+      }
+    }
+    return false;
+  }
 }
