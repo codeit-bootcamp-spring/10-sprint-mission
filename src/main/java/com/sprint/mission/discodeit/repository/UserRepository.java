@@ -12,7 +12,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   Optional<User> findByUsername(String username);
 
-  @EntityGraph(attributePaths = {"status", "profile"})
+  @EntityGraph(attributePaths = "profile")
   List<User> findAll();
 
   boolean existsByUsername(String username);

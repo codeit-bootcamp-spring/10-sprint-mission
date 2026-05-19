@@ -3,8 +3,6 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,7 +39,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
   private final UserService userService;
-  private final UserStatusService userStatusService;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "User 등록")
@@ -93,20 +90,5 @@ public class UserController {
     log.debug("유저 목록 조회 요청");
     List<UserDto> responses = userService.findAll();
     return ResponseEntity.status(HttpStatus.OK).body(responses);
-  }
-
-  @PatchMapping("/{userId}/userStatus")
-  @Operation(summary = "User 온라인 상태 업데이트")
-  @ApiResponses({
-      @ApiResponse(responseCode = "202", description = "User 온라인 상태가 성공적으로 업데이트됨"),
-      @ApiResponse(responseCode = "404", description = "해당 User의 UserStatus를 찾을 수 없음")
-  })
-  public ResponseEntity<UserStatusDto> updateOnline(
-      @Parameter(description = "업데이트할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
-      @NotNull @PathVariable UUID userId,
-      @Valid @RequestBody UserStatusUpdateRequest request) {
-    log.info("유저 온라인 상태 업데이트 요청: userId={}", userId);
-    UserStatusDto response = userStatusService.updateByUserId(userId, request);
-    return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
   }
 }

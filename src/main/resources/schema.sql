@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS message_attachments;
-DROP TABLE IF EXISTS read_statuses;
 DROP TABLE IF EXISTS user_statuses;
+DROP TABLE IF EXISTS read_statuses;
+DROP TABLE IF EXISTS message_attachments;
 DROP TABLE IF EXISTS messages;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS channels;
@@ -56,16 +56,6 @@ CREATE TABLE message_attachments
     attachment_id UUID,
     FOREIGN KEY (message_id) REFERENCES messages (id) ON DELETE CASCADE,
     FOREIGN KEY (attachment_id) REFERENCES binary_contents (id) ON DELETE CASCADE
-);
-
-CREATE TABLE user_statuses
-(
-    id             UUID PRIMARY KEY,
-    created_at     timestamp with time zone NOT NULL,
-    updated_at     timestamp with time zone,
-    user_id        UUID UNIQUE              NOT NULL,
-    last_active_at timestamp with time zone NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 CREATE TABLE read_statuses

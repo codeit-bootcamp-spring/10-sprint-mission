@@ -73,11 +73,9 @@ public class BasicUserService implements UserService {
         profile
     );
 
-    UserStatus userStatus = new UserStatus(user);
-    user.setStatus(userStatus); // 편의 메서드
-    userRepository.save(user); //cascade로 UserStatus도 같이 INSERT
+    userRepository.save(user);
     log.info("유저 생성 완료: userId={}", user.getId());
-    return userMapper.toDto(user);
+    return userMapper.toDto(user, false);
   }
 
   @Override
@@ -85,8 +83,9 @@ public class BasicUserService implements UserService {
   public UserDto findById(UUID userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
+    boolean isLoggedIn = authService.isUserLoggedIn(userId);
     log.debug("유저 조회 완료: user={}, username={}", user.getId(), user.getUsername());
-    return userMapper.toDto(user);
+    return userMapper.toDto(user, isLoggedIn);
   }
 
   @Override
@@ -95,7 +94,10 @@ public class BasicUserService implements UserService {
     List<User> users = userRepository.findAll();
     log.debug("유저 목록 조회 완료: userCount={}", users.size());
     return users.stream()
-        .map(userMapper::toDto)
+        .map(user -> {
+          boolean isOnline = authService.isUserLoggedIn(user.getId());
+          return userMapper.toDto(user, isOnline);
+        })
         .toList();
   }
 
@@ -130,7 +132,8 @@ public class BasicUserService implements UserService {
       }
     }
     log.info("유저 수정 완료: userId={}", user.getId());
-    return userMapper.toDto(user);
+    boolean isOnline = authService.isUserLoggedIn(userId);
+    return userMapper.toDto(user, isOnline);
   }
 
   @Override
@@ -140,7 +143,7 @@ public class BasicUserService implements UserService {
     user.updateRole(request.newRole());
     authService.expireUserSessions(user.getId());
     log.info("유저 역할 수정 완료: userId={}", user.getId());
-    return userMapper.toDto(user);
+    return userMapper.toDto(user, false);
   }
 
   @Override
