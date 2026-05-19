@@ -9,6 +9,8 @@ public enum ErrorCode {
 
     // Auth
     LOGIN_FAIL(401, "A401", "로그인에 실패했습니다."),
+    UNAUTHORIZED(401, "A402", "인증이 필요합니다."),
+    ACCESS_DENIED(403, "A403", "접근 권한이 없습니다."),
 
     // User
     USER_NOT_FOUND(404, "U100", "유저를 찾을 수 없습니다."),
@@ -54,6 +56,6 @@ public enum ErrorCode {
     ;
 
     private final int status;
-    private final String errorType;
+    private final String code;
     private final String message;
 }

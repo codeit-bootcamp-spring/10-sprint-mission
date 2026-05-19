@@ -43,6 +43,7 @@ public class AdminInitializer {
                             .ifPresentOrElse(existingAdmin ->
                                     {
                                         existingAdmin.updateRole(Role.ADMIN);
+                                        userRepository.save(existingAdmin);
                                         log.info("[ADMIN_INIT_RECOVER] 기존 admin 계정의 권한을 ADMIN으로 복구했습니다.");
                                     }, () ->  {
                                 User admin = new User(

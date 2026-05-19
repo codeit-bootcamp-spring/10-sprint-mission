@@ -32,7 +32,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(
                 Instant.now(),
                 ErrorCode.LOGIN_FAIL.getStatus(),
-                ErrorCode.LOGIN_FAIL.getErrorType(),
+                ErrorCode.LOGIN_FAIL.getCode(),
                 ErrorCode.LOGIN_FAIL.getMessage(),
                 Map.of(),
                 exception.getClass().getSimpleName()

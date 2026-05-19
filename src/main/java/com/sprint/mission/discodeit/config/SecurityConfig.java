@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.controller.dto.ErrorResponseDTO;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
@@ -7,6 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,6 +22,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
+import java.time.Instant;
+import java.util.Map;
+
 @EnableMethodSecurity
 @Configuration
 @RequiredArgsConstructor
@@ -22,6 +32,8 @@ public class SecurityConfig {
 
     private final LoginSuccessHandler loginSuccessHandler;
     private final LoginFailureHandler loginFailureHandler;
+
+    private final ObjectMapper objectMapper;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -52,6 +64,44 @@ public class SecurityConfig {
 
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
+
+                            ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                                    Instant.now(),
+                                    errorCode.getStatus(),
+                                    errorCode.getCode(),
+                                    errorCode.getMessage(),
+                                    Map.of(),
+                                    authException.getClass().getSimpleName()
+                            );
+
+                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            response.setContentType("application/json;charset=UTF-8");
+
+                            response.getWriter()
+                                    .write(objectMapper.writeValueAsString(errorResponse));
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            ErrorCode errorCode = ErrorCode.ACCESS_DENIED;
+
+                            ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                                    Instant.now(),
+                                    errorCode.getStatus(),
+                                    errorCode.getCode(),
+                                    errorCode.getMessage(),
+                                    Map.of(),
+                                    accessDeniedException.getClass().getSimpleName()
+                            );
+
+                            response.setStatus(HttpStatus.FORBIDDEN.value());
+                            response.setContentType("application/json;charset=UTF-8");
+
+                            response.getWriter()
+                                    .write(objectMapper.writeValueAsString(errorResponse));
+                        })
+                )
                 .formLogin(login -> login
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(loginSuccessHandler)
@@ -70,5 +120,24 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl.fromHierarchy("""
+                ROLE_ADMIN > ROLE_CHANNEL_MANAGER
+                ROLE_CHANNEL_MANAGER > ROLE_USER
+                """);
+    }
+
+    @Bean
+    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
+            RoleHierarchy roleHierarchy
+    ) {
+        DefaultMethodSecurityExpressionHandler handler =
+                new DefaultMethodSecurityExpressionHandler();
+
+        handler.setRoleHierarchy(roleHierarchy);
+        return handler;
     }
 }
