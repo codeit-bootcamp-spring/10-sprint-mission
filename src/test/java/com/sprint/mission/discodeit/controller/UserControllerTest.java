@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.service.UserService;
@@ -42,9 +43,6 @@ class UserControllerTest {
   @MockitoBean
   private UserService userService;
 
-  @MockitoBean
-  private UserStatusService userStatusService;
-
   @Test
   @DisplayName("유저 생성 요청을 처리하여 응답을 반환할 수 있어야 한다.")
   void should_return_response_when_create_user() throws Exception {
@@ -63,7 +61,8 @@ class UserControllerTest {
         "김코딩",
         "hello@hello.com",
         profileDto,
-        true
+        true,
+        Role.USER
     );
 
     MockMultipartFile userCreateRequestPart = new MockMultipartFile(

@@ -21,4 +21,6 @@ public interface MessageService {
   MessageDto update(UUID messageId, MessageUpdateRequest updateRequest);
 
   void delete(UUID messageId);
+
+  boolean isMessageAuthor(UUID messageId, UUID userId);
 }

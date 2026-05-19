@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,6 +56,7 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
+  @PreAuthorize("#userId == authentication.principal.userDto.id")
   @PatchMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "User 정보 수정")
   public ResponseEntity<UserDto> update(
@@ -68,6 +70,7 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
+  @PreAuthorize("#userId == authentication.principal.userDto.id")
   @DeleteMapping("/{userId}")
   @Operation(summary = "User 삭제")
   @ApiResponses({

@@ -33,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -139,5 +140,13 @@ public class BasicMessageService implements MessageService {
         .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
     messageRepository.delete(message);
     log.info("메시지 삭제 완료: messageId={}", message.getId());
+  }
+
+  @Transactional(readOnly = true)
+  public boolean isMessageAuthor(UUID messageId, UUID userId) {
+    return messageRepository.findById(messageId)
+        .map(Message::getAuthor)
+        .map(author -> author.getId().equals(userId))
+        .orElse(false);
   }
 }

@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,6 +61,7 @@ public class MessageController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
+  @PreAuthorize("@basicMessageService.isMessageAuthor(#messageId, authentication.principal.userDto.id)")
   @PatchMapping("/{messageId}")
   @Operation(summary = "Message 내용 수정")
   @ApiResponses({
@@ -76,6 +78,7 @@ public class MessageController {
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
+  @PreAuthorize("@basicMessageService.isMessageAuthor(#messageId, authentication.principal.userDto.id)")
   @DeleteMapping("/{messageId}")
   @Operation(summary = "Message 삭제")
   @ApiResponses({
