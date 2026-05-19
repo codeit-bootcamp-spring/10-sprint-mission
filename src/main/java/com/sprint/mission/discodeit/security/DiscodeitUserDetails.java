@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.security;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -53,5 +54,23 @@ public class DiscodeitUserDetails implements UserDetails {
   public boolean isEnabled() {
     // 계정 비활성화
     return UserDetails.super.isEnabled();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof DiscodeitUserDetails that)) {
+      return false;
+    }
+
+    // 같은 세션인지 id로
+    return Objects.equals(userDto.id(), that.userDto.id());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(userDto.id());
   }
 }

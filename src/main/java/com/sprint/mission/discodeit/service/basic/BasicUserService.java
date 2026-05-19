@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
@@ -23,6 +24,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +40,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
+  private final SessionRegistry sessionRegistry;
 
   @Transactional
   @Override
@@ -179,6 +182,20 @@ public class BasicUserService implements UserService {
 
     user.updateRole(request.newRole());
 
+    expireUserSessions(user.getId());
+
     return userMapper.toDto(user);
+  }
+
+  private void expireUserSessions(UUID userId) {
+    sessionRegistry.getAllPrincipals().stream()
+        .filter(DiscodeitUserDetails.class::isInstance)
+        .map(DiscodeitUserDetails.class::cast)
+        .filter(principal -> principal.getUserDto().id().equals(userId))
+        .forEach(
+            principal ->
+                sessionRegistry
+                    .getAllSessions(principal, false)
+                    .forEach(sessionInformation -> sessionInformation.expireNow()));
   }
 }

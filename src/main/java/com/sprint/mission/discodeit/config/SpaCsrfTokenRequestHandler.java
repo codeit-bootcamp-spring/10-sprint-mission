@@ -7,6 +7,7 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
+import org.springframework.util.StringUtils;
 
 public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
   private final CsrfTokenRequestHandler plain = new CsrfTokenRequestAttributeHandler();
@@ -19,5 +20,15 @@ public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
 
     // 지연 로딩된 CSRF 토큰을 강제로 생성합니다.
     csrfToken.get();
+  }
+
+  @Override
+  public String resolveCsrfTokenValue(HttpServletRequest request, CsrfToken csrfToken) {
+    String headerValue = request.getHeader(csrfToken.getHeaderName());
+    //
+
+    return StringUtils.hasText(headerValue)
+        ? this.plain.resolveCsrfTokenValue(request, csrfToken)
+        : this.xor.resolveCsrfTokenValue(request, csrfToken);
   }
 }

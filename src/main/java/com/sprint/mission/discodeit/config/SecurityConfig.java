@@ -20,11 +20,14 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @RequiredArgsConstructor
@@ -36,7 +39,8 @@ public class SecurityConfig {
   private final ObjectMapper objectMapper;
 
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry)
+      throws Exception {
     return http.csrf(
             csrf ->
                 csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
@@ -89,6 +93,7 @@ public class SecurityConfig {
                           response.setCharacterEncoding("UTF-8");
                           objectMapper.writeValue(response.getWriter(), errorResponse);
                         })
+
                     // 인증은 되었지만 권한이 부족하면 403
                     .accessDeniedHandler(
                         (request, response, accessDeniedException) -> {
@@ -114,6 +119,13 @@ public class SecurityConfig {
                     // 로그인 시
                     .successHandler(loginSuccessHandler)
                     .failureHandler(loginFailureHandler))
+        .rememberMe(
+            remember ->
+                remember
+                    .rememberMeParameter("remember-me")
+                    .rememberMeCookieName("remember-me")
+                    .key("discodeit-remember-me-key")
+                    .tokenValiditySeconds(60 * 60 * 24 * 7))
         .logout(
             logout ->
                 logout
@@ -121,6 +133,16 @@ public class SecurityConfig {
                     // 로그아웃 성공 시 204 No Content
                     .logoutSuccessHandler(
                         new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
+        .sessionManagement(
+            management ->
+                management.sessionConcurrency(
+                    concurrency ->
+                        concurrency
+                            // 같은 계정은 하나의 세션만
+                            .maximumSessions(1)
+                            // 새 로그인이 성공하면 기존 세션을 만료시킵니다.
+                            .maxSessionsPreventsLogin(false)
+                            .sessionRegistry(sessionRegistry)))
         .build();
   }
 
@@ -136,6 +158,16 @@ public class SecurityConfig {
       ROLE_ADMIN > ROLE_CHANNEL_MANAGER
       ROLE_CHANNEL_MANAGER > ROLE_USER
       """);
+  }
+
+  @Bean
+  public SessionRegistry sessionRegistry() {
+    return new SessionRegistryImpl();
+  }
+
+  @Bean
+  public HttpSessionEventPublisher httpSessionEventPublisher() {
+    return new HttpSessionEventPublisher();
   }
 
   @Bean
