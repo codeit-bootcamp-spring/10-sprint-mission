@@ -39,8 +39,6 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     return http.csrf(
             csrf ->
-                // CSRF는 세션이 아닌 쿠키에 저장
-                // XSFT-TOKEN 값을 읽어 X-XSRF-TOKEN 헤더에 넣어야하므로, HttpOnly를 false로 설정
                 csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                     .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
         .authorizeHttpRequests(
@@ -52,10 +50,8 @@ public class SecurityConfig {
                     // 회원가입은 로그인 전에
                     .requestMatchers(HttpMethod.POST, "/api/users")
                     .permitAll()
-                    // 로그인 료청은 인증 전에 호출
                     .requestMatchers(HttpMethod.POST, "/api/auth/login")
                     .permitAll()
-                    // 로그아웃 URL 자체는 Spring Security LogoutFilter가 처리
                     .requestMatchers(HttpMethod.POST, "/api/auth/logout")
                     .permitAll()
                     .requestMatchers(
@@ -69,15 +65,14 @@ public class SecurityConfig {
                         "/actuator/**",
                         "/login")
                     .permitAll()
-                    // 위에서 허용안한 것들은 인증 필.
                     .anyRequest()
                     .authenticated())
 
-        // 인증/인가 실패 시 기본 redirect 대신 JSON 응답을 반환
+        // 인증/인가 실패 시 기본 redirect 대신 JSON 응답을 반환?
         .exceptionHandling(
             ex ->
                 ex
-                    // 인증되지 않은 사용자가 보호된 API에 접근하면 401
+                    // 인증되지 않은 사용자가 접근하면 401
                     .authenticationEntryPoint(
                         (request, response, authException) -> {
                           ErrorResponse errorResponse =
@@ -111,8 +106,6 @@ public class SecurityConfig {
                           response.setCharacterEncoding("UTF-8");
                           objectMapper.writeValue(response.getWriter(), errorResponse);
                         }))
-
-        // Post /api/auth/login 은 UsernamePasswordAuthenticatorFilter 가 처리.
         .formLogin(
             login ->
                 login

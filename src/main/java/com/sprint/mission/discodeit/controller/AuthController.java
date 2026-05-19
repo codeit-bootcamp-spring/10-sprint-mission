@@ -26,8 +26,7 @@ public class AuthController {
 
   @GetMapping("/csrf-token")
   public ResponseEntity<Void> csrfToken(CsrfToken csrfToken) {
-    // csrfToken.getToken()을 호출하면 토큰이 실제로 생성
-    // CookieCsrfTokenRepository에 의해 응답 Set-Cookie 헤더로 내려감
+    // csrfToken.getToken()을 호출하면 토큰이 실제로 생성 후 응답 Set-Cookie 헤더로 내려감
     String tokenValue = csrfToken.getToken();
 
     log.debug("CSRF 토큰 요청: {}", tokenValue);
