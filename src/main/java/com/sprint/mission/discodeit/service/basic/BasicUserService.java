@@ -137,11 +137,11 @@ public class BasicUserService implements UserService {
             profileFile.getSize(),
             profileFile.getContentType()
         );
-        binaryContentRepository.save(newImage);
+        BinaryContent savedImage = binaryContentRepository.save(newImage);
 
-        binaryContentStorage.put(newImage.getId(), profileFile.getBytes());
+        binaryContentStorage.put(savedImage.getId(), profileFile.getBytes());
 
-        user.updateProfileImage(newImage);
+        user.updateProfileImage(savedImage);
       } catch (IOException e) {
         throw new FileUploadException(Map.of(
             "targetUserId", id,
