@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -54,6 +55,13 @@ public class SecurityConfig {
                         )
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                        // SPA 진입점
+                        .requestMatchers("/", "/index.html").permitAll()
+
+                        // 프론트 빌드 파일 경로
+                        .requestMatchers("/assets/**").permitAll()
+
                         .requestMatchers("/api/auth/csrf-token").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()      // 회원가입 경로만 허용
                         .requestMatchers("/api/auth/login").permitAll()
@@ -113,6 +121,14 @@ public class SecurityConfig {
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(loginSuccessHandler)
                         .failureHandler(loginFailureHandler)
+                )
+                .rememberMe(rememberMe -> rememberMe
+                        .rememberMeParameter("remember-me")
+                        // remember-me 쿠키 이름
+                        .rememberMeCookieName("remember-me")
+                        .tokenValiditySeconds(60 * 60 * 24 *14)     // 14일
+                        // remember-me 토큰 서명에 사용하는 키
+                        .key("discodeit-remember-me-key")
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
