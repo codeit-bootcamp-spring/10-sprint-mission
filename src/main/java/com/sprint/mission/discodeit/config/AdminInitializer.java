@@ -25,7 +25,7 @@ public class AdminInitializer implements ApplicationRunner {
   @Transactional
   public void run(ApplicationArguments args) {
     // 어드민 계정이 없을 때만 생성
-    if (!userRepository.existsByUsername("admin")) {
+    if (!userRepository.existsByRole(Role.ADMIN)) {
       log.info("ADMIN account not found. Proceeding with initialization.");
       User admin = new User("admin", "admin@admin.com", passwordEncoder.encode("admin1234!"), null);
       admin.updateRole(Role.ADMIN);
@@ -35,6 +35,8 @@ public class AdminInitializer implements ApplicationRunner {
 
       userRepository.save(admin);
       log.info("ADMIN account created successfully.");
+    } else {
+      log.info("ADMIN account already exists. Skipping initialization.");
     }
   }
 }

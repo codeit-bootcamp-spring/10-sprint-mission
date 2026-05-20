@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.Optional;
@@ -34,4 +35,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
       + "JOIN FETCH u.userStatus "
       + "WHERE u.id = :id")
   Optional<User> findByIdWithProfileAndStatus(@Param("id") UUID id);
+
+  // 특정 권한을 가진 유저의 존재 여부 확인
+  boolean existsByRole(Role role);
 }
