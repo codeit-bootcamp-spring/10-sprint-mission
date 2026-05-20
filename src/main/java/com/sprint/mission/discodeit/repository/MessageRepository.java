@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-    @EntityGraph(attributePaths = {"author", "author.userStatus", "author.profile", "channel", "attachments"})
+    @EntityGraph(attributePaths = {"author", "author.profile", "channel", "attachments"})
     @Query("""
         select m
         from Message m
@@ -24,10 +24,10 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     """)        // m.createdAt < :cursor = cursor 시간보다 더 이전에 작성된 메시지를 최신순으로 조회
     Slice<Message> findByAuthorIdWithCursor(UUID authorId, Instant cursor, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"author", "author.userStatus", "author.profile", "channel", "attachments"})
+    @EntityGraph(attributePaths = {"author", "author.profile", "channel", "attachments"})
     Slice<Message> findByAuthor_IdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"author", "author.userStatus", "author.profile", "channel", "attachments"})
+    @EntityGraph(attributePaths = {"author", "author.profile", "channel", "attachments"})
     @Query("""
         select m
         from Message m
@@ -37,10 +37,10 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     """)        // m.createdAt < :cursor = cursor 시간보다 더 이전에 작성된 메시지를 최신순으로 조회
     Slice<Message> findByChannelIdWithCursor(UUID channelId, Instant cursor, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"author", "author.userStatus", "author.profile", "channel", "attachments"})
+    @EntityGraph(attributePaths = {"author", "author.profile", "channel", "attachments"})
     Slice<Message> findByChannel_IdOrderByCreatedAtDesc(UUID channelId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"author", "author.userStatus", "author.profile", "channel", "attachments"})
+    @EntityGraph(attributePaths = {"author", "author.profile", "channel", "attachments"})
     Optional<Message> findById(UUID messageId);
 
     @EntityGraph(attributePaths = {"author", "channel", "attachments"})
@@ -59,6 +59,8 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
         group by m.channel.id
     """)    // 채널의 마지막 메시지를 찾음
     List<Object[]> findLastMessageAtByChannelIds(List<UUID> channelIds);
+
+    boolean existsByIdAndAuthor_Id(UUID messageId, UUID userId);
 
     void deleteAllByChannel_Id(UUID channelId);
 }
