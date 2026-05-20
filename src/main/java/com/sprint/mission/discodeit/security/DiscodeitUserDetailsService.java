@@ -20,7 +20,7 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
   @Override
   @Transactional(readOnly = true)
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    User user = userRepository.findByUsernameWithProfileAndStatus(username)
+    User user = userRepository.findByUsernameWithProfile(username)
         .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사용자입니다: " + username));
 
     return new DiscodeitUserDetails(userMapper.toDto(user), user.getPassword());

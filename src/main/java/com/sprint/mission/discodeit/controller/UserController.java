@@ -4,14 +4,9 @@ import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,9 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController implements UserApi {
 
   private final UserService userService;
-  private final UserStatusService userStatusService;
   private final UserMapper userMapper;
-  private final UserStatusMapper userStatusMapper;
 
   @Override
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -84,18 +77,6 @@ public class UserController implements UserApi {
     );
 
     return ResponseEntity.ok(userMapper.toDto(user));
-  }
-
-  @Override
-  @PatchMapping("/{userId}/userStatus")
-  public ResponseEntity<UserStatusDto> updateStatus(
-      @PathVariable UUID userId,
-      @RequestBody UserStatusUpdateRequest request) {
-    log.info("Received PATCH /api/users/{}/userStatus API request", userId); // 유저 상태 정보 업데이트 요청 로그
-
-    UserStatus status = userStatusService.updateByUserId(userId, request.newLastActiveAt());
-
-    return ResponseEntity.ok(userStatusMapper.toDto(status));
   }
 
   @Override

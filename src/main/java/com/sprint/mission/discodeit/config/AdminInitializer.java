@@ -2,9 +2,7 @@ package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -29,9 +27,6 @@ public class AdminInitializer implements ApplicationRunner {
       log.info("ADMIN account not found. Proceeding with initialization.");
       User admin = new User("admin", "admin@admin.com", passwordEncoder.encode("admin1234!"), null);
       admin.updateRole(Role.ADMIN);
-
-      UserStatus status = new UserStatus(admin, Instant.now());
-      admin.assignUserStatus(status);
 
       userRepository.save(admin);
       log.info("ADMIN account created successfully.");
