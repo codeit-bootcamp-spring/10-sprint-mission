@@ -163,6 +163,14 @@
           "required": true
         },
         "responses": {
+          "400": {
+            "description": "이미 읽음 상태가 존재함",
+            "content": {
+              "*/*": {
+                "example": "ReadStatus with userId {userId} and channelId {channelId} already exists"
+              }
+            }
+          },
           "201": {
             "description": "Message 읽음 상태가 성공적으로 생성됨",
             "content": {
@@ -178,14 +186,6 @@
             "content": {
               "*/*": {
                 "example": "Channel | User with id {channelId | userId} not found"
-              }
-            }
-          },
-          "400": {
-            "description": "이미 읽음 상태가 존재함",
-            "content": {
-              "*/*": {
-                "example": "ReadStatus with userId {userId} and channelId {channelId} already exists"
               }
             }
           }
@@ -214,7 +214,7 @@
             "name": "cursor",
             "in": "query",
             "description": "페이징 커서 정보",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -293,7 +293,7 @@
             "description": "Channel 또는 User를 찾을 수 없음",
             "content": {
               "*/*": {
-                "example": "Channel | Author with id {channelId | author} not found"
+                "example": "Channel | Author with id {channelId | authorId} not found"
               }
             }
           }
@@ -390,19 +390,19 @@
               }
             }
           },
-          "400": {
-            "description": "비밀번호가 일치하지 않음",
-            "content": {
-              "*/*": {
-                "example": "Wrong password"
-              }
-            }
-          },
           "404": {
             "description": "사용자를 찾을 수 없음",
             "content": {
               "*/*": {
                 "example": "User with username {username} not found"
+              }
+            }
+          },
+          "400": {
+            "description": "비밀번호가 일치하지 않음",
+            "content": {
+              "*/*": {
+                "example": "Wrong password"
               }
             }
           }
@@ -429,9 +429,6 @@
           }
         ],
         "responses": {
-          "204": {
-            "description": "User가 성공적으로 삭제됨"
-          },
           "404": {
             "description": "User를 찾을 수 없음",
             "content": {
@@ -439,6 +436,9 @@
                 "example": "User with id {id} not found"
               }
             }
+          },
+          "204": {
+            "description": "User가 성공적으로 삭제됨"
           }
         }
       },
@@ -483,14 +483,6 @@
           }
         },
         "responses": {
-          "404": {
-            "description": "User를 찾을 수 없음",
-            "content": {
-              "*/*": {
-                "example": "User with id {userId} not found"
-              }
-            }
-          },
           "400": {
             "description": "같은 email 또는 username를 사용하는 User가 이미 존재함",
             "content": {
@@ -506,6 +498,14 @@
                 "schema": {
                   "$ref": "#/components/schemas/UserDto"
                 }
+              }
+            }
+          },
+          "404": {
+            "description": "User를 찾을 수 없음",
+            "content": {
+              "*/*": {
+                "example": "User with id {userId} not found"
               }
             }
           }
@@ -593,6 +593,14 @@
           "required": true
         },
         "responses": {
+          "404": {
+            "description": "Message 읽음 상태를 찾을 수 없음",
+            "content": {
+              "*/*": {
+                "example": "ReadStatus with id {readStatusId} not found"
+              }
+            }
+          },
           "200": {
             "description": "Message 읽음 상태가 성공적으로 수정됨",
             "content": {
@@ -600,14 +608,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/ReadStatusDto"
                 }
-              }
-            }
-          },
-          "404": {
-            "description": "Message 읽음 상태를 찾을 수 없음",
-            "content": {
-              "*/*": {
-                "example": "ReadStatus with id {readStatusId} not found"
               }
             }
           }
@@ -676,6 +676,14 @@
           "required": true
         },
         "responses": {
+          "404": {
+            "description": "Message를 찾을 수 없음",
+            "content": {
+              "*/*": {
+                "example": "Message with id {messageId} not found"
+              }
+            }
+          },
           "200": {
             "description": "Message가 성공적으로 수정됨",
             "content": {
@@ -683,14 +691,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/MessageDto"
                 }
-              }
-            }
-          },
-          "404": {
-            "description": "Message를 찾을 수 없음",
-            "content": {
-              "*/*": {
-                "example": "Message with id {messageId} not found"
               }
             }
           }
@@ -717,9 +717,6 @@
           }
         ],
         "responses": {
-          "204": {
-            "description": "Channel이 성공적으로 삭제됨"
-          },
           "404": {
             "description": "Channel을 찾을 수 없음",
             "content": {
@@ -727,6 +724,9 @@
                 "example": "Channel with id {channelId} not found"
               }
             }
+          },
+          "204": {
+            "description": "Channel이 성공적으로 삭제됨"
           }
         }
       },
@@ -759,13 +759,11 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "Channel 정보가 성공적으로 수정됨",
+          "404": {
+            "description": "Channel을 찾을 수 없음",
             "content": {
               "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChannelDto"
-                }
+                "example": "Channel with id {channelId} not found"
               }
             }
           },
@@ -777,11 +775,13 @@
               }
             }
           },
-          "404": {
-            "description": "Channel을 찾을 수 없음",
+          "200": {
+            "description": "Channel 정보가 성공적으로 수정됨",
             "content": {
               "*/*": {
-                "example": "Channel with id {channelId} not found"
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelDto"
+                }
               }
             }
           }
@@ -883,14 +883,6 @@
           }
         ],
         "responses": {
-          "404": {
-            "description": "첨부 파일을 찾을 수 없음",
-            "content": {
-              "*/*": {
-                "example": "BinaryContent with id {binaryContentId} not found"
-              }
-            }
-          },
           "200": {
             "description": "첨부 파일 조회 성공",
             "content": {
@@ -898,6 +890,14 @@
                 "schema": {
                   "$ref": "#/components/schemas/BinaryContentDto"
                 }
+              }
+            }
+          },
+          "404": {
+            "description": "첨부 파일을 찾을 수 없음",
+            "content": {
+              "*/*": {
+                "example": "BinaryContent with id {binaryContentId} not found"
               }
             }
           }
