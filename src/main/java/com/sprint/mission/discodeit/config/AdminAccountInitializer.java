@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.config;
 
-import java.time.Instant;
-
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
@@ -11,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -52,7 +49,6 @@ public class AdminAccountInitializer implements ApplicationRunner {
 					null,
 					Role.ADMIN
 				);
-				UserStatus userStatus = new UserStatus(user, Instant.now());
 				return userRepository.save(user);
 			});
 

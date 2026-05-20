@@ -22,9 +22,6 @@ public enum ErrorCode {
 	@Schema(description = "사용 중인 이메일입니다. (400)")
 	EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "사용 중인 이메일입니다."),
 
-	@Schema(description = "유저 상태 정보가 이미 존재합니다. (400)")
-	USER_STATUS_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "유저 상태 정보가 이미 존재합니다."),
-
 	@Schema(description = "메시지 읽음 상태가 이미 존재합니다. (400)")
 	READ_STATUS_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "메시지 읽음 상태가 이미 존재합니다."),
 
@@ -54,9 +51,6 @@ public enum ErrorCode {
 
 	@Schema(description = "파일을 찾을 수 없습니다. (404)")
 	BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다."),
-
-	@Schema(description = "유저 상태 정보를 찾을 수 없습니다. (404)")
-	USER_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "유저 상태 정보를 찾을 수 없습니다."),
 
 	@Schema(description = "메시지 읽음 정보를 찾을 수 없습니다. (404)")
 	READ_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "메시지 읽음 정보를 찾을 수 없습니다."),

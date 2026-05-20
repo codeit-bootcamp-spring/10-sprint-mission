@@ -14,8 +14,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,7 +40,7 @@ public class SecurityConfig {
 	private final ObjectMapper objectMapper;
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
 		http
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.csrf(csrf -> csrf
@@ -53,6 +56,26 @@ public class SecurityConfig {
 			.logout(logout -> logout
 				.logoutUrl("/api/auth/logout")
 				.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+			)
+			.sessionManagement(management -> management
+				.sessionConcurrency(concurrency -> concurrency
+					.maximumSessions(1)
+					.maxSessionsPreventsLogin(false)
+					.sessionRegistry(sessionRegistry)
+					.expiredSessionStrategy(event -> {
+						ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
+						ErrorResponse errorResponse = ErrorResponse.of(
+							errorCode,
+							"SessionExpiredException",
+							errorCode.getMessage()
+						);
+
+						event.getResponse().setStatus(errorCode.getHttpStatus().value());
+						event.getResponse().setContentType(MediaType.APPLICATION_JSON_VALUE);
+						event.getResponse().setCharacterEncoding("UTF-8");
+						objectMapper.writeValue(event.getResponse().getWriter(), errorResponse);
+					})
+				)
 			)
 			.exceptionHandling(exception -> exception
 				.authenticationEntryPoint((request, response, authException) -> {
@@ -94,6 +117,16 @@ public class SecurityConfig {
 			);
 
 		return http.build();
+	}
+
+	@Bean
+	public SessionRegistry sessionRegistry() {
+		return new SessionRegistryImpl();
+	}
+
+	@Bean
+	public HttpSessionEventPublisher httpSessionEventPublisher() {
+		return new HttpSessionEventPublisher();
 	}
 
 	@Bean

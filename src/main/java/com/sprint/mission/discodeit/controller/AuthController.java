@@ -42,13 +42,14 @@ public class AuthController implements AuthApi {
 	public ResponseEntity<UserDto> getCurrentUser(
 		@AuthenticationPrincipal DiscodeitUserDetails userDetails
 	) {
-		UserDto currentUser = userDetails.getUserDto();
+		UserDto principalUser = userDetails.getUserDto();
+		UserDto currentUser = userService.find(principalUser.id());
 		log.debug("현재 로그인 사용자 조회 요청: userId={}", currentUser.id());
 
 		return ResponseEntity.ok(currentUser);
 	}
 
-	@PutMapping("role")
+	@PutMapping("/role")
 	@Override
 	public ResponseEntity<UserDto> updateRole(@Valid @RequestBody UserRoleUpdateRequest request) {
 		log.debug("사용자 권한 수정 요청: userId={}, newRole={}", request.userId(), request.newRole());

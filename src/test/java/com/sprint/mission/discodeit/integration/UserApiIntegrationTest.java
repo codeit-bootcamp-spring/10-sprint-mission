@@ -5,7 +5,6 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
 
 @SpringBootTest
@@ -79,7 +77,7 @@ class UserApiIntegrationTest {
 			.andExpect(jsonPath("$.username", is("testuser")))
 			.andExpect(jsonPath("$.email", is("test@example.com")))
 			.andExpect(jsonPath("$.profile.fileName", is("profile.jpg")))
-			.andExpect(jsonPath("$.online", is(true)));
+			.andExpect(jsonPath("$.online", is(false)));
 	}
 
 	@Test
@@ -252,49 +250,4 @@ class UserApiIntegrationTest {
 			.andExpect(status().isNotFound());
 	}
 
-	@Test
-	@DisplayName("사용자 상태 업데이트 API 통합 테스트")
-	void updateUserStatus_Success() throws Exception {
-		// given
-		UserCreateRequest createRequest = new UserCreateRequest(
-			"statususer",
-			"status@example.com",
-			"Password1!"
-		);
-
-		UserDto createdUser = userService.create(createRequest, Optional.empty());
-		UUID userId = createdUser.id();
-
-		Instant newLastActiveAt = Instant.now();
-		UserStatusUpdateRequest statusUpdateRequest = new UserStatusUpdateRequest(
-			newLastActiveAt
-		);
-		String requestBody = objectMapper.writeValueAsString(statusUpdateRequest);
-
-		// when & then
-		mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
-				.with(csrf())
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.lastActiveAt", is(newLastActiveAt.toString())));
-	}
-
-	@Test
-	@DisplayName("사용자 상태 업데이트 실패 API 통합 테스트 - 존재하지 않는 사용자")
-	void updateUserStatus_Failure_UserNotFound() throws Exception {
-		// given
-		UUID nonExistentUserId = UUID.randomUUID();
-		UserStatusUpdateRequest statusUpdateRequest = new UserStatusUpdateRequest(
-			Instant.now()
-		);
-		String requestBody = objectMapper.writeValueAsString(statusUpdateRequest);
-
-		// when & then
-		mockMvc.perform(patch("/api/users/{userId}/userStatus", nonExistentUserId)
-				.with(csrf())
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
-			.andExpect(status().isNotFound());
-	}
 }

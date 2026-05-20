@@ -26,11 +26,22 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication) throws IOException, ServletException {
 		DiscodeitUserDetails userDetails = (DiscodeitUserDetails)authentication.getPrincipal();
-		UserDto userDto = userDetails.getUserDto();
+		UserDto userDto = markOnline(userDetails.getUserDto());
 
 		response.setStatus(HttpStatus.OK.value());
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		response.setCharacterEncoding("UTF-8");
 		objectMapper.writeValue(response.getWriter(), userDto);
+	}
+
+	private UserDto markOnline(UserDto userDto) {
+		return new UserDto(
+			userDto.id(),
+			userDto.username(),
+			userDto.email(),
+			userDto.profile(),
+			true,
+			userDto.role()
+		);
 	}
 }

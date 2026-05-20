@@ -26,7 +26,6 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 
 @DataJpaTest
 @EnableJpaAuditing
@@ -48,7 +47,6 @@ class MessageRepositoryTest {
 	private User createTestUser(String username, String email) {
 		BinaryContent profile = new BinaryContent("profile.jpg", 1024L, "image/jpeg");
 		User user = new User(username, email, "test123", profile);
-		UserStatus status = new UserStatus(user, Instant.now());
 		return userRepository.save(user);
 	}
 
@@ -107,7 +105,6 @@ class MessageRepositoryTest {
 
 		Message firstMessage = content.get(0);
 		assertThat(Hibernate.isInitialized(firstMessage.getAuthor())).isTrue();
-		assertThat(Hibernate.isInitialized(firstMessage.getAuthor().getStatus())).isTrue();
 		assertThat(Hibernate.isInitialized(firstMessage.getAuthor().getProfile())).isTrue();
 	}
 

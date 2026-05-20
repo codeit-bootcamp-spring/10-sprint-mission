@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,13 +21,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.response.UserDto;
-import com.sprint.mission.discodeit.dto.response.UserStatusDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentReadException;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController implements UserApi {
 
 	private final UserService userService;
-	private final UserStatusService userStatusService;
-
 	@PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	@Override
 	public ResponseEntity<UserDto> create(
@@ -100,19 +94,6 @@ public class UserController implements UserApi {
 		return ResponseEntity
 			.status(HttpStatus.OK)
 			.body(users);
-	}
-
-	@PatchMapping(path = "/{userId}/userStatus")
-	@Override
-	public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
-		@PathVariable("userId") UUID userId,
-		@Valid @RequestBody UserStatusUpdateRequest request) {
-		log.debug("[USER_STATUS_UPDATE] 사용자 상태 수정 요청: userId={}", userId);
-
-		UserStatusDto updatedUserStatus = userStatusService.updateByUserId(userId, request);
-		return ResponseEntity
-			.status(HttpStatus.OK)
-			.body(updatedUserStatus);
 	}
 
 	private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
