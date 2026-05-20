@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 public interface UserService {
 
@@ -17,8 +18,10 @@ public interface UserService {
 
   List<UserDto> findAll();
 
+  @PreAuthorize("hasRole('ADMIN') or @userOwnershipChecker.isOwner(#userId, authentication)")
   UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> profileCreateRequest);
 
+  @PreAuthorize("hasRole('ADMIN') or @userOwnershipChecker.isOwner(#userId, authentication)")
   void delete(UUID userId);
 }

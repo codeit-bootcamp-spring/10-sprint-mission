@@ -6,9 +6,11 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 public interface ChannelService {
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   ChannelDto create(PublicChannelCreateRequest request);
 
   ChannelDto create(PrivateChannelCreateRequest request);
@@ -17,7 +19,9 @@ public interface ChannelService {
 
   List<ChannelDto> findAllByUserId(UUID userId);
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   ChannelDto update(UUID channelId, PublicChannelUpdateRequest request);
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   void delete(UUID channelId);
 }
