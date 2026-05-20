@@ -16,13 +16,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
@@ -33,6 +32,7 @@ public class SecurityConfig {
   private final LoginSuccessHandler loginSuccessHandler;
   private final LoginFailureHandler loginFailureHandler;
   private final CustomAccessDeniedHandler customAccessDeniedHandler;
+  private final UserDetailsService userDetailsService;
 
   @Bean
   public PasswordEncoder passwordEncoder() {
@@ -56,22 +56,9 @@ public class SecurityConfig {
     return handler;
   }
 
-  // SessionRegistry 빈 등록
-  // 로그인된 사용자 세션 목록을 메모리에서 관리
   @Bean
-  public SessionRegistry sessionRegistry() {
-    return new SessionRegistryImpl();
-  }
-
-  // HttpSessionEventPublisher 빈 등록
-  // HttpSession이 만료될 때 이벤트를 발행하여 SessionRegistry에서도 삭제
-  @Bean
-  public HttpSessionEventPublisher httpSessionEventPublisher() {
-    return new HttpSessionEventPublisher();
-  }
-
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry)
+      throws Exception {
     http
         // CSRF 보호 설정
         .csrf(csrf -> csrf
@@ -84,7 +71,7 @@ public class SecurityConfig {
         .sessionManagement(management -> management
             .maximumSessions(1) // 동일한 계정으로 동시 로그인할 수 없도록 설정
             .maxSessionsPreventsLogin(false) // 기존 로그인 세션을 만료시킴 (기본값)
-            .sessionRegistry(sessionRegistry()) // 위에서 만든 sessionRegistry 적용
+            .sessionRegistry(sessionRegistry) // 주입 받은 sessionRegistry 적용
         )
         // 인가 설정
         .authorizeHttpRequests(auth -> auth
@@ -123,6 +110,13 @@ public class SecurityConfig {
             .loginProcessingUrl("/api/auth/login") // Security 필터가 낚아챌 로그인 URL
             .successHandler(loginSuccessHandler)   // 200 응답 핸들러
             .failureHandler(loginFailureHandler)   // 401 응답 핸들러
+        )
+        // 로그인 유지 설정 (RememberMe)
+        .rememberMe(remember -> remember
+            .rememberMeParameter("remember-me") // 프론트엔드에서 보낼 파라미터 이름 (체크박스 이름)
+            .key("discodeit-super-secret-key")  // 쿠키 암호화에 사용할 고유 키
+            .tokenValiditySeconds(3600 * 24 * 7) // 키 유효기간 (7일)
+            .userDetailsService(userDetailsService) // 유저 정보 재조회용 서비스
         )
         // 로그아웃 설정
         .logout(logout -> logout
