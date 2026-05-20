@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.details.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class DiscodeitUserDetailsService implements UserDetailsService {
+    private final UserService userService;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
@@ -25,7 +27,7 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
                         "사용자를 찾을 수 없습니다." + username
         ));
 
-        UserDto userDto = userMapper.toDto(user);
+        UserDto userDto = userMapper.toDto(user, userService.isLoggedIn(user.getId()));
         String password = user.getPassword();
 
         return new DiscodeitUserDetails(userDto, password);

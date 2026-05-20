@@ -10,6 +10,8 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.sprint.mission.discodeit.service.UserService;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,8 @@ public abstract class ChannelMapper {
   private ReadStatusRepository readStatusRepository;
   @Autowired
   private UserMapper userMapper;
+  @Autowired
+  private UserService userService;
 
   @Mapping(target = "participants", expression = "java(resolveParticipants(channel))")
   @Mapping(target = "lastMessageAt", expression = "java(resolveLastMessageAt(channel))")
@@ -40,7 +44,7 @@ public abstract class ChannelMapper {
       readStatusRepository.findAllByChannelIdWithUser(channel.getId())
           .stream()
           .map(ReadStatus::getUser)
-          .map(userMapper::toDto)
+          .map(user -> userMapper.toDto(user, userService.isLoggedIn(user.getId())))
           .forEach(participants::add);
     }
     return participants;

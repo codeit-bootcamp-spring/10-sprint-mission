@@ -91,6 +91,7 @@ public interface UserApi {
   })
   ResponseEntity<List<UserDto>> findAll();
 
+  /*
   @Operation(summary = "User 온라인 상태 업데이트")
   @ApiResponses(value = {
       @ApiResponse(
@@ -106,4 +107,5 @@ public interface UserApi {
       @Parameter(description = "상태를 변경할 User ID") UUID userId,
       @Parameter(description = "변경할 User 온라인 상태 정보") UserStatusUpdateRequest request
   );
+   */
 }

@@ -4,16 +4,22 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.details.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.exception.user.InvalidCredentialsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
+import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,6 +28,8 @@ public class BasicAuthService implements AuthService {
 
   private final UserRepository userRepository;
   private final UserMapper userMapper;
+  private final SessionRegistry sessionRegistry;
+  private final UserService userService;
 
   /*
   @Transactional(readOnly = true)
@@ -47,11 +55,27 @@ public class BasicAuthService implements AuthService {
   // Role 변경
   @PreAuthorize( "hasRole('ADMIN')")
   public UserDto updateUserRole(RoleUpdateRequest request) {
+    log.debug("사용자 Role 변경 시작");
+
     User user = userRepository.findById(request.userId())
             .orElseThrow(() -> UserNotFoundException.withId(request.userId()));
 
     user.updateRole(request.newRole());
 
-    return userMapper.toDto(user);
+    expiredUserSession(user.getId());
+
+    log.debug("사용자 Role 변경 완료");
+
+    return userMapper.toDto(user, userService.isLoggedIn(user.getId()));
+  }
+
+  private void expiredUserSession(UUID userId) {
+    sessionRegistry.getAllPrincipals().stream()
+            .filter(principal -> principal instanceof DiscodeitUserDetails)
+            .map(principal -> (DiscodeitUserDetails) principal)
+            .filter(userDetails -> userDetails.getUserDto().id().equals(userId))
+            .forEach(userDetails -> sessionRegistry.getAllSessions(userDetails, false)
+                    .forEach(SessionInformation::expireNow)
+            );
   }
 }

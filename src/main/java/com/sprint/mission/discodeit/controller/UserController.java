@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController implements UserApi {
 
   private final UserService userService;
-  private final UserStatusService userStatusService;
+//  private final UserStatusService userStatusService;
 
   // 회원가입
   @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
@@ -111,6 +111,8 @@ public class UserController implements UserApi {
         .body(users);
   }
 
+  // 유저 온라인 상태 업데이트(UserStatus를 사용하는 구 버전)
+  /*
   @PatchMapping(path = "{userId}/userStatus")
   @Override
   public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
@@ -121,6 +123,7 @@ public class UserController implements UserApi {
         .status(HttpStatus.OK)
         .body(updatedUserStatus);
   }
+   */
 
   private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
     if (profileFile.isEmpty()) {

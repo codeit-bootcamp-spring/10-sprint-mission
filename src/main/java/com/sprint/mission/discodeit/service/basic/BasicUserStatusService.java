@@ -1,3 +1,4 @@
+/*
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.UserStatusDto;
@@ -34,11 +35,11 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public UserStatusDto create(UserStatusCreateRequest request) {
     log.debug("사용자 상태 생성 시작: userId={}", request.userId());
-    
+
     UUID userId = request.userId();
     User user = userRepository.findById(userId)
         .orElseThrow(() -> UserNotFoundException.withId(userId));
-    
+
     Optional.ofNullable(user.getStatus())
         .ifPresent(status -> {
             throw DuplicateUserStatusException.withUserId(userId);
@@ -47,7 +48,7 @@ public class BasicUserStatusService implements UserStatusService {
     Instant lastActiveAt = request.lastActiveAt();
     UserStatus userStatus = new UserStatus(user, lastActiveAt);
     userStatusRepository.save(userStatus);
-    
+
     log.info("사용자 상태 생성 완료: id={}, userId={}", userStatus.getId(), userId);
     return userStatusMapper.toDto(userStatus);
   }
@@ -76,13 +77,13 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
-    log.debug("사용자 상태 수정 시작: id={}, newLastActiveAt={}", 
+    log.debug("사용자 상태 수정 시작: id={}, newLastActiveAt={}",
         userStatusId, newLastActiveAt);
-    
+
     UserStatus userStatus = userStatusRepository.findById(userStatusId)
         .orElseThrow(() -> UserStatusNotFoundException.withId(userStatusId));
     userStatus.update(newLastActiveAt);
-    
+
     log.info("사용자 상태 수정 완료: id={}", userStatusId);
     return userStatusMapper.toDto(userStatus);
   }
@@ -91,13 +92,13 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
-    log.debug("사용자 ID로 상태 수정 시작: userId={}, newLastActiveAt={}", 
+    log.debug("사용자 ID로 상태 수정 시작: userId={}, newLastActiveAt={}",
         userId, newLastActiveAt);
-    
+
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
         .orElseThrow(() -> UserStatusNotFoundException.withUserId(userId));
     userStatus.update(newLastActiveAt);
-    
+
     log.info("사용자 ID로 상태 수정 완료: userId={}", userId);
     return userStatusMapper.toDto(userStatus);
   }
@@ -113,3 +114,4 @@ public class BasicUserStatusService implements UserStatusService {
     log.info("사용자 상태 삭제 완료: id={}", userStatusId);
   }
 }
+*/
