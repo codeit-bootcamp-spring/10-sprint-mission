@@ -8,7 +8,7 @@ CREATE TABLE users
     username   varchar(50) UNIQUE       NOT NULL,
     email      varchar(100) UNIQUE      NOT NULL,
     password   varchar(60)              NOT NULL,
-    profile_id uuid
+    profile_id uuid,
     role varchar(20) NOT NULL
 );
 
@@ -74,9 +74,6 @@ CREATE TABLE read_statuses
     last_read_at timestamp with time zone NOT NULL,
     UNIQUE (user_id, channel_id)
 );
-
-ALTER TABLE users
-    ADD role varchar(20) NOT NULL;
 
 -- 제약 조건
 -- User (1) -> BinaryContent (1)

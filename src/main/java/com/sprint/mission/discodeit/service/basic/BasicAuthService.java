@@ -53,6 +53,7 @@ public class BasicAuthService implements AuthService {
    */
 
   // Role 변경
+  @Transactional
   @PreAuthorize( "hasRole('ADMIN')")
   public UserDto updateUserRole(RoleUpdateRequest request) {
     log.debug("사용자 Role 변경 시작");
@@ -61,6 +62,7 @@ public class BasicAuthService implements AuthService {
             .orElseThrow(() -> UserNotFoundException.withId(request.userId()));
 
     user.updateRole(request.newRole());
+    userRepository.save(user);
 
     expiredUserSession(user.getId());
 
