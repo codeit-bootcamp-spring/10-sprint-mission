@@ -6,6 +6,8 @@ import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -36,6 +38,10 @@ public class User extends BaseUpdatableEntity {
   @OneToOne(mappedBy = "user", fetch = FetchType.LAZY,
       cascade = CascadeType.ALL, orphanRemoval = true)
   private UserStatus status;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "role", nullable = false, length = 20)
+  private UserRole role = UserRole.USER;
 
   protected User() {
   }
@@ -87,5 +93,10 @@ public class User extends BaseUpdatableEntity {
   @Override
   public String toString() {
     return "이름: " + username + "\n" + "email: " + email;
+  }
+
+  public void updateRole(UserRole role) {
+    this.role = role;
+    touch();
   }
 }

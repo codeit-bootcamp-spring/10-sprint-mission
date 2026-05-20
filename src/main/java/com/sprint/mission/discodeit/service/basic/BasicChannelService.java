@@ -8,7 +8,6 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.channel.ChannelDuplicateNameException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelCannotBeUpdatedException;
@@ -24,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +67,7 @@ public class BasicChannelService implements ChannelService {
     return savedChannel.getId();
   }
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Override
   public UUID createPublic(PublicChannelCreateRequest req) {
     requireNonNull(req, "publicChReq");
@@ -124,6 +125,7 @@ public class BasicChannelService implements ChannelService {
         .toList();
   }
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Override
   public ChannelResponse update(ChannelUpdateRequest req) {
     requireNonNull(req, "req");
@@ -141,6 +143,7 @@ public class BasicChannelService implements ChannelService {
     return find(req.channelId());
   }
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Override
   public void delete(UUID channelId) {
     requireNonNull(channelId, "channelId");

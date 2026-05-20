@@ -15,5 +15,5 @@ public interface BinaryContentMapper {
 
   List<BinaryContentDto> toDtoList(List<BinaryContent> binaryContents);
 
-  BinaryContentDto toDto(BinaryContentResponse binaryContentResponse);
+  BinaryContentDto toDto(BinaryContentResponse response);
 }

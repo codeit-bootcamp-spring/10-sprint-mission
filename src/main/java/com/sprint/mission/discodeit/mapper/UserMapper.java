@@ -18,6 +18,7 @@ public interface UserMapper {
   @Mapping(source = "status.online", target = "online")
   @Mapping(source = "status.lastActiveAt", target = "lastSeenAt")
   @Mapping(source = "profileImage.id", target = "profileImageId")
+  @Mapping(source = "user.role", target = "role")
   UserResponse toResponse(User user, UserStatus status, BinaryContent profileImage);
 
   @Mapping(source = "user.id", target = "id")
@@ -25,5 +26,6 @@ public interface UserMapper {
   @Mapping(source = "user.email", target = "email")
   @Mapping(source = "status.online", target = "online")
   @Mapping(source = "profile", target = "profile")
+  @Mapping(source = "user.role", target = "role")
   UserDto toDto(User user, UserStatus status, BinaryContentDto profile);
 }

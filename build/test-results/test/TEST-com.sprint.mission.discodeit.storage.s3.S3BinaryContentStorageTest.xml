@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorageTest" tests="5" skipped="5" failures="0" errors="0" timestamp="2026-05-14T09:22:07.944Z" hostname="SER" time="0.003">
+  <properties/>
+  <testcase name="S3에 저장된 파일을 조회 할 수 있다." classname="com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorageTest" time="0.001">
+    <skipped/>
+  </testcase>
+  <testcase name="S3에 저장된 파일을 정상 삭제할 수 있다." classname="com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorageTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="다운로드 요청 시 URL로 응답을 반환 한다." classname="com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorageTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="S3에 파일을 정상 업로드할 수 있다." classname="com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorageTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="Presigned URL을 정상 생성할 수 있다." classname="com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorageTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

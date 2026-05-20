@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.user.ProfileImageCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
@@ -29,6 +30,8 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +48,7 @@ public class BasicUserService implements UserService {
   private final UserMapper userMapper;
   private final BinaryContentMapper binaryContentMapper;
   private final BinaryContentStorage binaryContentStorage;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   public UserResponse create(UserCreateRequest request) {
@@ -65,7 +69,14 @@ public class BasicUserService implements UserService {
       throw new UserEmailAlreadyExistsException();
     }
 
-    User user = new User(request.userName(), request.email(), request.password());
+    // 비밀번호 암호화
+    String encryptedPassword = passwordEncoder.encode(request.password());
+
+    User user = new User(
+        request.userName(),
+        request.email(),
+        encryptedPassword
+    );
 
     if (request.profileImage() != null) {
       ProfileImageCreateRequest imgReq = request.profileImage();
@@ -166,7 +177,9 @@ public class BasicUserService implements UserService {
       if (newPassword.isEmpty()) {
         throw new PasswordEmptyException();
       }
-      user.updatePassword(newPassword);
+
+      String encryptedPassword = passwordEncoder.encode(newPassword);
+      user.updatePassword(encryptedPassword);
     });
 
     request.profileImage().ifPresent(imgReq -> {
@@ -178,6 +191,30 @@ public class BasicUserService implements UserService {
       binaryContentStorage.put(newImage.getId(), imgReq.data());
       user.updateProfileImage(newImage);
     });
+
+    User savedUser = userRepository.save(user);
+
+    UserStatus status = userStatusRepository.findByUserId(savedUser.getId());
+    if (status == null) {
+      throw new StatusNotFoundException(savedUser.getId());
+    }
+
+    BinaryContent profileImage = findProfileImageOrNull(savedUser);
+
+    return userMapper.toResponse(savedUser, status, profileImage);
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @Override
+  public UserResponse updateRole(UserRoleUpdateRequest request) {
+    requireNonNull(request, "request");
+    requireNonNull(request.userId(), "userId");
+    requireNonNull(request.role(), "role");
+
+    User user = userRepository.findById(request.userId())
+        .orElseThrow(() -> new UserNotFoundException(request.userId()));
+
+    user.updateRole(request.role());
 
     User savedUser = userRepository.save(user);
 

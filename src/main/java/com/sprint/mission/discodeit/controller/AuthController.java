@@ -1,89 +1,81 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.auth.LoginRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
-import com.sprint.mission.discodeit.service.AuthService;
+import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-  private final AuthService authService;
   private final UserService userService;
   private final BinaryContentService binaryContentService;
+  private final BinaryContentMapper binaryContentMapper;
 
-  public AuthController(
-      AuthService authService,
-      UserService userService,
-      BinaryContentService binaryContentService
-  ) {
-    this.authService = authService;
+  public AuthController(UserService userService, BinaryContentService binaryContentService,
+      BinaryContentMapper binaryContentMapper) {
     this.userService = userService;
     this.binaryContentService = binaryContentService;
+    this.binaryContentMapper = binaryContentMapper;
   }
 
-  @Operation(summary = "로그인", operationId = "login", tags = {"Auth"})
-  @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "로그인 성공"),
-      @ApiResponse(
-          responseCode = "400",
-          description = "비밀번호가 일치하지 않음",
-          content = @Content(
-              mediaType = "*/*",
-              examples = @ExampleObject(value = "Wrong password")
-          )
-      ),
-      @ApiResponse(
-          responseCode = "404",
-          description = "사용자를 찾을 수 없음",
-          content = @Content(
-              mediaType = "*/*",
-              examples = @ExampleObject(value = "User with username {username} not found")
-          )
-      )
-  })
-  @RequestMapping(value = "/login", method = RequestMethod.POST)
-  public ResponseEntity<UserDto> postLogin(@Valid @RequestBody LoginRequest dto) {
-    var user = authService.login(dto);
-    UserResponse userResponse = userService.find(user.getId());
+  @GetMapping("/csrf-token")
+  public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
+    String tokenValue = csrfToken.getToken();
+    log.debug("CSRF 토큰 요청: {}", tokenValue);
 
-    return ResponseEntity.ok(toUserDto(userResponse));
+    return ResponseEntity.status(203).build();
   }
 
-  private UserDto toUserDto(UserResponse userResponse) {
+  @GetMapping("/me")
+  public ResponseEntity<UserDto> getMe(
+      @AuthenticationPrincipal DiscodeitUserDetails userDetails
+  ) {
+    UserDto userDto = userDetails.getUserDto();
+
+    return ResponseEntity.ok(userDto);
+  }
+
+  @PutMapping("/role")
+  public ResponseEntity<UserDto> updateRole(
+      @Valid @RequestBody UserRoleUpdateRequest request
+  ) {
+    UserResponse updated = userService.updateRole(request);
+
     BinaryContentDto profile = null;
-    if (userResponse.profileImageId() != null) {
-      BinaryContentResponse binary = binaryContentService.find(userResponse.profileImageId());
-      profile = new BinaryContentDto(
-          binary.id(),
-          binary.fileName(),
-          binary.size(),
-          binary.contentType()
-      );
+    if (updated.profileImageId() != null) {
+      BinaryContentResponse profileResponse =
+          binaryContentService.find(updated.profileImageId());
+
+      profile = binaryContentMapper.toDto(profileResponse);
     }
 
-    return new UserDto(
-        userResponse.id(),
-        userResponse.userName(),
-        userResponse.email(),
+    UserDto userDto = new UserDto(
+        updated.id(),
+        updated.userName(),
+        updated.email(),
         profile,
-        userResponse.online()
+        updated.online(),
+        updated.role()
     );
+
+    return ResponseEntity.ok(userDto);
   }
 }

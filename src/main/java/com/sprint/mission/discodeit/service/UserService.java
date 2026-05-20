@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 
 import com.sprint.mission.discodeit.entity.User;
@@ -18,6 +19,8 @@ public interface UserService {
   List<UserResponse> findAll();
 
   UserResponse update(UserUpdateRequest request);
+
+  UserResponse updateRole(UserRoleUpdateRequest request);
 
   void delete(UUID userId);
 

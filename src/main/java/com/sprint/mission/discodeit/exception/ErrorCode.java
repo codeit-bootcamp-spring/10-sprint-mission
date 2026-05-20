@@ -16,6 +16,7 @@ public enum ErrorCode {
   WRONG_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 올바르지 않습니다."),
   INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "요청 파라미터가 올바르지 않습니다."),
   DUPLICATION_CHANNEL_NAME(HttpStatus.BAD_REQUEST, "이미 존재하는 채널이름 입니다."),
+  VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "입력값을 찾을 수 없습니다."),
 
   // 401
   UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증에 실패했습니다."),
@@ -26,7 +27,6 @@ public enum ErrorCode {
   MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "메시지를 찾을 수 없습니다."),
   STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "상태 정보를 찾을 수 없습니다."),
   BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다."),
-  VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "입력값을 찾을 수 없습니다."),
 
   // 409
   DUPLICATION_CHANNEL(HttpStatus.CONFLICT, "이미 존재하는 채널입니다."),

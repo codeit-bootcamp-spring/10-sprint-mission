@@ -181,7 +181,8 @@ public class ChannelController {
         userResponse.userName(),
         userResponse.email(),
         profile,
-        userResponse.online()
+        userResponse.online(),
+        userResponse.role()
     );
   }
 }

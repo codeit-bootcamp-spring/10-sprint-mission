@@ -68,7 +68,7 @@ public class UserController {
 
   @Operation(summary = "User 등록", operationId = "create", tags = {"User"})
   @ApiResponses({
-      @ApiResponse(responseCode = "201", description = "User가 성공적으로 생성됨"),
+      @ApiResponse(responseCode = "200", description = "User가 성공적으로 생성됨"),
       @ApiResponse(
           responseCode = "400",
           description = "같은 email 또는 username를 사용하는 User가 이미 존재함",
@@ -107,7 +107,7 @@ public class UserController {
 
     UserResponse created = userService.create(createRequest);
     log.info("사용자가 성공적으로 생성되었습니다. id = {}", created.id());
-    return ResponseEntity.status(HttpStatus.CREATED).body(toUserDto(created.id()));
+    return ResponseEntity.ok().body(toUserDto(created.id()));
   }
 
   @Operation(summary = "User 정보 수정", operationId = "update", tags = {"User"})
@@ -217,7 +217,8 @@ public class UserController {
         user.userName(),
         user.email(),
         profile,
-        user.online()
+        user.online(),
+        user.role()
     );
   }
 
