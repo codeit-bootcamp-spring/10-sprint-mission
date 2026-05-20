@@ -98,6 +98,7 @@ public class BasicUserService implements UserService {
         return userMapper.toDto(findUserOrThrow(userId), checker.isOnline(userId));
     }
 
+    @PreAuthorize("#userId == authentication.principal.id")
     @Override
     public UserDto updateUserInfo(UUID userId, UpdateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
         User user = findUserOrThrow(userId);
@@ -139,6 +140,7 @@ public class BasicUserService implements UserService {
         return userMapper.toDto(user, checker.isOnline(user.getId()));
     }
 
+    @PreAuthorize("#userId == authentication.principal.id")
     @Override
     public void deleteUser(UUID userId) {
         User user = findUserOrThrow(userId);
