@@ -11,7 +11,7 @@ public record UserRoleUpdateRequest(
     UUID userId,
 
     @NotNull(message = "변경할 권한을 입력하세요.")
-    Role role
+    Role newRole
 ) {
 
 }
