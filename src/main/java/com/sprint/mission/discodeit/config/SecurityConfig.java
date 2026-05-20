@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,14 +13,15 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.exception.ErrorCode;
@@ -39,8 +41,18 @@ public class SecurityConfig {
 	private final LoginFailureHandler loginFailureHandler;
 	private final ObjectMapper objectMapper;
 
+	@Value("${discodeit.security.remember-me.key:discodeit-remember-me-key}")
+	private String rememberMeKey;
+
+	@Value("${discodeit.security.remember-me.token-validity-seconds:1209600}")
+	private int rememberMeTokenValiditySeconds;
+
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
+	public SecurityFilterChain securityFilterChain(
+		HttpSecurity http,
+		SessionRegistry sessionRegistry,
+		UserDetailsService userDetailsService
+	) throws Exception {
 		http
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.csrf(csrf -> csrf
@@ -53,8 +65,17 @@ public class SecurityConfig {
 				.failureHandler(loginFailureHandler)
 				.permitAll()
 			)
+			.rememberMe(rememberMe -> rememberMe
+				.rememberMeParameter("remember-me")
+				.key(rememberMeKey)
+				.userDetailsService(userDetailsService)
+				.tokenValiditySeconds(rememberMeTokenValiditySeconds)
+			)
 			.logout(logout -> logout
 				.logoutUrl("/api/auth/logout")
+				.invalidateHttpSession(true)
+				.clearAuthentication(true)
+				.deleteCookies("JSESSIONID", "remember-me")
 				.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
 			)
 			.sessionManagement(management -> management

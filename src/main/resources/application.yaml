@@ -46,6 +46,10 @@ info:
       max-request-size: ${spring.servlet.multipart.maxRequestSize}
 
 discodeit:
+  security:
+    remember-me:
+      key: ${REMEMBER_ME_KEY:discodeit-remember-me-key}
+      token-validity-seconds: ${REMEMBER_ME_TOKEN_VALIDITY_SECONDS:1209600}
   storage:
     type: ${STORAGE_TYPE:local}
     local:
