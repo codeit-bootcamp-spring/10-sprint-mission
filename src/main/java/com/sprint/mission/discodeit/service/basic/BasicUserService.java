@@ -186,7 +186,7 @@ public class BasicUserService implements UserService {
 
   // 유저 검증
   private User getOrThrowUser(UUID id) {
-    return userRepository.findById(id)
+    return userRepository.findByIdWithProfileAndStatus(id)
         .orElseThrow(() -> new UserNotFoundException(Map.of("requestedUserId", id)));
   }
 }

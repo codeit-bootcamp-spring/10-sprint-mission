@@ -27,4 +27,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
       + "JOIN FETCH u.userStatus " // 상태 정보도 함께 가져오기
       + "WHERE u.username = :username")
   Optional<User> findByUsernameWithProfileAndStatus(@Param("username") String username);
+
+  // ID로 조회 시 연관 객체도 함께 가져오기 위한 쿼리
+  @Query("SELECT u FROM User u "
+      + "LEFT JOIN FETCH u.profile "
+      + "JOIN FETCH u.userStatus "
+      + "WHERE u.id = :id")
+  Optional<User> findByIdWithProfileAndStatus(@Param("id") UUID id);
 }
