@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.security;
 
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -56,5 +56,24 @@ public class DiscodeitUserDetails implements UserDetails {
 
   public UUID getId() {
     return this.userDto.id();
+  }
+
+  // 세션의 동일성을 보장하기 위해 equals(), hashCode() 오버라이딩
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    DiscodeitUserDetails that = (DiscodeitUserDetails) o;
+    // UserDto의 id를 기준으로 동일한 유저인지 판단
+    return Objects.equals(this.userDto.id(), that.userDto.id());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.userDto.id());
   }
 }

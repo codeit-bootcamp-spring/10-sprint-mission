@@ -5,17 +5,19 @@ import com.sprint.mission.discodeit.exception.binarycontent.FileUploadException;
 import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import java.time.Instant;
 import java.util.*;
 
 @Slf4j
@@ -28,6 +30,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
+  private final SessionRegistry sessionRegistry;
 
   @Override
   @Transactional
@@ -69,8 +72,6 @@ public class BasicUserService implements UserService {
 
     // 유저 생성
     User user = new User(username, email, encodedPassword, profile);
-    UserStatus status = new UserStatus(user, Instant.now());
-    user.assignUserStatus(status);
 
     User savedUser = userRepository.save(user);
 
@@ -92,7 +93,7 @@ public class BasicUserService implements UserService {
   public List<User> findAll() {
     log.info("Fetching all users list"); // 유저 전체 조회 시작 로그
 
-    List<User> users = userRepository.findAllWithProfileAndStatus();
+    List<User> users = userRepository.findAllWithProfile();
 
     log.debug("Total users fetched: {}", users.size()); // 유저 전체 조회 성공 로그
     return users;
@@ -167,6 +168,9 @@ public class BasicUserService implements UserService {
     // 권한 수정
     user.updateRole(newRole);
 
+    // 권한이 변경된 사용자가 로그인한 상태라면 세션 무효화
+    expireUserSessions(id);
+
     log.info("User ID {} role updated successfully to {}", id, newRole);
     return user;
   }
@@ -186,7 +190,16 @@ public class BasicUserService implements UserService {
 
   // 유저 검증
   private User getOrThrowUser(UUID id) {
-    return userRepository.findByIdWithProfileAndStatus(id)
+    return userRepository.findByIdWithProfile(id)
         .orElseThrow(() -> new UserNotFoundException(Map.of("requestedUserId", id)));
+  }
+
+  // 특정 유저 세션 강제 만료
+  private void expireUserSessions(UUID userId) {
+    sessionRegistry.getAllPrincipals().stream()
+        .filter(principal -> principal instanceof DiscodeitUserDetails)
+        .filter(principal -> ((DiscodeitUserDetails) principal).getId().equals(userId))
+        .flatMap(principal -> sessionRegistry.getAllSessions(principal, false).stream())
+        .forEach(SessionInformation::expireNow);
   }
 }

@@ -15,11 +15,14 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
@@ -53,6 +56,20 @@ public class SecurityConfig {
     return handler;
   }
 
+  // SessionRegistry 빈 등록
+  // 로그인된 사용자 세션 목록을 메모리에서 관리
+  @Bean
+  public SessionRegistry sessionRegistry() {
+    return new SessionRegistryImpl();
+  }
+
+  // HttpSessionEventPublisher 빈 등록
+  // HttpSession이 만료될 때 이벤트를 발행하여 SessionRegistry에서도 삭제
+  @Bean
+  public HttpSessionEventPublisher httpSessionEventPublisher() {
+    return new HttpSessionEventPublisher();
+  }
+
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
@@ -62,6 +79,12 @@ public class SecurityConfig {
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             // SPA 전용 핸들러 등록
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+        )
+        // 세션 관리 설정
+        .sessionManagement(management -> management
+            .maximumSessions(1) // 동일한 계정으로 동시 로그인할 수 없도록 설정
+            .maxSessionsPreventsLogin(false) // 기존 로그인 세션을 만료시킴 (기본값)
+            .sessionRegistry(sessionRegistry()) // 위에서 만든 sessionRegistry 적용
         )
         // 인가 설정
         .authorizeHttpRequests(auth -> auth
