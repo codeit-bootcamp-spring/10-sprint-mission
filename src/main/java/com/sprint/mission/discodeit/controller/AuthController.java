@@ -28,6 +28,7 @@ public class AuthController implements AuthApi {
   private final UserService userService;
   private final UserMapper userMapper;
 
+  @Override
   @GetMapping("/csrf-token")
   public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
     String tokenValue = csrfToken.getToken();
@@ -36,6 +37,7 @@ public class AuthController implements AuthApi {
     return ResponseEntity.status(203).build(); // 203 Non-Authoritative Information 반환
   }
 
+  @Override
   @GetMapping("/me")
   public ResponseEntity<UserDto> getMe(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
     // 세션이 없거나 만료된 상태로 접근하면 userDetails에 null 대입
@@ -48,6 +50,7 @@ public class AuthController implements AuthApi {
     return ResponseEntity.ok(userDetails.getUserDto());
   }
 
+  @Override
   @PutMapping("/role")
   public ResponseEntity<UserDto> updateRole(@Valid @RequestBody UserRoleUpdateRequest request) {
     log.info("Role update requested - userId: {}, newRole: {}", request.userId(),
