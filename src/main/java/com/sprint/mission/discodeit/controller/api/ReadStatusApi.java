@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller.api;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "ReadStatus", description = "ReadStatus API")
@@ -39,7 +41,8 @@ public interface ReadStatusApi {
       )
   })
   ResponseEntity<ReadStatusDto> create(
-      @Parameter(description = "ReadStatus 생성 정보") ReadStatusCreateRequest request
+      @Parameter(description = "ReadStatus 생성 정보") ReadStatusCreateRequest request,
+      @Parameter(hidden = true) @AuthenticationPrincipal DiscodeitUserDetails userDetails
   );
 
   @Operation(summary = "User의 ReadStatus 목록 조회")
@@ -51,7 +54,7 @@ public interface ReadStatusApi {
       )
   })
   ResponseEntity<List<ReadStatusDto>> findAllByUserId(
-      @Parameter(description = "조회할 User ID") @RequestParam UUID userId
+      @Parameter(hidden = true) @AuthenticationPrincipal DiscodeitUserDetails userDetails
   );
 
   @Operation(summary = "ReadStatus 수정")

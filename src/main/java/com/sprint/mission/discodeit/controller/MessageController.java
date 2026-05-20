@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,15 +41,16 @@ public class MessageController implements MessageApi {
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<MessageDto> create(
       @RequestPart("messageCreateRequest") MessageCreateRequest request,
-      @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {
+      @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments,
+      @AuthenticationPrincipal DiscodeitUserDetails userDetails) {
     log.info(
         "Received POST /api/messages request - channelId: {}, authorId: {}, attachments count: {}",
-        request.channelId(), request.authorId(),
+        request.channelId(), userDetails.getId(),
         attachments != null ? attachments.size() : 0); // 메시지 생성 요청 로그
 
     Message message = messageService.create(
         request.content(),
-        request.authorId(),
+        userDetails.getId(),
         request.channelId(),
         attachments
     );
@@ -87,12 +90,13 @@ public class MessageController implements MessageApi {
   @PatchMapping("/{messageId}")
   public ResponseEntity<MessageDto> update(
       @PathVariable UUID messageId,
-      @RequestBody MessageUpdateRequest request) {
+      @RequestBody MessageUpdateRequest request,
+      @AuthenticationPrincipal DiscodeitUserDetails userDetails) {
     log.info("Received PATCH /api/messages/{} request", messageId); // 메시지 수정 요청 로그
 
     Message message = messageService.update(
         messageId,
-        request.requesterId(),
+        userDetails.getId(),
         request.newContent()
     );
 
@@ -103,10 +107,10 @@ public class MessageController implements MessageApi {
   @DeleteMapping("/{messageId}")
   public ResponseEntity<Void> delete(
       @PathVariable UUID messageId,
-      @RequestParam UUID requesterId) {
+      @AuthenticationPrincipal DiscodeitUserDetails userDetails) {
     log.info("Received DELETE /api/messages/{} request", messageId); // 메시지 삭제 요청 로그
 
-    messageService.deleteById(messageId, requesterId);
+    messageService.deleteById(messageId, userDetails.getId());
     return ResponseEntity.noContent().build();
   }
 }

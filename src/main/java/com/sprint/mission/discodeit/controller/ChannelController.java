@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.ChannelService;
 import jakarta.validation.Valid;
 import java.time.Instant;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -70,11 +72,18 @@ public class ChannelController implements ChannelApi {
 
   @Override
   @GetMapping
-  public ResponseEntity<List<ChannelDto>> findAllByUserId(@RequestParam UUID userId) {
-    log.info("Received GET /api/channels request - userId: {}", userId); // 특정 유저가 속한 채널 조회 요청 로그
+  public ResponseEntity<List<ChannelDto>> findAllByUserId(
+      @AuthenticationPrincipal DiscodeitUserDetails userDetails) {
+
+    if (userDetails == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    log.info("Received GET /api/channels request - userId: {}",
+        userDetails.getId()); // 특정 유저가 속한 채널 조회 요청 로그
 
     // 해당 유저가 속한 채널 리스트를 가져옴
-    List<Channel> channels = channelService.findAllByUserId(userId);
+    List<Channel> channels = channelService.findAllByUserId(userDetails.getId());
     List<UUID> channelIds = channels.stream().map(Channel::getId).toList();
 
     // 루프 돌기 전 배치 쿼리로 데이터 미리 로드
