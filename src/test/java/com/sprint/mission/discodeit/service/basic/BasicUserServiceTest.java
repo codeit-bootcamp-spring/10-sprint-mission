@@ -10,11 +10,14 @@ import static org.mockito.Mockito.verify;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +38,15 @@ class BasicUserServiceTest {
 
   @Mock
   private UserMapper userMapper;
+
+  @Mock
+  private BinaryContentRepository binaryContentRepository;
+
+  @Mock
+  private BinaryContentStorage binaryContentStorage;
+
+  @Mock
+  private PasswordEncoder passwordEncoder;
 
   @InjectMocks
   private BasicUserService userService;
@@ -54,7 +67,7 @@ class BasicUserServiceTest {
 
     user = new User(username, email, password, null);
     ReflectionTestUtils.setField(user, "id", userId);
-    userDto = new UserDto(userId, username, email, null, true);
+    userDto = new UserDto(userId, username, email, null, Role.USER, false);
   }
 
   @Test
@@ -64,6 +77,7 @@ class BasicUserServiceTest {
     UserCreateRequest request = new UserCreateRequest(username, email, password);
     given(userRepository.existsByEmail(eq(email))).willReturn(false);
     given(userRepository.existsByUsername(eq(username))).willReturn(false);
+    given(passwordEncoder.encode(eq(password))).willReturn("encoded-password");
     given(userMapper.toDto(any(User.class))).willReturn(userDto);
 
     // when
@@ -136,6 +150,7 @@ class BasicUserServiceTest {
     given(userRepository.findById(eq(userId))).willReturn(Optional.of(user));
     given(userRepository.existsByEmail(eq(newEmail))).willReturn(false);
     given(userRepository.existsByUsername(eq(newUsername))).willReturn(false);
+    given(passwordEncoder.encode(eq(newPassword))).willReturn("encoded-new-password");
     given(userMapper.toDto(any(User.class))).willReturn(userDto);
 
     // when

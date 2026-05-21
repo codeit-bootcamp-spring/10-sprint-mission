@@ -11,8 +11,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
-import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.core.session.SessionRegistry;
@@ -78,8 +76,7 @@ public class SecurityConfig {
                                 .maximumSessions(1)
                                 .sessionRegistry(sessionRegistry)
                                 .expiredUrl("/api/auth/login")
-                        )
-                        .sessionAuthenticationStrategy(new SessionFixationProtectionStrategy())
+                                )
                 )
                 .rememberMe(remember -> remember
                         .key("discodeit-remember-me")
@@ -87,11 +84,12 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
-                        .requestMatchers("/api/auth/csrf-token", "/api/users", "/api/auth/login", "/api/auth/logout").permitAll()
+                        .requestMatchers("/api/auth/csrf-token", "/api/users", "/api/auth/logout").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(new AuthenticationEntryPointImpl())
                         .accessDeniedHandler(new AccessDeniedHandlerImpl())
                 );
         return http.build();

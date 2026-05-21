@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
     });
     
     ErrorResponse response = new ErrorResponse(
-        Instant.now(), 
+        Instant.now(),
         "VALIDATION_ERROR",
         "요청 데이터 유효성 검사에 실패했습니다",
         validationErrors,
@@ -66,10 +66,13 @@ public class GlobalExceptionHandler {
     return switch (errorCode) {
       case USER_NOT_FOUND, CHANNEL_NOT_FOUND, MESSAGE_NOT_FOUND, BINARY_CONTENT_NOT_FOUND,
            READ_STATUS_NOT_FOUND -> HttpStatus.NOT_FOUND;
-      case DUPLICATE_USER, DUPLICATE_READ_STATUS -> HttpStatus.CONFLICT;
-      case INVALID_USER_CREDENTIALS -> HttpStatus.UNAUTHORIZED;
-      case PRIVATE_CHANNEL_UPDATE, INVALID_REQUEST -> HttpStatus.BAD_REQUEST;
-      case INTERNAL_SERVER_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
+      case DUPLICATE_USER, DUPLICATE_READ_STATUS, READ_STATUS_ALREADY_EXISTS -> HttpStatus.CONFLICT;
+      case INVALID_USER_CREDENTIALS, INVALID_PASSWORD -> HttpStatus.UNAUTHORIZED;
+      case MESSAGE_SENDER_MISMATCH -> HttpStatus.FORBIDDEN;
+      case PRIVATE_CHANNEL_UPDATE, INVALID_REQUEST, INVALID_CONTENT_TYPE, IMAGE_BINARY_CONVERSION_FAILED
+           -> HttpStatus.BAD_REQUEST;
+      case UNSUPPORTED_MEDIA_TYPE -> HttpStatus.UNSUPPORTED_MEDIA_TYPE;
+      case INTERNAL_SERVER_ERROR, INTERNAL_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
     };
   }
 }

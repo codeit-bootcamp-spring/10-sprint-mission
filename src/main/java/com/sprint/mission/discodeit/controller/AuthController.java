@@ -40,7 +40,15 @@ public class AuthController {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        UserDto userDto = userDetails.getUserDto();
+        UserDto principalUser = userDetails.getUserDto();
+        UserDto userDto = new UserDto(
+            principalUser.id(),
+            principalUser.username(),
+            principalUser.email(),
+            principalUser.profile(),
+            principalUser.role(),
+            true
+        );
         log.debug("현재 사용자 조회: userId={}, username={}", userDto.id(), userDto.username());
         return ResponseEntity.ok(userDto);
     }

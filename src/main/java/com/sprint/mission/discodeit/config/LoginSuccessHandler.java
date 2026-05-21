@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.mapper.UserMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
-    private final UserMapper userMapper;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -27,7 +25,15 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         HttpServletResponse response,
         Authentication authentication) throws IOException, ServletException {
         DiscodeitUserDetails userDetails = (DiscodeitUserDetails) authentication.getPrincipal();
-        UserDto userDto = userDetails.getUserDto();
+        UserDto principalUser = userDetails.getUserDto();
+        UserDto userDto = new UserDto(
+            principalUser.id(),
+            principalUser.username(),
+            principalUser.email(),
+            principalUser.profile(),
+            principalUser.role(),
+            true
+        );
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_OK);
