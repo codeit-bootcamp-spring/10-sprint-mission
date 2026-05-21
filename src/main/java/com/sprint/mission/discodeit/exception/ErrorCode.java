@@ -25,7 +25,6 @@ public enum ErrorCode {
 
   // ==== 메시지 관련 ====
   MESSAGE_NOT_FOUND("M001", "해당 메시지를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-  MESSAGE_ACCESS_DENIED("M002", "메시지 작성자만 수정/삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
 
   // ==== 바이너리 콘텐츠 관련 ====
   FILE_IS_EMPTY("F001", "파일이 비어있습니다.", HttpStatus.BAD_REQUEST),

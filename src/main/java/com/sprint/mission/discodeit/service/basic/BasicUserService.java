@@ -101,6 +101,7 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional
+  @PreAuthorize("#id == authentication.principal.id") // 수정하려는 타겟 ID와 현재 로그인한 사람의 ID가 일치할 때만 실행
   public User update(UUID id, String newUsername, String newEmail, String newPassword,
       MultipartFile profileFile) {
     log.info("Updating user with ID: {}", id); // 유저 업데이트 시작 로그
@@ -177,6 +178,7 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional
+  @PreAuthorize("#id == authentication.principal.id") // 수정하려는 타겟 ID와 현재 로그인한 사람의 ID가 일치할 때만 실행
   public void deleteById(UUID id) {
     log.info("Deleting user with ID: {}", id); // 유저 삭제 시작 로그
 

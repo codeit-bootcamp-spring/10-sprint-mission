@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -119,12 +120,12 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional
+  // SpEL을 활용해 커스텀 검증기를 호출하여 메시지 작성자와 현재 로그인한 사람이 일치할 때만 실행
+  @PreAuthorize("@messageSecurityValidator.isAuthor(#id, authentication.principal.id)")
   public Message update(UUID id, UUID requesterId, String newContent) {
     log.info("Updating message with ID: {}", id); // 메시지 수정 시작 로그
 
     Message message = getOrThrowMessage(id);
-
-    validateMessageAuthor(message, requesterId);
 
     // 텍스트 내용만 수정
     Optional.ofNullable(newContent).ifPresent(content -> {
@@ -138,11 +139,12 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional
+  // SpEL을 활용해 커스텀 검증기를 호출하여 메시지 작성자와 현재 로그인한 사람이 일치할 때만 실행
+  @PreAuthorize("@messageSecurityValidator.isAuthor(#id, authentication.principal.id)")
   public void deleteById(UUID id, UUID requesterId) {
     log.info("Deleting message with ID: {}", id); // 메시지 삭제 시작 로그
 
     Message message = getOrThrowMessage(id);
-    validateMessageAuthor(message, requesterId);
     messageRepository.delete(message);
 
     log.info("Message ID {} deleted successfully", id); // 메시지 삭제 성공 로그
@@ -178,16 +180,5 @@ public class BasicMessageService implements MessageService {
   private Message getOrThrowMessage(UUID id) {
     return messageRepository.findByIdWithDetails(id)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("requestedMessageId", id)));
-  }
-
-  // 메시지 작성자 검증
-  private void validateMessageAuthor(Message message, UUID requesterId) {
-    if (!message.getAuthor().getId().equals(requesterId)) {
-      throw new MessageAccessDeniedException(Map.of(
-          "messageId", message.getId(),
-          "requesterId", requesterId,
-          "reason", "메시지 작성자만 수정/삭제할 수 있습니다."
-      ));
-    }
   }
 }
