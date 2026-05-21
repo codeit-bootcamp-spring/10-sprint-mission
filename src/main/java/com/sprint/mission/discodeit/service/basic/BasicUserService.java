@@ -157,6 +157,18 @@ public class BasicUserService implements UserService {
 		return userMapper.toDto(user);
 	}
 
+	@Transactional
+	@Override
+	public void delete(UUID userId) {
+		if (!userRepository.existsById(userId)) {
+			throw new UserNotFoundException(userId);
+		}
+
+		expireUserSessions(userId);
+		userRepository.deleteById(userId);
+		log.info("[USER_DELETE] 사용자 삭제 완료: userId={}", userId);
+	}
+
 	private void expireUserSessions(UUID userId) {
 		sessionRegistry.getAllPrincipals().stream()
 			.filter(DiscodeitUserDetails.class::isInstance)
@@ -170,16 +182,5 @@ public class BasicUserService implements UserService {
 						sessionInformation.expireNow();
 					}
 				}));
-	}
-
-	@Transactional
-	@Override
-	public void delete(UUID userId) {
-		if (!userRepository.existsById(userId)) {
-			throw new UserNotFoundException(userId);
-		}
-
-		userRepository.deleteById(userId);
-		log.info("[USER_DELETE] 사용자 삭제 완료: userId={}", userId);
 	}
 }
