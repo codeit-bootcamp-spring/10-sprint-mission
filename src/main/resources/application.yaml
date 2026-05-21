@@ -46,9 +46,13 @@ info:
       max-request-size: ${spring.servlet.multipart.maxRequestSize}
 
 discodeit:
+  admin:
+    username: ${ADMIN_USERNAME}
+    email: ${ADMIN_EMAIL}
+    password: ${ADMIN_PASSWORD}
   security:
     remember-me:
-      key: ${REMEMBER_ME_KEY:discodeit-remember-me-key}
+      key: ${REMEMBER_ME_KEY}
       token-validity-seconds: ${REMEMBER_ME_TOKEN_VALIDITY_SECONDS:1209600}
   storage:
     type: ${STORAGE_TYPE:local}

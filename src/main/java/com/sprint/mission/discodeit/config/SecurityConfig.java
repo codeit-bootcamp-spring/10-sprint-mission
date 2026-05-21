@@ -22,6 +22,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.exception.ErrorCode;
@@ -41,7 +42,7 @@ public class SecurityConfig {
 	private final LoginFailureHandler loginFailureHandler;
 	private final ObjectMapper objectMapper;
 
-	@Value("${discodeit.security.remember-me.key:discodeit-remember-me-key}")
+	@Value("${discodeit.security.remember-me.key}")
 	private String rememberMeKey;
 
 	@Value("${discodeit.security.remember-me.token-validity-seconds:1209600}")
@@ -53,6 +54,8 @@ public class SecurityConfig {
 		SessionRegistry sessionRegistry,
 		UserDetailsService userDetailsService
 	) throws Exception {
+		validateSecurityProperties();
+
 		http
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.csrf(csrf -> csrf
@@ -138,6 +141,12 @@ public class SecurityConfig {
 			);
 
 		return http.build();
+	}
+
+	private void validateSecurityProperties() {
+		if (!StringUtils.hasText(rememberMeKey)) {
+			throw new IllegalStateException("REMEMBER_ME_KEY 또는 discodeit.security.remember-me.key 설정이 필요합니다.");
+		}
 	}
 
 	@Bean
