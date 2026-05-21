@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.repository.query.Param;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
@@ -21,11 +22,14 @@ public interface UserService {
 
 	List<UserDto> findAll();
 
-	UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
+	@PreAuthorize("@resourceAuthorizationService.canModifyUser(authentication, #userId)")
+	UserDto update(@Param("userId") UUID userId,
+		UserUpdateRequest userUpdateRequest,
 		Optional<BinaryContentCreateRequest> profileCreateRequest);
 
 	@PreAuthorize("hasRole('ADMIN')")
 	UserDto updateRole(UserRoleUpdateRequest request);
 
-	void delete(UUID userId);
+	@PreAuthorize("@resourceAuthorizationService.canModifyUser(authentication, #userId)")
+	void delete(@Param("userId") UUID userId);
 }
