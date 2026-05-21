@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.integration;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
+import static com.sprint.mission.discodeit.TestAuthentication.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -218,6 +219,7 @@ class MessageApiIntegrationTest {
 		// when & then
 		mockMvc.perform(patch("/api/messages/{messageId}", messageId)
 				.with(csrf())
+				.with(authenticated(user))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isOk())
@@ -241,6 +243,7 @@ class MessageApiIntegrationTest {
 		// when & then
 		mockMvc.perform(patch("/api/messages/{messageId}", nonExistentMessageId)
 				.with(csrf())
+				.with(authenticated(UUID.randomUUID()))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isNotFound());
@@ -276,7 +279,8 @@ class MessageApiIntegrationTest {
 
 		// when & then
 		mockMvc.perform(delete("/api/messages/{messageId}", messageId)
-				.with(csrf()))
+				.with(csrf())
+				.with(authenticated(user)))
 			.andExpect(status().isNoContent());
 
 		mockMvc.perform(get("/api/messages")
@@ -294,7 +298,8 @@ class MessageApiIntegrationTest {
 
 		// when & then
 		mockMvc.perform(delete("/api/messages/{messageId}", nonExistentMessageId)
-				.with(csrf()))
+				.with(csrf())
+				.with(authenticated(UUID.randomUUID())))
 			.andExpect(status().isNotFound());
 	}
 }

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.integration;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
+import static com.sprint.mission.discodeit.TestAuthentication.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -174,6 +175,7 @@ class UserApiIntegrationTest {
 				.file(profilePart)
 				.contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
 				.with(csrf())
+				.with(authenticated(createdUser))
 				.with(request -> {
 					request.setMethod("PATCH");
 					return request;
@@ -208,6 +210,7 @@ class UserApiIntegrationTest {
 				.file(userUpdateRequestPart)
 				.contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
 				.with(csrf())
+				.with(authenticated(nonExistentUserId))
 				.with(request -> {
 					request.setMethod("PATCH");
 					return request;
@@ -230,7 +233,8 @@ class UserApiIntegrationTest {
 
 		// when & then
 		mockMvc.perform(delete("/api/users/{userId}", userId)
-				.with(csrf()))
+				.with(csrf())
+				.with(authenticated(createdUser)))
 			.andExpect(status().isNoContent());
 
 		mockMvc.perform(get("/api/users"))
@@ -246,7 +250,8 @@ class UserApiIntegrationTest {
 
 		// when & then
 		mockMvc.perform(delete("/api/users/{userId}", nonExistentUserId)
-				.with(csrf()))
+				.with(csrf())
+				.with(authenticated(nonExistentUserId)))
 			.andExpect(status().isNotFound());
 	}
 
