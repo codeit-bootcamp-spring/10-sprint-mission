@@ -4,7 +4,6 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.KeyLengthException;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -59,7 +58,7 @@ public class JwtTokenProvider {
     }
   }
 
-  private String generateRefreshToken(String subject) {
+  public String generateRefreshToken(String subject) {
     try {
       JWSSigner signer = new MACSigner(secretKey.getBytes(StandardCharsets.UTF_8));
 
