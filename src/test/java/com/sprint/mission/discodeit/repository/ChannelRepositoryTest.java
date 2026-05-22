@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.sprint.mission.discodeit.config.JpaAuditingConfig;
+import com.sprint.mission.discodeit.config.AppConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -16,7 +16,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
 @DataJpaTest
-@Import(JpaAuditingConfig.class)
+@Import(AppConfig.class)
 class ChannelRepositoryTest {
 
   @Autowired
