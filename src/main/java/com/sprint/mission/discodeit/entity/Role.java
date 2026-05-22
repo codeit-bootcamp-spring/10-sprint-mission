@@ -15,4 +15,15 @@ public enum Role {
     this.dbKey = dbKey;
     this.authority = authority;
   }
+
+  public static Role fromString(String roleStr) {
+    if (roleStr == null) {
+      return Role.USER;
+    }
+    try {
+      return Role.valueOf(roleStr.toUpperCase().trim());
+    } catch (IllegalArgumentException e) {
+      return Role.USER;
+    }
+  }
 }

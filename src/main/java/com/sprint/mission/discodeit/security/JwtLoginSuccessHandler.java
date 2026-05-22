@@ -57,7 +57,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private String delegateAccessToken(UserDto userDto) {
     Map<String, Object> claims = new HashMap<>();
     claims.put("username", userDto.username());
-    claims.put("roles", userDto.role());
+    claims.put("email", userDto.email());
+    claims.put("roles", userDto.role().getDbKey());
     claims.put("userId", userDto.id());
 
     String subject = userDto.username();
