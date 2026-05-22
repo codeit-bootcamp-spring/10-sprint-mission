@@ -6,6 +6,6 @@ import java.util.Map;
 public class ChannelAccessDeniedException extends ChannelException {
 
   public ChannelAccessDeniedException(Map<String, Object> details) {
-    super(ErrorCode.ACCESS_DENIED, details);
+    super(ErrorCode.CHANNEL_ACCESS_DENIED, details);
   }
 }

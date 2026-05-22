@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.security.CustomAccessDeniedHandler;
+import com.sprint.mission.discodeit.security.CustomAuthenticationEntryPoint;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class SecurityConfig {
   private final LoginSuccessHandler loginSuccessHandler;
   private final LoginFailureHandler loginFailureHandler;
   private final CustomAccessDeniedHandler customAccessDeniedHandler;
+  private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
   private final UserDetailsService userDetailsService;
 
   @Bean
@@ -97,13 +99,7 @@ public class SecurityConfig {
             // 권한 없음 (403)
             .accessDeniedHandler(customAccessDeniedHandler)
             // 인증 안 됨 (401)
-            .authenticationEntryPoint((request, response, authException) -> {
-              response.setStatus(HttpStatus.UNAUTHORIZED.value());
-              response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-              response.setCharacterEncoding("UTF-8");
-              response.getWriter()
-                  .write("{\"error\": \"Unauthorized\", \"message\": \"로그인이 필요한 서비스입니다.\"}");
-            })
+            .authenticationEntryPoint(customAuthenticationEntryPoint)
         )
         // 로그인 설정
         .formLogin(login -> login

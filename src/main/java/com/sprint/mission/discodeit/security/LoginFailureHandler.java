@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.error.ErrorResponse;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,10 +28,16 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setCharacterEncoding("UTF-8");
 
-    Map<String, String> errorResponse = Map.of(
-        "error", "Unauthorized",
-        "message", "아이디 또는 비밀번호가 일치하지 않습니다."
+    ErrorCode errorCode = ErrorCode.LOGIN_FAILED; // 로그인 실패 401 에러코드
+    ErrorResponse errorResponse = new ErrorResponse(
+        java.time.Instant.now(),
+        errorCode.name(),
+        errorCode.getMessage(),
+        null,
+        exception.getClass().getSimpleName(),
+        HttpStatus.UNAUTHORIZED.value()
     );
+
     objectMapper.writeValue(response.getWriter(), errorResponse);
   }
 }

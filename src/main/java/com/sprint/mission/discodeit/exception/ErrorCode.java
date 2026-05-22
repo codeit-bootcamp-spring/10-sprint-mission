@@ -6,19 +6,20 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
-  // ==== 유저 및 인증 관련 ====
+  // === 인증 및 인가 관련 ===
+  UNAUTHORIZED("A001", "로그인이 필요한 서비스입니다.", HttpStatus.UNAUTHORIZED),
+  LOGIN_FAILED("A002", "아이디 또는 비밀번호가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED),
+  ACCESS_DENIED("A003", "해당 리소스에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN),
+
+  // ==== 유저 관련 ====
   USER_NOT_FOUND("U001", "해당 유저를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   DUPLICATE_USER("U002", "이미 존재하는 사용자명입니다.", HttpStatus.CONFLICT),
   DUPLICATE_EMAIL("U003", "이미 존재하는 이메일입니다.", HttpStatus.CONFLICT),
-  INVALID_PASSWORD("U004", "비밀번호가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED),
-
-  USER_STATUS_NOT_FOUND("U005", "유저 상태 정보가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-  DUPLICATE_USER_STATUS("U006", "이미 상태 정보가 존재합니다.", HttpStatus.CONFLICT),
 
   // ==== 채널 및 참여 관련 ====
   CHANNEL_NOT_FOUND("C001", "해당 채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   PRIVATE_CHANNEL_UPDATE("C002", "PRIVATE 채널은 수정할 수 없습니다.", HttpStatus.BAD_REQUEST),
-  ACCESS_DENIED("C003", "채널 접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
+  CHANNEL_ACCESS_DENIED("C003", "채널 접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
   ALREADY_PARTICIPATING("C004", "이미 해당 채널에 참여 중인 유저입니다.", HttpStatus.CONFLICT),
 
   READ_STATUS_NOT_FOUND("C005", "해당 참여 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
