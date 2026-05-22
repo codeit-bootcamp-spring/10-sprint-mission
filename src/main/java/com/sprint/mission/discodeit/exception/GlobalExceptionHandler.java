@@ -8,6 +8,8 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -90,8 +92,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler
-  public ResponseEntity<ErrorResponse> handleAuthenticationException(
-      org.springframework.security.core.AuthenticationException e) {
+  public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException e) {
     log.warn("인증 실패", e);
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
@@ -99,15 +100,14 @@ public class GlobalExceptionHandler {
             Instant.now(),
             "UNAUTHORIZED",
             "로그인이 필요한 서비스입니다.",
-            java.util.Collections.emptyMap(),
+            Collections.emptyMap(),
             e.getClass().getSimpleName(),
             HttpStatus.UNAUTHORIZED.value()
         ));
   }
 
   @ExceptionHandler
-  public ResponseEntity<ErrorResponse> handleAccessDeniedException(
-      org.springframework.security.access.AccessDeniedException e) {
+  public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
     log.warn("인가 실패", e);
     return ResponseEntity
         .status(HttpStatus.FORBIDDEN)
@@ -115,7 +115,7 @@ public class GlobalExceptionHandler {
             Instant.now(),
             "FORBIDDEN",
             "해당 요청에 대한 접근 권한이 없습니다.",
-            java.util.Collections.emptyMap(),
+            Collections.emptyMap(),
             e.getClass().getSimpleName(),
             HttpStatus.FORBIDDEN.value()
         ));
