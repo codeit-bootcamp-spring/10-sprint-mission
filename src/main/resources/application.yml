@@ -5,12 +5,6 @@ spring:
   application:
     name: discodeit
 
-  boot:
-    admin:
-      client:
-        instance:
-          name: discodeit
-
 discodeit:
   storage:
     type: ${STORAGE_TYPE:local}  # local | s3 (기본값: local)
@@ -25,6 +19,10 @@ discodeit:
   admin:
     email: ${ADMIN_EMAIL}
     password: ${ADMIN_PASSWORD}
+  jwt:
+    key: ${JWT_SECRET_KEY}
+    access-token-expiration-minutes: 30
+    refresh-token-expiration-minutes: 420
 
 management:
   info:
