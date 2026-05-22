@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.times;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -14,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.auth.enums.Role;
 import com.sprint.mission.discodeit.dto.channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
@@ -29,18 +31,22 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+@WithMockUser
 @WebMvcTest(ChannelController.class)
 @ActiveProfiles("test")
 @Import({GlobalExceptionHandler.class})
+@Tag("unit")
 class ChannelControllerTest {
 
   @Autowired
@@ -57,13 +63,16 @@ class ChannelControllerTest {
     PublicChannelCreateRequest dto = new PublicChannelCreateRequest("channelName",
         "channelDescription");
     UUID channelId = UUID.randomUUID();
-    UserDto userDto1 = new UserDto(UUID.randomUUID(), "test1", "test1@test.com", null, true,
+    UserDto userDto1 = new UserDto(UUID.randomUUID(), "test1", "test1@test.com", Role.USER, null,
+        true,
         Instant.now(),
         Instant.now());
-    UserDto userDto2 = new UserDto(UUID.randomUUID(), "test2", "test2@test.com", null, true,
+    UserDto userDto2 = new UserDto(UUID.randomUUID(), "test2", "test2@test.com", Role.USER, null,
+        true,
         Instant.now(),
         Instant.now());
-    UserDto userDto3 = new UserDto(UUID.randomUUID(), "test3", "test3@test.com", null, true,
+    UserDto userDto3 = new UserDto(UUID.randomUUID(), "test3", "test3@test.com", Role.USER, null,
+        true,
         Instant.now(),
         Instant.now());
     List<UserDto> users = List.of(userDto1, userDto2, userDto3);
@@ -77,6 +86,7 @@ class ChannelControllerTest {
 
     //when & then
     mockMvc.perform(post("/api/channels/public")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(body))
@@ -95,13 +105,13 @@ class ChannelControllerTest {
     UUID u3Id = UUID.randomUUID();
     UUID channelId = UUID.randomUUID();
     PrivateChannelCreateRequest dto = new PrivateChannelCreateRequest(List.of(u1Id, u2Id, u3Id));
-    UserDto userDto1 = new UserDto(u1Id, "test1", "test1@test.com", null, true,
+    UserDto userDto1 = new UserDto(u1Id, "test1", "test1@test.com", Role.USER, null, true,
         Instant.now(),
         Instant.now());
-    UserDto userDto2 = new UserDto(u2Id, "test2", "test2@test.com", null, true,
+    UserDto userDto2 = new UserDto(u2Id, "test2", "test2@test.com", Role.USER, null, true,
         Instant.now(),
         Instant.now());
-    UserDto userDto3 = new UserDto(u3Id, "test3", "test3@test.com", null, true,
+    UserDto userDto3 = new UserDto(u3Id, "test3", "test3@test.com", Role.USER, null, true,
         Instant.now(),
         Instant.now());
     List<UserDto> participants = List.of(userDto1, userDto2, userDto3);
@@ -115,6 +125,7 @@ class ChannelControllerTest {
 
     //when & then
     mockMvc.perform(post("/api/channels/private")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(body))
@@ -139,6 +150,7 @@ class ChannelControllerTest {
 
     //when & then
     mockMvc.perform(post("/api/channels/private")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(body))
@@ -153,13 +165,16 @@ class ChannelControllerTest {
     PublicChannelUpdateRequest dto = new PublicChannelUpdateRequest("newChannelName",
         "newChannelDescription");
     UUID channelId = UUID.randomUUID();
-    UserDto userDto1 = new UserDto(UUID.randomUUID(), "test1", "test1@test.com", null, true,
+    UserDto userDto1 = new UserDto(UUID.randomUUID(), "test1", "test1@test.com", Role.USER, null,
+        true,
         Instant.now(),
         Instant.now());
-    UserDto userDto2 = new UserDto(UUID.randomUUID(), "test2", "test2@test.com", null, true,
+    UserDto userDto2 = new UserDto(UUID.randomUUID(), "test2", "test2@test.com", Role.USER, null,
+        true,
         Instant.now(),
         Instant.now());
-    UserDto userDto3 = new UserDto(UUID.randomUUID(), "test3", "test3@test.com", null, true,
+    UserDto userDto3 = new UserDto(UUID.randomUUID(), "test3", "test3@test.com", Role.USER, null,
+        true,
         Instant.now(),
         Instant.now());
     List<UserDto> users = List.of(userDto1, userDto2, userDto3);
@@ -173,6 +188,7 @@ class ChannelControllerTest {
 
     //when & then
     mockMvc.perform(patch("/api/channels/{channelId}", channelId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(body))
@@ -198,6 +214,7 @@ class ChannelControllerTest {
 
     //when & then
     mockMvc.perform(patch("/api/channels/{channelId}", privateChannelId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(body))
@@ -214,6 +231,7 @@ class ChannelControllerTest {
 
     //when & then
     mockMvc.perform(delete("/api/channels/{channelId}", channelId)
+            .with(csrf())
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
 
@@ -229,6 +247,7 @@ class ChannelControllerTest {
 
     //when & then
     mockMvc.perform(delete("/api/channels/{channelId}", wrongChannelId)
+            .with(csrf())
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound())
         .andExpect(
@@ -241,13 +260,15 @@ class ChannelControllerTest {
   void findChannelsByUserSuccess() throws Exception {
     //given
     UUID userId = UUID.randomUUID();
-    UserDto userDto1 = new UserDto(userId, "test1", "test1@test.com", null, true,
+    UserDto userDto1 = new UserDto(userId, "test1", "test1@test.com", Role.USER, null, true,
         Instant.now(),
         Instant.now());
-    UserDto userDto2 = new UserDto(UUID.randomUUID(), "test2", "test2@test.com", null, true,
+    UserDto userDto2 = new UserDto(UUID.randomUUID(), "test2", "test2@test.com", Role.USER, null,
+        true,
         Instant.now(),
         Instant.now());
-    UserDto userDto3 = new UserDto(UUID.randomUUID(), "test3", "test3@test.com", null, true,
+    UserDto userDto3 = new UserDto(UUID.randomUUID(), "test3", "test3@test.com", Role.USER, null,
+        true,
         Instant.now(),
         Instant.now());
     ChannelDto channelDto1 = new ChannelDto(UUID.randomUUID(), ChannelType.PUBLIC, "c1",

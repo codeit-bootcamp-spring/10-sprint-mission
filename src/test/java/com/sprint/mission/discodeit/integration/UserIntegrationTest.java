@@ -1,26 +1,19 @@
 package com.sprint.mission.discodeit.integration;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.BDDMockito.willThrow;
-import static org.mockito.Mockito.times;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
@@ -29,18 +22,11 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.user.EmailAlreadyExistException;
 import com.sprint.mission.discodeit.exception.user.UserNameAlreadyExistException;
-import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.persistence.EntityManager;
 import java.io.InputStream;
@@ -55,7 +41,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,9 +66,6 @@ public class UserIntegrationTest {
   private UserRepository userRepository;
 
   @Autowired
-  private UserStatusRepository userStatusRepository;
-
-  @Autowired
   private BinaryContentRepository binaryContentRepository;
 
   @Autowired
@@ -92,6 +79,26 @@ public class UserIntegrationTest {
   @Autowired
   private ChannelRepository channelRepository;
 
+  private void setupSecurityContext(User user) {
+    UserDetails customUserDetails = new DiscodeitUserDetails(
+        new UserDto(user.getId(), user.getUsername(), user.getEmail(), user.getRole(), null, true,
+            user.getCreatedAt(), user.getUpdatedAt()),
+        user.getPassword()
+    );
+
+    Authentication authentication = new UsernamePasswordAuthenticationToken(
+        customUserDetails,
+        null,
+        customUserDetails.getAuthorities()
+    );
+
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+  }
+
+  @BeforeEach
+  public void setup() {
+    userRepository.deleteAll();
+  }
 
   @Test
   @DisplayName("성공: 프로필 사진을 가진 사용자 생성 성공")
@@ -119,13 +126,13 @@ public class UserIntegrationTest {
     mockMvc.perform(multipart("/api/users")
             .file(userPart)
             .file(profilePart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").exists());
 
-    User user = userRepository.findByUsernameAndPassword(request.username(), request.password())
+    User user = userRepository.findByUsername(request.username())
         .orElseThrow();
-    assertTrue(userStatusRepository.findByUserId(user.getId()).isPresent());
     assertEquals(user.getEmail(), request.email());
 
     //프로필 사진 저장 확인
@@ -161,6 +168,7 @@ public class UserIntegrationTest {
     //when & then
     mockMvc.perform(multipart("/api/users")
             .file(userPart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isConflict())
         .andExpect(
@@ -174,14 +182,15 @@ public class UserIntegrationTest {
     //given
     BinaryContent oldProfile = BinaryContent.create("oldProfile", "jpg", 50L);
     User user = userRepository.save(User.create("test", "test@test.com", "test123", oldProfile));
-    UserStatus.create(user, Instant.parse("2020-01-01T00:00:00.00Z"));
 
     em.flush();
     em.clear();
 
-    user = userRepository.findByUsernameAndPassword("test", "test123").orElseThrow();
+    user = userRepository.findByUsername("test").orElseThrow();
     UUID userId = user.getId();
     UUID oldProfileId = oldProfile.getId();
+
+    setupSecurityContext(user);
 
     UserUpdateRequest request = new UserUpdateRequest(null, "new@test.com", null);
 
@@ -205,6 +214,7 @@ public class UserIntegrationTest {
     mockMvc.perform(multipart("/api/users/{userId}", userId)
             .file(userPart)
             .file(profilePart)
+            .with(csrf())
             .with(r -> {
               r.setMethod("PATCH");
               return r;
@@ -242,6 +252,12 @@ public class UserIntegrationTest {
     UUID wrongUserId = UUID.randomUUID();
     UserUpdateRequest request = new UserUpdateRequest(null, "new@test.com", null);
 
+    User user = userRepository.save(User.create("test", "test@test.com", "test123", null));
+
+    em.flush();
+    em.clear();
+
+    setupSecurityContext(user);
     // 바디 생성
     MockMultipartFile userPart = new MockMultipartFile(
         "userUpdateRequest",
@@ -253,12 +269,14 @@ public class UserIntegrationTest {
     //when & then
     mockMvc.perform(multipart("/api/users/{userId}", wrongUserId)
             .file(userPart)
+            .with(csrf())
             .with(r -> {
               r.setMethod("PATCH");
               return r;
             }))
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.exceptionType").value(UserNotFoundException.class.getSimpleName()));
+        .andExpect(status().isForbidden())
+        .andExpect(
+            jsonPath("$.exceptionType").value(AuthorizationDeniedException.class.getSimpleName()));
 
   }
 
@@ -272,7 +290,6 @@ public class UserIntegrationTest {
 
     BinaryContent profile = BinaryContent.create("profile", "jpg", 50L);
     User user = User.create("test", "test@test.com", "test123", profile);
-    UserStatus userStatus = UserStatus.create(user, Instant.parse("2020-01-01T00:00:00.00Z"));
     userRepository.save(user);
 
     ReadStatus readStatus = ReadStatus.create(user, channel,
@@ -282,19 +299,20 @@ public class UserIntegrationTest {
     em.flush();
     em.clear();
 
-    User myuser = userRepository.findByUsernameAndPassword("test", "test123").orElseThrow();
+    User myuser = userRepository.findByUsername("test").orElseThrow();
     UUID userId = myuser.getId();
     UUID profileId = profile.getId();
 
     assertFalse(userRepository.findById(userId).isEmpty());
-    assertFalse(userStatusRepository.findByUserId(userId).isEmpty());
     assertFalse(binaryContentRepository.findById(profileId).isEmpty());
     assertFalse(readStatusRepository.findAllByUserId(userId).isEmpty());
 
     em.flush();
     em.clear();
+    setupSecurityContext(user);
     //when & then
     mockMvc.perform(delete("/api/users/{userId}", userId)
+            .with(csrf())
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
 
@@ -302,7 +320,6 @@ public class UserIntegrationTest {
     em.clear();
 
     assertTrue(userRepository.findById(userId).isEmpty());
-    assertTrue(userStatusRepository.findByUserId(userId).isEmpty());
     assertTrue(binaryContentRepository.findById(profileId).isEmpty());
     assertTrue(readStatusRepository.findAllByUserId(userId).isEmpty());
 
@@ -313,12 +330,20 @@ public class UserIntegrationTest {
   void deleteUserByWrongUserIdFailure() throws Exception {
     //given
     UUID wrongUserId = UUID.randomUUID();
+    User user = userRepository.save(User.create("test", "test@test.com", "test123", null));
+
+    em.flush();
+    em.clear();
+
+    setupSecurityContext(user);
 
     //when & then
     mockMvc.perform(delete("/api/users/{userId}", wrongUserId)
+            .with(csrf())
             .accept(MediaType.APPLICATION_JSON))
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.exceptionType").value(UserNotFoundException.class.getSimpleName()));
+        .andExpect(status().isForbidden())
+        .andExpect(
+            jsonPath("$.exceptionType").value(AuthorizationDeniedException.class.getSimpleName()));
 
   }
 
@@ -328,18 +353,16 @@ public class UserIntegrationTest {
     //given
     BinaryContent profile1 = BinaryContent.create("profile1", "jpg", 50L);
     User user1 = User.create("test1", "test1@test.com", "test123", profile1);
-    UserStatus.create(user1, Instant.parse("2020-01-01T00:00:00.00Z"));
     BinaryContent profile2 = BinaryContent.create("profile2", "jpg", 50L);
     User user2 = User.create("test2", "test2@test.com", "test123", profile2);
-    UserStatus.create(user2, Instant.parse("2020-01-01T00:00:00.00Z"));
     BinaryContent profile3 = BinaryContent.create("profile3", "jpg", 50L);
     User user3 = User.create("tes3", "test3@test.com", "test123", profile3);
-    UserStatus.create(user3, Instant.parse("2020-01-01T00:00:00.00Z"));
     userRepository.saveAll(List.of(user1, user2, user3));
 
     em.flush();
     em.clear();
 
+    setupSecurityContext(user1);
     //when & then
     mockMvc.perform(get("/api/users")
             .accept(MediaType.APPLICATION_JSON))
@@ -348,13 +371,12 @@ public class UserIntegrationTest {
   }
 
   @Test
-  @DisplayName("성공: 사용자가 없을 때 빈 리스트 반환 성공(200 Ok)")
+  @DisplayName("실패: 로그인하지 않은 사용자 요청시 예외")
   void findEmptyUserList() throws Exception {
 
     //when & then
     mockMvc.perform(get("/api/users")
             .accept(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.size()").value(0));
+        .andExpect(status().isUnauthorized());
   }
 }

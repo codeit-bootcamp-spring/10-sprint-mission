@@ -20,6 +20,7 @@ CREATE TABLE users
     username   VARCHAR(50)              NOT NULL UNIQUE,
     email      VARCHAR(100)             NOT NULL UNIQUE,
     password   VARCHAR(60)              NOT NULL,
+    role       VARCHAR(20)              NOT NULL,
     profile_id UUID UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE,
@@ -31,14 +32,14 @@ CREATE TABLE users
 
 
 
-CREATE TABLE user_statuses
-(
-    id             UUID PRIMARY KEY,
-    user_id        UUID UNIQUE              NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    last_active_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at     TIMESTAMP WITH TIME ZONE
-);
+-- CREATE TABLE user_statuses
+-- (
+--     id             UUID PRIMARY KEY,
+--     user_id        UUID UNIQUE              NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+--     last_active_at TIMESTAMP WITH TIME ZONE NOT NULL,
+--     created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
+--     updated_at     TIMESTAMP WITH TIME ZONE
+-- );
 
 CREATE TABLE channels
 (
@@ -75,4 +76,12 @@ CREATE TABLE message_attachments
 (
     message_id    UUID NOT NULL REFERENCES messages (id) ON DELETE CASCADE,
     attachment_id UUID NOT NULL REFERENCES binary_contents (id) ON DELETE CASCADE
+);
+
+CREATE TABLE persistent_logins
+(
+    username  VARCHAR(64) NOT NULL,
+    series    VARCHAR(64) PRIMARY KEY,
+    token     VARCHAR(64) NOT NULL,
+    last_used TIMESTAMP   NOT NULL
 );

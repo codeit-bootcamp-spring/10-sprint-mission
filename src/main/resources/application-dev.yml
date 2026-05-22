@@ -26,6 +26,7 @@ logging:
     com.sprint.mission.discodeit: debug
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace #버전 올라가면서 경로에 orm추가 해야해야 바인딩 파라미터 보임
+    org.springframework.security: trace
 
 server:
   port: 8080

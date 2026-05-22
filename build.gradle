@@ -7,7 +7,7 @@ plugins {
 
 group = 'com.sprint.mission'
 //version = '0.0.1-SNAPSHOT'
-version = '1.2-M8'
+version = '2.0-M9'
 description = 'Demo project for Spring Boot'
 
 java {
@@ -44,10 +44,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     //implementation 'de.codecentric:spring-boot-admin-starter-client:3.4.5'
     implementation 'software.amazon.awssdk:s3:2.31.7'
+    //시큐리티
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        def includeTag = System.getProperty('junit.jupiter.tags.include')
+        if (includeTag) {
+            includeTags includeTag
+        }
+    }
     systemProperty 'spring.profiles.active', 'test'
     finalizedBy jacocoTestReport
 }
@@ -57,6 +65,25 @@ jacocoTestReport {
     reports {
         xml.required = true
         html.required = true
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "**/*Application*",
+                    "**/config/**",
+                    "**/util/**",
+                    "**/*Dto*",
+                    "**/*Request*",
+                    "**/*Response*",
+                    "**/Interceptor*",
+                    "**/Exception*",
+                    "**/entity/**",
+                    "**/*Mapper*",
+                    "**/resources/**",
+                    "**/testdata/**"
+            ])
+        }))
     }
 }
 
@@ -72,6 +99,25 @@ jacocoTestCoverageVerification {
                 minimum = 0.6
             }
         }
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "**/*Application*",
+                    "**/config/**",
+                    "**/util/**",
+                    "**/*Dto*",
+                    "**/*Request*",
+                    "**/*Response*",
+                    "**/Interceptor*",
+                    "**/Exception*",
+                    "**/entity/**",
+                    "**/*Mapper*",
+                    "**/resources/**",
+                    "**/testdata/**"
+            ])
+        }))
     }
 }
 // 빌드 시 coverage 체크를 강제

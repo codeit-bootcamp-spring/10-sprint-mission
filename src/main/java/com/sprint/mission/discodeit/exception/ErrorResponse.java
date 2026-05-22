@@ -9,6 +9,10 @@ import java.util.Map;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 
 import java.util.List;
@@ -76,6 +80,41 @@ public class ErrorResponse {
     );
   }
 
+  public static ErrorResponse of(AuthenticationException e) {
+
+    ErrorCode errorCode;
+
+    if (e instanceof BadCredentialsException) {
+      // 로그인 실패
+      errorCode = ErrorCode.INVALID_CREDENTIALS; // AU001
+    } else if (e instanceof InsufficientAuthenticationException) {
+      // auth/me 등 로그인 안한 상황
+      errorCode = ErrorCode.UNAUTHORIZED; // AU002
+    } else {
+      // 3. 그 외
+      errorCode = ErrorCode.AUTHENTICATION_FAILED;
+    }
+
+    return new ErrorResponse(
+        Instant.now(),
+        errorCode.getCode(),
+        errorCode.getMessage(),
+        new HashMap<>(),
+        e.getClass().getSimpleName(),
+        errorCode.getStatus()
+    );
+  }
+
+  public static ErrorResponse of(AccessDeniedException e) {
+    return new ErrorResponse(
+        Instant.now(),
+        ErrorCode.ACCESS_DENIED.getCode(),
+        ErrorCode.ACCESS_DENIED.getMessage(),
+        new HashMap<>(),
+        e.getClass().getSimpleName(),
+        ErrorCode.ACCESS_DENIED.getStatus()
+    );
+  }
   //내부 dto
   @Getter
   public static class FieldError {

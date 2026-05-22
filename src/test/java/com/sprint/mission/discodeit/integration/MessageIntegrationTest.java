@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -11,15 +12,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.auth.enums.Role;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.message.InvalidMessageException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -27,7 +30,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.List;
@@ -40,6 +42,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -57,8 +63,6 @@ public class MessageIntegrationTest {
   private ObjectMapper objectMapper;
   @Autowired
   private ChannelRepository channelRepository;
-  @Autowired
-  private UserStatusRepository userStatusRepository;
   @Autowired
   private BinaryContentRepository binaryContentRepository;
   @Autowired
@@ -78,25 +82,26 @@ public class MessageIntegrationTest {
   private UUID c2Id;
   private UUID m1Id;
   private UUID m2Id;
+  private User user1;
+  private User user2;
+  private User user3;
 
   @BeforeEach
   public void setup() {
     binaryContentRepository.deleteAll();
     messageRepository.deleteAll();
     readStatusRepository.deleteAll();
-    userStatusRepository.deleteAll();
     userRepository.deleteAll();
     channelRepository.deleteAll();
 
     BinaryContent profile1 = BinaryContent.create("profile1", "jpg", 50L);
-    User user1 = User.create("test1", "test1@test.com", "test123", profile1);
-    UserStatus.create(user1, Instant.parse("2020-01-01T00:00:00.00Z"));
+    user1 = User.create("test1", "test1@test.com", "test123", profile1);
     BinaryContent profile2 = BinaryContent.create("profile2", "jpg", 50L);
-    User user2 = User.create("test2", "test2@test.com", "test123", profile2);
-    UserStatus.create(user2, Instant.parse("2020-01-01T00:00:00.00Z"));
+    user2 = User.create("test2", "test2@test.com", "test123", profile2);
+
     BinaryContent profile3 = BinaryContent.create("profile3", "jpg", 50L);
-    User user3 = User.create("tes3", "test3@test.com", "test123", profile3);
-    UserStatus.create(user3, Instant.parse("2020-01-01T00:00:00.00Z"));
+    user3 = User.create("tes3", "test3@test.com", "test123", profile3);
+
     userRepository.saveAll(List.of(user1, user2, user3));
 
     u1Id = user1.getId();
@@ -145,10 +150,27 @@ public class MessageIntegrationTest {
     em.clear();
   }
 
+  private void setupSecurityContext(User user, Role role) {
+    UserDetails customUserDetails = new DiscodeitUserDetails(
+        new UserDto(user.getId(), user.getUsername(), user.getEmail(), role, null, true,
+            user.getCreatedAt(), user.getUpdatedAt()),
+        user.getPassword()
+    );
+
+    Authentication authentication = new UsernamePasswordAuthenticationToken(
+        customUserDetails,
+        null,
+        customUserDetails.getAuthorities()
+    );
+
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+  }
+
   @Test
   @DisplayName("성공: 첨부파일과 함께 메세지 전송 성공(201 created)")
   void sendMessageWithAttachmentsSuccess() throws Exception {
     //given
+    setupSecurityContext(user1, Role.USER);
     MessageCreateRequest request = new MessageCreateRequest("testContent", c1Id, u1Id);
 
     // 바디 생성
@@ -180,6 +202,7 @@ public class MessageIntegrationTest {
             .file(userPart)
             .file(attachmentsPart1)
             .file(attachmentsPart2)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isCreated())
         .andReturn();
@@ -203,6 +226,7 @@ public class MessageIntegrationTest {
   @DisplayName("실패: 빈 메세지 전송 실패(400 bad request)")
   void sendMessageWithNoContentFailure() throws Exception {
     //given
+    setupSecurityContext(user1, Role.USER);
     MessageCreateRequest request = new MessageCreateRequest("", c1Id, u1Id);
 
     // 바디 생성
@@ -216,6 +240,7 @@ public class MessageIntegrationTest {
     //when & then
     mockMvc.perform(multipart("/api/messages")
             .file(userPart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isBadRequest())
         .andExpect(
@@ -227,10 +252,12 @@ public class MessageIntegrationTest {
   @DisplayName("성공: 메세지 내용 변경 성공(200 ok)")
   void updateMessageContentSuccess() throws Exception {
     //given
+    setupSecurityContext(user1, Role.USER);
     MessageUpdateRequest request = new MessageUpdateRequest("newContent");
 
     //when & then
     mockMvc.perform(patch("/api/messages/{messageId}", m1Id)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
@@ -249,11 +276,13 @@ public class MessageIntegrationTest {
   @DisplayName("실패: 유효하지 않은 메세지 아이디에 대해 메세지 내용 변경 실패(404 not found)")
   void updateMessageContentWithNotExistedMessageIdFailure() throws Exception {
     //given
+    setupSecurityContext(user1, Role.USER);
     UUID wrongMessageId = UUID.randomUUID();
     MessageUpdateRequest request = new MessageUpdateRequest("newContent");
 
     //when & then
     mockMvc.perform(patch("/api/messages/{messageId}", wrongMessageId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
@@ -266,8 +295,10 @@ public class MessageIntegrationTest {
   @Test
   @DisplayName("성공: 메세지 삭제 성공(204 No content)")
   void deleteMessageSuccess() throws Exception {
+    setupSecurityContext(user1, Role.USER);
     //when & then
     mockMvc.perform(delete("/api/messages/{messageId}", m1Id)
+            .with(csrf())
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
 
@@ -282,9 +313,11 @@ public class MessageIntegrationTest {
   void deleteMessageByWrongUserIdFailure() throws Exception {
     //given
     UUID wrongMessageId = UUID.randomUUID();
+    setupSecurityContext(user1, Role.USER);
 
     //when & then
     mockMvc.perform(delete("/api/messages/{messageId}", wrongMessageId)
+            .with(csrf())
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound())
         .andExpect(
@@ -296,6 +329,8 @@ public class MessageIntegrationTest {
   @Test
   @DisplayName("성공: 채널 아이디로 페이지네이션이 적용된 메세지 목록 조회 성공")
   void findMessagesByChannelIdSuccess() throws Exception {
+    //given
+    setupSecurityContext(user1, Role.USER);
     // when & then
     mockMvc.perform(get("/api/messages")
             .param("channelId", c1Id.toString())
@@ -310,6 +345,8 @@ public class MessageIntegrationTest {
   @Test
   @DisplayName("성공: 페이지네이션 기본 값으로 채널 아이디로 페이지네이션이 적용된 메세지 목록 조회 성공")
   void findMessagesByChannelIdWithDefaultPaginationSuccess() throws Exception {
+    //given
+    setupSecurityContext(user1, Role.USER);
     // when & then
     mockMvc.perform(get("/api/messages")
             .param("channelId", c1Id.toString())
