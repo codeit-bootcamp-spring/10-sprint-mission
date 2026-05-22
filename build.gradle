@@ -34,6 +34,7 @@ dependencies {
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'software.amazon.awssdk:s3:2.31.7'
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'com.h2database:h2'
     compileOnly 'org.projectlombok:lombok'
