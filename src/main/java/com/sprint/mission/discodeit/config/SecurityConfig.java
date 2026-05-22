@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import java.util.List;
@@ -15,11 +16,14 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -30,9 +34,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http,
-      LoginSuccessHandler loginSuccessHandler, LoginFailureHandler loginFailureHandler)
-      throws Exception {
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity http,
+      LoginSuccessHandler loginSuccessHandler,
+      LoginFailureHandler loginFailureHandler,
+      SessionRegistry sessionRegistry,
+      DiscodeitUserDetailsService discodeitUserDetailsService
+  ) throws Exception {
     http
         .cors(Customizer.withDefaults()
         )
@@ -49,6 +57,15 @@ public class SecurityConfig {
             .successHandler(loginSuccessHandler)
             .failureHandler(loginFailureHandler)
         )
+
+        // rememberMe 설정
+        .rememberMe(remember -> remember
+            .rememberMeParameter("remember-me")
+            .key("discodeit-remember-me-key")
+            .tokenValiditySeconds(60 * 60 * 24 * 14)
+            .userDetailsService(discodeitUserDetailsService)
+        )
+
         // 로그아웃 성공 시 204 반환
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
@@ -56,7 +73,15 @@ public class SecurityConfig {
                 new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
             )
         )
-        // 예외 반환 (인증 안됨 -> 401 / 권한 없음 -> 403)
+        // 동시 로그인 제한
+        .sessionManagement(management -> management
+            .sessionConcurrency(concurrency -> concurrency
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(false)
+                .sessionRegistry(sessionRegistry)
+            )
+        )
+        // 예외 반환 (인증 안됨 401 / 권한 없음 403)
         .exceptionHandling(ex -> ex
             .authenticationEntryPoint((request, response, authException) -> {
               response.setStatus(HttpStatus.UNAUTHORIZED.value());
@@ -132,5 +157,15 @@ public class SecurityConfig {
 
     handler.setRoleHierarchy(roleHierarchy);
     return handler;
+  }
+
+  @Bean
+  public SessionRegistry sessionRegistry() {
+    return new SessionRegistryImpl();
+  }
+
+  @Bean
+  public HttpSessionEventPublisher httpSessionEventPublisher() {
+    return new HttpSessionEventPublisher();
   }
 }

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.sprint.mission.discodeit.DiscodeitApplicationTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-05-22T07:33:51.327Z" hostname="SER" time="0.497">
+  <properties/>
+  <testcase name="contextLoads()" classname="com.sprint.mission.discodeit.DiscodeitApplicationTests" time="0.497"/>
+  <system-out><![CDATA[16:33:42.699 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.sprint.mission.discodeit.DiscodeitApplicationTests]: DiscodeitApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:33:42.955 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.DiscodeitApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.12)
+
+26-05-22 16:33:43.632 [background-preinit] INFO  o.h.validator.internal.util.Version  [ |  | ] - HV000001: Hibernate Validator 8.0.3.Final
+26-05-22 16:33:43.686 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests    [ |  | ] - Starting DiscodeitApplicationTests using Java 17.0.17 with PID 34036 (started by mjohn in C:\Users\mjohn\codeit\10-sprint-mission\10-sprint-mission)
+26-05-22 16:33:43.687 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests    [ |  | ] - The following 1 profile is active: "dev"
+26-05-22 16:33:45.177 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+26-05-22 16:33:45.303 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Finished Spring Data repository scanning in 112 ms. Found 5 JPA repository interfaces.
+26-05-22 16:33:46.127 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Starting...
+26-05-22 16:33:46.390 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool    [ |  | ] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7641ed02
+26-05-22 16:33:46.393 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Start completed.
+26-05-22 16:33:46.535 [Test worker] INFO  o.h.jpa.internal.util.LogHelper      [ |  | ] - HHH000204: Processing PersistenceUnitInfo [name: default]
+26-05-22 16:33:46.643 [Test worker] INFO  org.hibernate.Version                [ |  | ] - HHH000412: Hibernate ORM core version 6.6.44.Final
+26-05-22 16:33:46.701 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator       [ |  | ] - HHH000026: Second-level cache disabled
+26-05-22 16:33:47.127 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo  [ |  | ] - No LoadTimeWeaver setup: ignoring JPA class transformer
+26-05-22 16:33:47.246 [Test worker] INFO  o.hibernate.orm.connections.pooling  [ |  | ] - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 18.2
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+26-05-22 16:33:48.408 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator   [ |  | ] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+26-05-22 16:33:48.411 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [ |  | ] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+26-05-22 16:33:48.716 [Test worker] INFO  o.s.d.j.r.query.QueryEnhancerFactory [ |  | ] - Hibernate is in classpath; If applicable, HQL parser will be used.
+26-05-22 16:33:49.759 [Test worker] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer [ |  | ] - Global AuthenticationManager configured with UserDetailsService bean with name discodeitUserDetailsService
+26-05-22 16:33:49.883 [Test worker] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping [ |  | ] - Adding welcome page: class path resource [static/index.html]
+26-05-22 16:33:50.254 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver  [ |  | ] - Exposing 1 endpoint beneath base path '/actuator'
+26-05-22 16:33:50.349 [Test worker] DEBUG o.s.s.web.DefaultSecurityFilterChain [ |  | ] - Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, CorsFilter, CsrfFilter, LogoutFilter, UsernamePasswordAuthenticationFilter, ConcurrentSessionFilter, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, RememberMeAuthenticationFilter, AnonymousAuthenticationFilter, ExceptionTranslationFilter, AuthorizationFilter
+26-05-22 16:33:50.981 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests    [ |  | ] - Started DiscodeitApplicationTests in 7.84 seconds (process running for 9.631)
+]]></system-out>
+  <system-err><![CDATA[16:33:43,467 |-WARN in ch.qos.logback.core.joran.action.ConversionRuleAction - [converterClass] attribute is deprecated and replaced by [class]. See element [conversionRule] near line 4
+]]></system-err>
+</testsuite>

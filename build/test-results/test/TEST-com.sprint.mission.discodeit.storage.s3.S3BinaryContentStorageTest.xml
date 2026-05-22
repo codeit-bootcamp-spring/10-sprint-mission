@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorageTest" tests="5" skipped="5" failures="0" errors="0" timestamp="2026-05-14T09:22:07.944Z" hostname="SER" time="0.003">
+<testsuite name="com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorageTest" tests="5" skipped="5" failures="0" errors="0" timestamp="2026-05-22T07:33:55.171Z" hostname="SER" time="0.001">
   <properties/>
-  <testcase name="S3에 저장된 파일을 조회 할 수 있다." classname="com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorageTest" time="0.001">
+  <testcase name="S3에 저장된 파일을 조회 할 수 있다." classname="com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorageTest" time="0.0">
     <skipped/>
   </testcase>
   <testcase name="S3에 저장된 파일을 정상 삭제할 수 있다." classname="com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorageTest" time="0.0">

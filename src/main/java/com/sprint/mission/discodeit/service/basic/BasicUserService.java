@@ -9,28 +9,27 @@ import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.auth.PasswordEmptyException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidParameterException;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserEmailAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.exception.userstatus.StatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,13 +41,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
   private final ReadStatusRepository readStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final UserMapper userMapper;
   private final BinaryContentMapper binaryContentMapper;
   private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
+  private final SessionRegistry sessionRegistry;
 
   @Override
   public UserResponse create(UserCreateRequest request) {
@@ -91,10 +90,9 @@ public class BasicUserService implements UserService {
 
     User savedUser = userRepository.save(user);
 
-    UserStatus userStatus = new UserStatus(savedUser, Instant.now());
-    userStatusRepository.save(userStatus);
+    boolean online = isOnline(savedUser.getId());
 
-    return userMapper.toResponse(savedUser, userStatus, savedUser.getProfileImage());
+    return userMapper.toResponse(savedUser, online, savedUser.getProfileImage());
   }
 
   @Override
@@ -105,14 +103,10 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(userId));
 
-    UserStatus status = userStatusRepository.findByUserId(userId);
-    if (status == null) {
-      throw new StatusNotFoundException(userId);
-    }
-
     BinaryContent profileImage = findProfileImageOrNull(user);
+    boolean online = isOnline(user.getId());
 
-    return userMapper.toResponse(user, status, profileImage);
+    return userMapper.toResponse(user, online, profileImage);
   }
 
   @Override
@@ -120,14 +114,10 @@ public class BasicUserService implements UserService {
   public List<UserResponse> findAll() {
     return userRepository.findAll().stream()
         .map(user -> {
-          UserStatus status = userStatusRepository.findByUserId(user.getId());
-          if (status == null) {
-            throw new StatusNotFoundException(user.getId());
-          }
-
           BinaryContent profileImage = findProfileImageOrNull(user);
+          boolean online = isOnline(user.getId());
 
-          return userMapper.toResponse(user, status, profileImage);
+          return userMapper.toResponse(user, online, profileImage);
         })
         .toList();
   }
@@ -137,20 +127,18 @@ public class BasicUserService implements UserService {
   public List<UserDto> findAllDto() {
     return userRepository.findAll().stream()
         .map(user -> {
-          UserStatus status = userStatusRepository.findByUserId(user.getId());
-          if (status == null) {
-            throw new StatusNotFoundException(user.getId());
-          }
-
           BinaryContent profileImage = findProfileImageOrNull(user);
           BinaryContentDto profileDto =
               profileImage == null ? null : binaryContentMapper.toDto(profileImage);
 
-          return userMapper.toDto(user, status, profileDto);
+          boolean online = isOnline(user.getId());
+
+          return userMapper.toDto(user, online, profileDto);
         })
         .toList();
   }
 
+  @PreAuthorize("@securityExpression.isSelf(#request.userId())")
   @Override
   public UserResponse update(UserUpdateRequest request) {
     requireNonNull(request, "request");
@@ -194,14 +182,10 @@ public class BasicUserService implements UserService {
 
     User savedUser = userRepository.save(user);
 
-    UserStatus status = userStatusRepository.findByUserId(savedUser.getId());
-    if (status == null) {
-      throw new StatusNotFoundException(savedUser.getId());
-    }
-
     BinaryContent profileImage = findProfileImageOrNull(savedUser);
+    boolean online = isOnline(savedUser.getId());
 
-    return userMapper.toResponse(savedUser, status, profileImage);
+    return userMapper.toResponse(savedUser, online, profileImage);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -218,16 +202,16 @@ public class BasicUserService implements UserService {
 
     User savedUser = userRepository.save(user);
 
-    UserStatus status = userStatusRepository.findByUserId(savedUser.getId());
-    if (status == null) {
-      throw new StatusNotFoundException(savedUser.getId());
-    }
+    //권한이 변경된 사용자 로그인중이면 세션만료
+    expireUserSessions(savedUser.getId());
 
     BinaryContent profileImage = findProfileImageOrNull(savedUser);
+    boolean online = isOnline(savedUser.getId());
 
-    return userMapper.toResponse(savedUser, status, profileImage);
+    return userMapper.toResponse(savedUser, online, profileImage);
   }
 
+  @PreAuthorize("@securityExpression.isSelf(#userId)")
   @Override
   public void delete(UUID userId) {
     requireNonNull(userId, "userId");
@@ -261,5 +245,23 @@ public class BasicUserService implements UserService {
     if (value == null) {
       throw new InvalidParameterException(name);
     }
+  }
+
+  private void expireUserSessions(UUID userId) {
+    sessionRegistry.getAllPrincipals().stream()
+        .filter(DiscodeitUserDetails.class::isInstance)
+        .map(DiscodeitUserDetails.class::cast)
+        .filter(principal -> principal.getUserDto().id().equals(userId))
+        .forEach(principal ->
+            sessionRegistry.getAllSessions(principal, false)
+                .forEach(SessionInformation::expireNow)
+        );
+  }
+
+  private boolean isOnline(UUID userId) {
+    return sessionRegistry.getAllPrincipals().stream()
+        .filter(DiscodeitUserDetails.class::isInstance)
+        .map(DiscodeitUserDetails.class::cast)
+        .anyMatch(principal -> principal.getUserDto().id().equals(userId));
   }
 }

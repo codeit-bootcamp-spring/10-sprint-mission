@@ -35,10 +35,6 @@ public class User extends BaseUpdatableEntity {
   @JoinColumn(name = "profile_id")
   private BinaryContent profileImage;
 
-  @OneToOne(mappedBy = "user", fetch = FetchType.LAZY,
-      cascade = CascadeType.ALL, orphanRemoval = true)
-  private UserStatus status;
-
   @Enumerated(EnumType.STRING)
   @Column(name = "role", nullable = false, length = 20)
   private UserRole role = UserRole.USER;
@@ -66,10 +62,6 @@ public class User extends BaseUpdatableEntity {
     return profileImage == null ? null : profileImage.getId();
   }
 
-  public void bindStatus(UserStatus status) {
-    this.status = status;
-  }
-
   public void updateName(String username) {
     this.username = username;
     touch();
@@ -90,13 +82,13 @@ public class User extends BaseUpdatableEntity {
     touch();
   }
 
-  @Override
-  public String toString() {
-    return "이름: " + username + "\n" + "email: " + email;
-  }
-
   public void updateRole(UserRole role) {
     this.role = role;
     touch();
+  }
+
+  @Override
+  public String toString() {
+    return "이름: " + username + "\n" + "email: " + email;
   }
 }

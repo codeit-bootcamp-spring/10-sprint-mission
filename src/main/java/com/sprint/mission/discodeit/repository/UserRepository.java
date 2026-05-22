@@ -21,10 +21,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
       select distinct u
       from User u
       left join fetch u.profileImage
-      left join fetch u.status
       where u.id in :userIds
       """)
-  List<User> findAllByIdInWithProfileImageAndStatus(@Param("userIds") List<UUID> userIds);
+  List<User> findAllByIdInWithProfileImage(@Param("userIds") List<UUID> userIds);
 
   boolean existsByRole(UserRole role);
 }

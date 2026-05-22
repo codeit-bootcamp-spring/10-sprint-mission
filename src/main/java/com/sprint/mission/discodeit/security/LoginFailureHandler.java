@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.session.SessionAuthenticationException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,17 +29,26 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
       AuthenticationException exception
   ) throws IOException, ServletException {
 
+    String code = "LOGIN_FAILED";
+    String message = "로그인 인증에 실패하였습니다.";
+    int status = HttpStatus.UNAUTHORIZED.value();
+
+    if (exception instanceof SessionAuthenticationException) {
+      code = "SESSION_CONCURRENCY_EXCEEDED";
+      message = "이미 로그인된 계정입니다.";
+    }
+
     ErrorResponse errorResponse = new ErrorResponse(
         Instant.now(),
-        HttpStatus.UNAUTHORIZED.value(),
+        status,
         HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-        "LOGIN_FAILED",
-        "로그인 인증에 실패하였습니다.",
+        code,
+        message,
         exception.getClass().getSimpleName(),
         Map.of()
     );
 
-    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    response.setStatus(status);
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setCharacterEncoding("UTF-8");
 

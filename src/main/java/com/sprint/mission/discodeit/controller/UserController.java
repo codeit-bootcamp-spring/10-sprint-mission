@@ -6,14 +6,10 @@ import com.sprint.mission.discodeit.dto.user.ProfileImageCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
-import com.sprint.mission.discodeit.dto.user.UserStatusDto;
-import com.sprint.mission.discodeit.dto.user.UserStatusResponse;
-import com.sprint.mission.discodeit.dto.user.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.exception.binarycontent.FileIOException;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,7 +26,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -44,16 +39,13 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
   private final UserService userService;
-  private final UserStatusService userStatusService;
   private final BinaryContentService binaryContentService;
 
   public UserController(
       UserService userService,
-      UserStatusService userStatusService,
       BinaryContentService binaryContentService
   ) {
     this.userService = userService;
-    this.userStatusService = userStatusService;
     this.binaryContentService = binaryContentService;
   }
 
@@ -107,6 +99,7 @@ public class UserController {
 
     UserResponse created = userService.create(createRequest);
     log.info("사용자가 성공적으로 생성되었습니다. id = {}", created.id());
+
     return ResponseEntity.ok().body(toUserDto(created.id()));
   }
 
@@ -145,6 +138,7 @@ public class UserController {
         userUpdateRequest.password(),
         Optional.ofNullable(readProfile(profile))
     );
+
     UserResponse updated = userService.update(request);
     UserDto userDto = toUserDto(updated.id());
 
@@ -174,36 +168,13 @@ public class UserController {
     log.info("사용자가 정상적으로 삭제되었습니다. id = {}", userId);
   }
 
-  @Operation(summary = "User 온라인 상태 업데이트", operationId = "updateUserStatusByUserId", tags = {
-      "User"})
-  @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "User 온라인 상태가 성공적으로 업데이트됨"),
-      @ApiResponse(
-          responseCode = "404",
-          description = "해당 User의 UserStatus를 찾을 수 없음",
-          content = @Content(
-              mediaType = "*/*",
-              examples = @ExampleObject(value = "UserStatus with userId {userId} not found")
-          )
-      )
-  })
-  @RequestMapping(value = "/{userId}/userStatus", method = RequestMethod.PATCH)
-  public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
-      @Parameter(description = "상태를 변경할 User ID")
-      @PathVariable UUID userId,
-      @Valid @RequestBody UserStatusUpdateRequest request
-  ) {
-    return ResponseEntity.ok(
-        toUserStatusDto(userStatusService.updateByUserId(userId, request.newLastActiveAt()))
-    );
-  }
-
   private UserDto toUserDto(UUID userId) {
     UserResponse user = userService.find(userId);
 
     BinaryContentDto profile = null;
     if (user.profileImageId() != null) {
       BinaryContentResponse binary = binaryContentService.find(user.profileImageId());
+
       profile = new BinaryContentDto(
           binary.id(),
           binary.fileName(),
@@ -222,18 +193,11 @@ public class UserController {
     );
   }
 
-  private UserStatusDto toUserStatusDto(UserStatusResponse response) {
-    return new UserStatusDto(
-        response.id(),
-        response.userId(),
-        response.lastActiveAt()
-    );
-  }
-
   private ProfileImageCreateRequest readProfile(MultipartFile profile) {
     if (profile == null || profile.isEmpty()) {
       return null;
     }
+
     try {
       return new ProfileImageCreateRequest(
           profile.getOriginalFilename(),
