@@ -1,10 +1,10 @@
 services:
   app:
     build: .
-    image: discodeit-backend:1.2-M8
+    image: discodeit-backend:2.0-M9
     restart: always
     ports:
-      - "8081:8080"
+      - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       DB_HOST: ${DB_HOST}
@@ -19,11 +19,14 @@ services:
       AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
       STORAGE_TYPE: ${STORAGE_TYPE}
       LOCAL_STORAGE_ROOT_PATH: ${LOCAL_STORAGE_ROOT_PATH}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
 
   web-server:
     build:
-      context: ./0-sprint-mission-front-1.2.3
-    image: discodeit-frontend:1.2.3
+      context: discodeit-front
+    image: discodeit-frontend:2.0.7
     restart: always
     depends_on:
       - app
@@ -31,7 +34,6 @@ services:
       - "80:80"
     volumes:
       - local-uploads:/usr/share/nginx/html/uploads
-      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template
     environment:
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
       AWS_S3_REGION: ${AWS_S3_REGION}

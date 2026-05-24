@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.UserStatusDto;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.mapper.config.GlobalMapperConfig;
+import com.sprint.mission.discodeit.common.mapper.config.GlobalMapperConfig;
+import com.sprint.mission.discodeit.userstatus.dto.UserStatusDto;
+import com.sprint.mission.discodeit.userstatus.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.userstatus.entity.UserStatus;
 import java.time.Instant;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

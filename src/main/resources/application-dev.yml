@@ -1,6 +1,6 @@
 springdoc:
   swagger-ui:
-    url: /api/api-docs_1.2.json
+    url: /api.json
 
 spring:
   datasource:
@@ -16,7 +16,7 @@ spring:
     defer-datasource-initialization: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
         jdbc.batch_size: 100
         order_inserts: true
         order_updates: true
@@ -29,6 +29,7 @@ logging:
     com.sprint.mission.discodeit: debug
     org.hibernate.orm.jdbc.bind: warn
     org.hibernate.SQL: warn
+    org.springframework.security: trace
 
   file:
     name: .logs/discodeit.log

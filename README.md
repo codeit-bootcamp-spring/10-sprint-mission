@@ -1,7 +1,11 @@
 # 10-spring-mission
-discode clone coding
+Discode clone coding
 
 ---
+
+- mission-9
+  - spring security
+    - authentication, authorization
 
 - mission-8
   - Dockerfile
@@ -68,7 +72,7 @@ LOCAL_STORAGE_ROOT_PATH=.discodeit/storage
 AWS_S3_ACCESS_KEY=
 AWS_S3_SECRET_KEY=
 AWS_S3_BUCKET=
-AWS_S3_REGION=
+AWS_S3_REGION=ap-northeast-2
 AWS_S3_PRESIGNED_URL_EXPIRATION=
 
 ```

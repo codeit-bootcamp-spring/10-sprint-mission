@@ -1,35 +1,11 @@
-# nginx.conf.template
-nginx.conf.template
-
-# docker-compose
-docker-compose.override.yml
-
-# Git 관련 파일
-.git
-.gitignore
-.github
-readme.md
-
-# 로컬 빌드 결과물 (도커 안에서 새로 빌드할 거니까 로컬 찌꺼기는 무시)
-build/
-out/
-.gradle/
-
-# intellij 설정
+README.md
+postman
+discodeit-front
+db-data
+build
+.logs
 .idea
-*.iml
-
-# front page
-0-sprint-mission-front-1.2.3/
-
-# postman legacy
-postman/
-
-# log
-.logs/
-
-# local storage
-.discodeit/
-
-# db-data
-db-data/
+.gradle
+.github
+.discodeit
+.gitignore

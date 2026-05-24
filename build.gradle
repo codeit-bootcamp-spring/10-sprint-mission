@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '1.2-M8'
+version = '2.0-M9'
 
 repositories {
     mavenCentral()
@@ -29,6 +29,7 @@ dependencies {
     implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui')
     implementation('org.springframework.boot:spring-boot-starter-data-jpa')
     implementation('org.springframework.boot:spring-boot-starter-aop')
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation('software.amazon.awssdk:s3')
     implementation('org.flywaydb:flyway-core')
     implementation('org.flywaydb:flyway-database-postgresql')
@@ -51,13 +52,22 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation('org.springframework.boot:spring-boot-starter-test')
-    testImplementation('com.h2database:h2')
+    testImplementation 'org.springframework.security:spring-security-test'
     testImplementation('org.testcontainers:postgresql')
     testImplementation('org.testcontainers:junit-jupiter')
 
     testImplementation platform('org.instancio:instancio-bom:6.0.0-RC2')
     testImplementation('org.instancio:instancio-core')
     testImplementation('org.instancio:instancio-junit')
+}
+
+tasks.register('copyFrontApiJson', Copy) {
+    from "${project.rootDir}/discodeit-front/api.json"
+    into "${project.projectDir}/src/main/resources/static"
+}
+
+tasks.named('processResources') {
+    dependsOn copyFrontApiJson
 }
 
 test {
