@@ -70,9 +70,6 @@ public class SecurityConfig {
       JwtAuthenticationFilter jwtAuthenticationFilter)
       throws Exception {
     return http
-        // RememberMe 사용 시 세션 무효화되어도 자동으로 로그인
-        .rememberMe()
-        .and()
         // csrf 관련 설정
         .csrf(csrf -> csrf
             .ignoringRequestMatchers("/h2-console/**") // h2 콘솔로 들어가는 요청은 csrf 무시
