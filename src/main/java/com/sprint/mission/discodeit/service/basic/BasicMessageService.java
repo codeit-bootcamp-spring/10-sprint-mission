@@ -111,7 +111,7 @@ public class BasicMessageService implements MessageService {
     return pageResponseMapper.fromSlice(slice, nextCursor);
   }
 
-  @PreAuthorize("@messagePermissionEvaluator.isAuthor(#messageId, authentication.principal)")
+  @PreAuthorize("principal.userDto.id == @basicMessageService.find(#messageId).author.id")
   @Transactional
   @Override
   public MessageDto update(UUID messageId, MessageUpdateRequest request) {
@@ -124,7 +124,7 @@ public class BasicMessageService implements MessageService {
     return messageMapper.toDto(message);
   }
 
-  @PreAuthorize("@messagePermissionEvaluator.isAuthor(#messageId, authentication.principal)")
+  @PreAuthorize("principal.userDto.id == @basicMessageService.find(#messageId).author.id")
   @Transactional
   @Override
   public void delete(UUID messageId) {

@@ -2,16 +2,17 @@ package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.security.SessionManager;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(componentModel = "spring", uses = {BinaryContentMapper.class})
-public interface UserMapper {
+public abstract class UserMapper {
 
-  @Mapping(target = "online", source = "online")
-  UserDto toDto(User user, Boolean online);
+  @Autowired
+  protected SessionManager sessionManager;
 
-  default UserDto toDto(User user) {
-    return toDto(user, false);
-  }
+  @Mapping(target = "online", expression = "java(sessionManager.hasActiveSessions(user.getId()))")
+  public abstract UserDto toDto(User user);
 }
