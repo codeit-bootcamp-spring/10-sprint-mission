@@ -7,6 +7,7 @@ import java.util.Map;
 public class InvalidBinaryContentException extends BinaryContentException{
 
     public InvalidBinaryContentException(String reason) {
-        super(ErrorCode.INVALID_BINARY_CONTENT, Map.of("reason", reason));
+        super(ErrorCode.INVALID_BINARY_CONTENT);
+        addDetail("reason", reason);
     }
 }

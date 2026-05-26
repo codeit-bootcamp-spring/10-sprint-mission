@@ -1,22 +1,26 @@
 server:
-  port: ${SERVER_PORT:8081}
+  port: 80
 
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-
   jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: false
     properties:
       hibernate:
         format_sql: false
 
 logging:
   level:
-    root: info
+    com.sprint.mission.discodeit: info
     org.hibernate.SQL: info
+    org.springframework.security: trace
+
+management:
+  endpoint:
+    health:
+      show-details: never
+  info:
+    env:
+      enabled: false

@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class BinaryContentProcessingException extends BinaryContentException{
     public BinaryContentProcessingException(String reason){
-        super(ErrorCode.BINARY_CONTENT_PROCESSING_ERROR,
-                Map.of("reason", reason));
+        super(ErrorCode.BINARY_CONTENT_PROCESSING_ERROR);
+        addDetail("reason", reason);
     }
 }
