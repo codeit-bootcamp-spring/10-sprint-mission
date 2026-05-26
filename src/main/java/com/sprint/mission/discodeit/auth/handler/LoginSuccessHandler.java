@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.handler;
+package com.sprint.mission.discodeit.auth.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.UserDto;
@@ -19,7 +19,7 @@ import java.io.IOException;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
+//@Component
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper objectMapper;
 

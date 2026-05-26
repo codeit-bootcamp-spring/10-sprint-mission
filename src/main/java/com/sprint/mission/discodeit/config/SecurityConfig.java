@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
-import com.sprint.mission.discodeit.handler.LoginFailureHandler;
-import com.sprint.mission.discodeit.handler.LoginSuccessHandler;
-import com.sprint.mission.discodeit.handler.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.auth.handler.*;
 import com.sprint.mission.discodeit.service.details.DiscodeitUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,10 +11,9 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,7 +29,7 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler, LoginFailureHandler loginFailureHandler, AuthenticationEntryPoint authenticationEntryPoint, AccessDeniedHandler accessDeniedHandler, SessionRegistry sessionRegistry, UserDetailsService userDetailsService, DiscodeitUserDetailsService discodeitUserDetailsService) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler, LoginFailureHandler loginFailureHandler, AuthenticationEntryPoint authenticationEntryPoint, AccessDeniedHandler accessDeniedHandler, SessionRegistry sessionRegistry, UserDetailsService userDetailsService, DiscodeitUserDetailsService discodeitUserDetailsService, JwtLoginSuccessHandler jwtLoginSuccessHandler, JwtLogoutHandler jwtLogoutHandler) throws Exception {
         http
                 .headers().frameOptions().sameOrigin()
                 .and()
@@ -54,6 +51,7 @@ public class SecurityConfig {
                                 "/api/auth/csrf-token",
                                 "/api/auth/login",
                                 "/api/auth/logout",
+                                "/api/auth/refresh",
                                 "/api/users",
                                 "/swagger-ui/**",
                                 "/actuator/**"
@@ -62,12 +60,13 @@ public class SecurityConfig {
                 )
                 .formLogin(login -> login
                         .loginProcessingUrl("/api/auth/login")
-                        .successHandler(loginSuccessHandler)
+                        .successHandler(jwtLoginSuccessHandler)
                         .failureHandler(loginFailureHandler)
                 )
 //                .loginPage("/auths/login-form")
 //                .loginProcessingUrl("/process_login")
 //                .failureUrl("/auths/login-form?error")
+                /*
                 .rememberMe(remember -> remember
                         .rememberMeParameter("remember-me")
                         .rememberMeCookieName("my-rememeber-me")
@@ -75,12 +74,14 @@ public class SecurityConfig {
                         .key("my-remember-key")
                         .userDetailsService(discodeitUserDetailsService)
                 )
+                 */
                 // 로그아웃 관련 설정 추가
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(
                                 HttpStatus.NO_CONTENT
                         ))
+                        .addLogoutHandler(jwtLogoutHandler)
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint)
@@ -88,11 +89,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session
                         .sessionFixation(fixation -> fixation.changeSessionId())
-                        .sessionConcurrency(concurrency -> concurrency
-                                .maximumSessions(1)
-                                .maxSessionsPreventsLogin(true)
-                                .sessionRegistry(sessionRegistry)
-                        )
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
 
         return http.build();
