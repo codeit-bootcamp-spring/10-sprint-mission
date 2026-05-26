@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,12 +15,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtTokenProvider jwtTokenProvider;
   private final DiscodeitUserDetailsService discodeitUserDetailsService;
+  private final JwtRegistry jwtRegistry;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -30,20 +33,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // 2. 토큰이 유효한지 검증
     if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
-      // 2-1. 토큰에서 Subject(UUID) 문자열 추출
-      String subject = jwtTokenProvider.getSubjectFromToken(token);
+      // Registry 검사 통과 시에만 인증 주입
+      if (jwtRegistry.hasActiveJwtInformationByAccessToken(token)) {
+        String subject = jwtTokenProvider.getSubjectFromToken(token);
+        UUID userId = UUID.fromString(subject);
+        UserDetails userDetails = discodeitUserDetailsService.loadUserById(userId);
 
-      // 2-2. 문자열을 UUID 객체로 변환
-      UUID userId = UUID.fromString(subject);
-
-      // 2-3. UUID로 유저 상세 정보를 조회
-      UserDetails userDetails = discodeitUserDetailsService.loadUserById(userId);
-
-      // 2-4. 인증 완료 처리 (SecurityContext에 등록)
-      UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-          userDetails, null, userDetails.getAuthorities());
-
-      SecurityContextHolder.getContext().setAuthentication(authentication);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+      } else {
+        // 서명은 맞지만 Registry에 없는 토큰 예외
+        log.warn("Valid token provided but not found in JwtRegistry. accessToken: {}", token);
+      }
     }
 
     // 3. 다음 필터로 이동

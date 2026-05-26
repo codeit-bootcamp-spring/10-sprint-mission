@@ -2,12 +2,14 @@ package com.sprint.mission.discodeit.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.auth.JwtDto;
+import com.sprint.mission.discodeit.dto.auth.JwtInformation;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,6 +23,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
   private final JwtTokenProvider jwtTokenProvider;
   private final ObjectMapper objectMapper;
+  private final JwtRegistry jwtRegistry;
 
   // 인증 성공 시 엑세스 토큰은 Body에, 리프레시 토큰은 쿠키에 저장하여 응답
   @Override
@@ -35,14 +38,19 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     String accessToken = jwtTokenProvider.createAccessToken(userDetails);
     String refreshToken = jwtTokenProvider.createRefreshToken(userDetails);
 
-    // 3. 리프레시 토큰 쿠키 저장
+    // 3. Registry에 토큰 정보 등록
+    Instant expiresAt = jwtTokenProvider.getExpirationFromToken(refreshToken);
+    JwtInformation jwtInfo = new JwtInformation(userDto, accessToken, refreshToken, expiresAt);
+    jwtRegistry.registerJwtInformation(jwtInfo);
+
+    // 4. 리프레시 토큰 쿠키 저장
     Cookie refreshTokenCookie = new Cookie(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME,
         refreshToken);
     refreshTokenCookie.setHttpOnly(true);
     refreshTokenCookie.setPath("/");
     response.addCookie(refreshTokenCookie);
 
-    // 4. 엑세스 토큰과 UserDto를 함께 Body에 JSON 응답
+    // 5. 엑세스 토큰과 UserDto를 함께 Body에 JSON 응답
     JwtDto jwtDto = new JwtDto(userDto, accessToken);
 
     response.setStatus(HttpStatus.OK.value());
