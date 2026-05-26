@@ -79,6 +79,8 @@ CREATE TABLE refresh_tokens
     id    UUID PRIMARY KEY,
     token VARCHAR(500) NOT NULL,
     email VARCHAR(100) NOT NULL,
+    created_at   TIMESTAMPTZ NOT NULL,
+    updated_at   TIMESTAMPTZ,
 
     CONSTRAINT uk_refresh_tokens_token UNIQUE (token),
     CONSTRAINT uk_refresh_tokens_email UNIQUE (email)
