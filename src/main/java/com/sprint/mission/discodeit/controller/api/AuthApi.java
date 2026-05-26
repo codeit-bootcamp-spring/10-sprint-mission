@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.controller.api;
 
+import com.sprint.mission.discodeit.dto.auth.JwtDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,8 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -28,23 +28,6 @@ public interface AuthApi {
   })
   ResponseEntity<Void> getCsrfToken(
       @Parameter(hidden = true) CsrfToken csrfToken
-  );
-
-  @Operation(summary = "내 정보 조회 (현재 로그인된 사용자)")
-  @ApiResponses(value = {
-      @ApiResponse(
-          responseCode = "200",
-          description = "내 정보 조회 성공",
-          content = @Content(schema = @Schema(implementation = UserDto.class))
-      ),
-      @ApiResponse(
-          responseCode = "401",
-          description = "인증되지 않은 사용자 (세션 없음 또는 만료)",
-          content = @Content(examples = @ExampleObject(value = "Unauthorized access attempt"))
-      )
-  })
-  ResponseEntity<UserDto> getMe(
-      @Parameter(hidden = true) @AuthenticationPrincipal DiscodeitUserDetails userDetails
   );
 
   @Operation(summary = "사용자 권한 변경 (ADMIN 전용)")
@@ -67,5 +50,23 @@ public interface AuthApi {
   })
   ResponseEntity<UserDto> updateRole(
       @Parameter(description = "변경할 대상의 ID와 새로운 권한 정보") @RequestBody UserRoleUpdateRequest request
+  );
+
+  @Operation(summary = "엑세스 토큰 재발급 (Refresh Token 활용)")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200",
+          description = "토큰 재발급 성공",
+          content = @Content(schema = @Schema(implementation = JwtDto.class))
+      ),
+      @ApiResponse(
+          responseCode = "401",
+          description = "유효하지 않거나 만료된 리프레시 토큰",
+          content = @Content(examples = @ExampleObject(value = "Invalid refresh token"))
+      )
+  })
+  ResponseEntity<JwtDto> refresh(
+      @Parameter(hidden = true) String refreshToken,
+      @Parameter(hidden = true) HttpServletResponse response
   );
 }

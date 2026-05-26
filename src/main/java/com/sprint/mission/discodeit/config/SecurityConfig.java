@@ -87,6 +87,8 @@ public class SecurityConfig {
             .permitAll() // 로그인
             .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/logout")
             .permitAll() // 로그아웃
+            .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/refresh")
+            .permitAll() // 토큰 재발급
             .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**",
                 "/actuator/**").permitAll() // API가 아닌 요청(Swagger, Actuator)
             // 그 외의 모든 요청은 반드시 인증되어야 함
