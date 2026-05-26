@@ -94,6 +94,11 @@ public class JwtTokenProvider {
         throw new RuntimeException("JWT 검증 실패");
       }
 
+      Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+      if (expirationTime != null && expirationTime.before(new Date())) {
+        throw new RuntimeException("JWT 토큰이 만료되었습니다.");
+      }
+
       JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
       return claimsSet.getClaims();
     } catch (Exception e) {
@@ -113,6 +118,17 @@ public class JwtTokenProvider {
       return signedJWT.getJWTClaimsSet().getSubject();
     } catch (Exception e) {
       throw new RuntimeException("JWT 파싱 실패", e);
+    }
+  }
+
+  public boolean isExpired(String token) {
+    try {
+      SignedJWT signedJWT = SignedJWT.parse(token);
+      Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+      return expirationTime == null || expirationTime.before(new Date());
+    } catch (Exception e) {
+      // 파싱 실패 시에도 유효하지 않음으로 삭제
+      return true;
     }
   }
 }

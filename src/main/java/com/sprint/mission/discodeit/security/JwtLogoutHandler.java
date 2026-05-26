@@ -35,8 +35,7 @@ public class JwtLogoutHandler implements LogoutHandler {
           String refreshToken = cookie.getValue();
 
           if (jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
-            String subject = jwtTokenProvider.getSubject(refreshToken);
-            UUID userId = UUID.fromString(subject);
+            UUID userId = UUID.fromString(jwtTokenProvider.getSubject(refreshToken));
             jwtRegistry.invalidateJwtInformationByUserId(userId);
 
             ResponseCookie expiredCookie = ResponseCookie.from(

@@ -2,7 +2,9 @@ package com.sprint.mission.discodeit.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.jwt.JwtDto;
+import com.sprint.mission.discodeit.dto.jwt.JwtInformation;
 import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.registry.JwtRegistry;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +25,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
   private final JwtTokenProvider jwtTokenProvider;
   private final ObjectMapper objectMapper;
+  private final JwtRegistry jwtRegistry;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -34,11 +37,15 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
       response.setStatus(200);
       UserDto userDto = userDetails.getUserDto();
       String accessToken = delegateAccessToken(userDto);
+      String refreshToken = delegateRefreshToken(userDto);
+
       JwtDto jwtDto = new JwtDto(userDto, accessToken);
       String json = objectMapper.writeValueAsString(jwtDto);
       response.getWriter().write(json);
 
-      String refreshToken = delegateRefreshToken(userDto);
+      JwtInformation jwtInformation = new JwtInformation(userDto, accessToken, refreshToken);
+      jwtRegistry.registerJwtInformation(jwtInformation);
+
       Cookie refreshTokenCookie = new Cookie(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME,
           refreshToken);
       refreshTokenCookie.setHttpOnly(true);

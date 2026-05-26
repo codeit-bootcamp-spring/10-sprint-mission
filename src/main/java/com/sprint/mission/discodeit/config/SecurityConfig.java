@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.security.DiscodeitAuthenticationEntryPoint;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.HttpStatusReturningLogoutSuccessHandler;
 import com.sprint.mission.discodeit.security.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.security.JwtLogoutHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import com.sprint.mission.discodeit.security.JwtLoginSuccessHandler;
@@ -37,25 +38,28 @@ public class SecurityConfig {
   private final DiscodeitAuthenticationEntryPoint authenticationEntryPoint;
   private final DiscodeitAccessDeniedHandler accessDeniedHandler;
   private final DiscodeitUserDetailsService userDetailsService;
-  private final JwtLoginSuccessHandler loginSuccessHandler;
+  private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final JwtLogoutHandler jwtLogoutHandler;
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .csrf(csrf -> csrf
+            .ignoringRequestMatchers("/api/auth/refresh")
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(spaCsrfTokenRequestHandler)
         )
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
-            .successHandler(loginSuccessHandler)
+            .successHandler(jwtLoginSuccessHandler)
             .failureHandler(loginFailureHandler)
         )
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
             .logoutSuccessHandler(logoutSuccessHandler)
+            .addLogoutHandler(jwtLogoutHandler)
         )
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/").permitAll()
