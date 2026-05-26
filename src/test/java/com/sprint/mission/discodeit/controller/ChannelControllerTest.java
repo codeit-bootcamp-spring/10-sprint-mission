@@ -28,6 +28,9 @@ import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.security.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.security.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 @AutoConfigureMockMvc(addFilters = false)
@@ -42,6 +45,15 @@ class ChannelControllerTest {
 
 	@MockitoBean
 	private ChannelService channelService;
+
+	@MockitoBean
+	private JwtLoginSuccessHandler jwtLoginSuccessHandler;
+
+	@MockitoBean
+	private LoginFailureHandler loginFailureHandler;
+
+	@MockitoBean
+	private JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	@Test
 	@DisplayName("공개 채널 생성 성공 테스트")

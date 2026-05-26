@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -30,6 +31,7 @@ import org.springframework.util.StringUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
+import com.sprint.mission.discodeit.security.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
@@ -54,7 +56,8 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(
 		HttpSecurity http,
-		UserDetailsService userDetailsService
+		UserDetailsService userDetailsService,
+		JwtAuthenticationFilter jwtAuthenticationFilter
 	) throws Exception {
 		validateSecurityProperties();
 
@@ -90,6 +93,7 @@ public class SecurityConfig {
 			.sessionManagement(management -> management
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			)
+			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 			.exceptionHandling(exception -> exception
 				.authenticationEntryPoint((request, response, authException) -> {
 					ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
