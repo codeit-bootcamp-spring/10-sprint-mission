@@ -67,7 +67,8 @@ public class SecurityConfig {
       JwtLoginSuccessHandler jwtLoginSuccessfulHandler,
       LoginFailureHandler loginFailureHandler,
       SessionRegistry sessionRegistry,
-      JwtAuthenticationFilter jwtAuthenticationFilter)
+      JwtAuthenticationFilter jwtAuthenticationFilter,
+      JwtLogoutHandler jwtLogoutHandler)
       throws Exception {
     return http
         // csrf 관련 설정
@@ -139,6 +140,7 @@ public class SecurityConfig {
             .logoutUrl("/api/auth/logout")
             .logoutSuccessHandler(
                 new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+            .addLogoutHandler(jwtLogoutHandler)
         )
 
         // 동시 세션 제어
