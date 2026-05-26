@@ -1,5 +1,6 @@
-package com.sprint.mission.discodeit.auth;
+package com.sprint.mission.discodeit.auth.checker;
 
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -7,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Principal;
 import java.util.UUID;
 
 @Component("messageChecker")

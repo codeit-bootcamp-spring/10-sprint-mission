@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.auth;
+package com.sprint.mission.discodeit.auth.checker;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.enums.ChannelType;

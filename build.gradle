@@ -46,6 +46,8 @@ dependencies {
 	testImplementation 'com.h2database:h2'
 	runtimeOnly 'org.postgresql:postgresql'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
 }
 
 tasks.named('test') {
