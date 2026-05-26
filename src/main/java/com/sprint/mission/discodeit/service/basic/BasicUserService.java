@@ -15,15 +15,12 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
-import com.sprint.mission.discodeit.security.UserOnlineStatusChecker;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,8 +40,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentMapper binaryContentMapper;
 
     private final PasswordEncoder passwordEncoder;
-    private final SessionRegistry sessionRegistry;
-    private final UserOnlineStatusChecker checker;
+    private final JwtRegistry jwtRegistry;
 
     @Override
     public UserDto createUser(CreateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
@@ -81,7 +77,7 @@ public class BasicUserService implements UserService {
         }
 
         log.info("[USER_CREATE_SUCCESS] 유저 생성 성공: userId={}", savedUser.getId());
-        return userMapper.toDto(savedUser, checker.isOnline(savedUser.getId()));
+        return userMapper.toDto(savedUser, jwtRegistry.hasActiveJwtInformationByUserId(savedUser.getId()));
     }
 
     @Override
@@ -89,13 +85,13 @@ public class BasicUserService implements UserService {
     public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
 
-        return userMapper.toDtoList(users, checker::isOnline);
+        return userMapper.toDtoList(users, jwtRegistry::hasActiveJwtInformationByUserId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserDto findByUserId(UUID userId) {
-        return userMapper.toDto(findUserOrThrow(userId), checker.isOnline(userId));
+        return userMapper.toDto(findUserOrThrow(userId), jwtRegistry.hasActiveJwtInformationByUserId(userId));
     }
 
     @PreAuthorize("#userId == authentication.principal.id")
@@ -124,7 +120,7 @@ public class BasicUserService implements UserService {
         }
 
         log.info("[USER_UPDATE_SUCCESS] 유저 정보 수정 성공: userId={}", user.getId());
-        return userMapper.toDto(user, checker.isOnline(user.getId()));
+        return userMapper.toDto(user, jwtRegistry.hasActiveJwtInformationByUserId(user.getId()));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -133,11 +129,10 @@ public class BasicUserService implements UserService {
         User user = findUserOrThrow(dto.userId());
 
         user.updateRole(dto.newRole());
-        // 권한 업데이트 성공 후 로그인 세션 만료시키기
-        expiredUserSessions(user.getId());
+        jwtRegistry.invalidateJwtInformationByUserId(user.getId());
 
         log.info("[USER_ROLE_UPDATE_SUCCESS] 유저 역할 수정 성공: userId={}, role={}", user.getId(), user.getRole());
-        return userMapper.toDto(user, checker.isOnline(user.getId()));
+        return userMapper.toDto(user, jwtRegistry.hasActiveJwtInformationByUserId(user.getId()));
     }
 
     @PreAuthorize("#userId == authentication.principal.id")
@@ -226,15 +221,5 @@ public class BasicUserService implements UserService {
     private void updatePassword(UpdateUserRequestDTO dto, User user) {
         String encodedPassword = passwordEncoder.encode(dto.newPassword());
         user.updatePassword(encodedPassword);
-    }
-
-    private void expiredUserSessions(UUID userId) {
-        sessionRegistry.getAllPrincipals().stream()
-                .filter(principal -> principal instanceof DiscodeitUserDetails)
-                .map(principal -> (DiscodeitUserDetails) principal)
-                .filter(userDetails -> userDetails.getUserDto().id().equals(userId))
-                .forEach(userDetails ->
-                        sessionRegistry.getAllSessions(userDetails, false)
-                                .forEach(SessionInformation::expireNow));
     }
 }

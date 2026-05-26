@@ -68,7 +68,7 @@ public class JwtTokenProvider {
                     .subject(subject)
                     .expirationTime(expiration)
                     .issueTime(new Date())
-                    .issuer("example.com")
+                    .issuer("discodeit")
                     .build();
 
             // 서명 분리
@@ -96,6 +96,15 @@ public class JwtTokenProvider {
             return claimsSet.getClaims();
         } catch (Exception e) {
             throw new RuntimeException("JWT 파싱 실패", e);
+        }
+    }
+
+    public String getSubject(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            return signedJWT.getJWTClaimsSet().getSubject();
+        } catch (Exception e) {
+            throw new RuntimeException("JWT subject 추출 실패", e);
         }
     }
 
