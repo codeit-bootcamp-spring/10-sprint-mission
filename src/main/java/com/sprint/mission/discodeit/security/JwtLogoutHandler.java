@@ -33,18 +33,22 @@ public class JwtLogoutHandler implements LogoutHandler {
         .findFirst()
         .ifPresent(cookie -> {
           String refreshToken = cookie.getValue();
+          ResponseCookie expiredCookie = ResponseCookie.from(
+                  JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, "")
+              .httpOnly(true)
+              .path("/")
+              .maxAge(0)
+              .build();
+          response.addHeader(HttpHeaders.SET_COOKIE, expiredCookie.toString());
+          log.debug("[LOGOUT] 브라우저 쿠키 정상 삭제 완료");
 
-          if (jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
-            UUID userId = UUID.fromString(jwtTokenProvider.getSubject(refreshToken));
-            jwtRegistry.invalidateJwtInformationByUserId(userId);
-
-            ResponseCookie expiredCookie = ResponseCookie.from(
-                    JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, "")
-                .httpOnly(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-            response.addHeader(HttpHeaders.SET_COOKIE, expiredCookie.toString());
+          try {
+            if (jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
+              UUID userId = UUID.fromString(jwtTokenProvider.getSubject(refreshToken));
+              jwtRegistry.invalidateJwtInformationByUserId(userId);
+            }
+          } catch (Exception e) {
+            log.warn("[LOGOUT] 만료되거나 유효하지 않은 Refresh Token의 접근");
           }
         });
   }

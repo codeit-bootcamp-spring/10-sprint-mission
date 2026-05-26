@@ -6,8 +6,6 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.registry.JwtRegistry;
 import com.sprint.mission.discodeit.security.JwtTokenProvider;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
@@ -54,7 +52,8 @@ public class InMemoryJwtRegistry implements JwtRegistry {
   @Override
   public boolean hasActiveJwtInformationByUserId(UUID userId) {
     // 사용자의 로그인 상태를 판단할 때 활용합니다.
-    return origin.containsKey(userId);
+    Queue<JwtInformation> queue = origin.get(userId);
+    return queue != null && !queue.isEmpty();
   }
 
   @Override
@@ -85,7 +84,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     if (queue != null) {
       boolean isRemoved = queue.removeIf(info -> info.refreshToken().equals(oldRefreshToken));
       if (!isRemoved) {
-        log.warn("토큰이 삭제되지 않음 RefreshToken={}", oldRefreshToken);
+        log.warn("[JWT] 토큰이 삭제되지 않음 RefreshToken={}", oldRefreshToken);
         throw new DiscodeitUnauthorizedException();
       }
       queue.offer(newJwtInformation);
@@ -98,7 +97,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
   @Override
   public void clearExpiredJwtInformation() {
     //만료된 JwtInformation을 삭제합니다.
-    log.debug("만료된 JwtInformation 삭제 스케줄러 가동");
+    log.debug("[JWT] 만료된 JwtInformation 삭제 스케줄러 가동");
     origin.values().forEach(queue -> queue
         .removeIf(info -> jwtTokenProvider.isExpired(info.refreshToken()))
     );

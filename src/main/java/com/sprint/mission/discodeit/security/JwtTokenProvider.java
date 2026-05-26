@@ -12,7 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 import lombok.Getter;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -81,7 +80,7 @@ public class JwtTokenProvider {
       signedJWT.sign(signer);
       return signedJWT.serialize();
     } catch (Exception e) {
-      throw new RuntimeException("JWT 발급 실패", e);
+      throw new RuntimeException("[JWT] JWT 발급 실패", e);
     }
   }
 
@@ -91,18 +90,18 @@ public class JwtTokenProvider {
       JWSVerifier verifier = new MACVerifier(secretKey.getBytes(StandardCharsets.UTF_8));
 
       if (!signedJWT.verify(verifier)) {
-        throw new RuntimeException("JWT 검증 실패");
+        throw new RuntimeException("[JWT] JWT 검증 실패");
       }
 
       Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
       if (expirationTime != null && expirationTime.before(new Date())) {
-        throw new RuntimeException("JWT 토큰이 만료되었습니다.");
+        throw new RuntimeException("[JWT] JWT 토큰이 만료되었습니다.");
       }
 
       JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
       return claimsSet.getClaims();
     } catch (Exception e) {
-      throw new RuntimeException("JWT 파싱 실패", e);
+      throw new RuntimeException("[JWT] JWT 파싱 실패", e);
     }
   }
 
@@ -112,12 +111,17 @@ public class JwtTokenProvider {
       JWSVerifier verifier = new MACVerifier(secretKey.getBytes(StandardCharsets.UTF_8));
 
       if (!signedJWT.verify(verifier)) {
-        throw new RuntimeException("JWT 검증 실패");
+        throw new RuntimeException("[JWT] JWT 검증 실패");
+      }
+
+      Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+      if (expirationTime != null && expirationTime.before(new Date())) {
+        throw new RuntimeException("[JWT] JWT 토큰이 만료되었습니다.");
       }
 
       return signedJWT.getJWTClaimsSet().getSubject();
     } catch (Exception e) {
-      throw new RuntimeException("JWT 파싱 실패", e);
+      throw new RuntimeException("[JWT] JWT 파싱 실패", e);
     }
   }
 
