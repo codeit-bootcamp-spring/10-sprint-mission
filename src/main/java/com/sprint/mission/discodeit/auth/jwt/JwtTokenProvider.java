@@ -122,15 +122,16 @@ public class JwtTokenProvider {
             // 토큰에 저장한 정보 꺼냄
             String email = claimsSet.getSubject();
             String roleString = claimsSet.getStringClaim("role");
-            Role role = Role.valueOf(roleString);
+            Role role = Role.valueOf(getSimpleRole(roleString));
             UUID id = UUID.fromString(claimsSet.getStringClaim("id"));
             String username = claimsSet.getStringClaim("username");
 
             SimpleGrantedAuthority authority = new SimpleGrantedAuthority(roleString);
 
             UserDto userDto = new UserDto(id, username, email, null, role, true);
+            DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, null);
 
-            return new UsernamePasswordAuthenticationToken(userDto, null, Collections.singleton(authority));
+            return new UsernamePasswordAuthenticationToken(userDetails, null, Collections.singleton(authority));
         } catch (ParseException e) {
             throw new RuntimeException("토큰에서 정보를 추출할 수 없습니다");
         }
@@ -145,5 +146,9 @@ public class JwtTokenProvider {
         } catch (ParseException e){
             throw new RuntimeException("토큰에서 이메일을 추출할 수 없습니다");
         }
+    }
+
+    private String getSimpleRole(String role){
+        return role.substring(5);
     }
 }
