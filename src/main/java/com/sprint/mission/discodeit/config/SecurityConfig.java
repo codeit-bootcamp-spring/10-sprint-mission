@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.security.CustomAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.CustomAuthenticationEntryPoint;
 import com.sprint.mission.discodeit.security.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.JwtLogoutHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class SecurityConfig {
   private final CustomAccessDeniedHandler customAccessDeniedHandler;
   private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final JwtLogoutHandler jwtLogoutHandler;
 
   @Bean
   public PasswordEncoder passwordEncoder() {
@@ -112,8 +114,9 @@ public class SecurityConfig {
         // 로그아웃 설정
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout") // Security 필터가 낚아챌 로그아웃 URL
-            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(
-                HttpStatus.NO_CONTENT)) // 302 리다이렉트 대신 204 응답 반환
+            .addLogoutHandler(jwtLogoutHandler)
+            .logoutSuccessHandler(
+                new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
         );
     return http.build();
   }
