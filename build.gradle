@@ -53,6 +53,8 @@ dependencies {
 
 	// Spring security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	// JWT
+	implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
 }
 
 tasks.named('test') {
