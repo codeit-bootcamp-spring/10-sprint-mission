@@ -4,14 +4,11 @@ import com.sprint.mission.discodeit.dto.jwt.JwtDto;
 import com.sprint.mission.discodeit.dto.jwt.JwtInformation;
 import com.sprint.mission.discodeit.dto.user.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
-import com.sprint.mission.discodeit.exception.user.DiscodeitUnauthorizedException;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.JwtTokenProvider;
-import com.sprint.mission.discodeit.service.JwtService;
+import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -19,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -39,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private final UserService userService;
-  private final JwtService jwtService;
+  private final AuthService authService;
 
   @GetMapping("/csrf-token")
   public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
@@ -51,7 +47,7 @@ public class AuthController {
   @PostMapping("/refresh")
   public ResponseEntity<JwtDto> refresh(
       @CookieValue(value = "REFRESH_TOKEN") String oldRefreshToken) {
-    JwtInformation jwtInformation = jwtService.rotateToken(oldRefreshToken);
+    JwtInformation jwtInformation = authService.rotateToken(oldRefreshToken);
     ResponseCookie cookie = ResponseCookie.from(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME,
             jwtInformation.refreshToken())
         .httpOnly(true)
