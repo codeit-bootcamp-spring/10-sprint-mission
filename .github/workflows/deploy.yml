@@ -1,10 +1,9 @@
 name: 배포
 
 on:
-  workflow_dispatch:
-#  push:
-#    branches:
-#      - release
+  push:
+    branches:
+      - release
 
 jobs:
   build-and-push:
@@ -85,3 +84,4 @@ jobs:
             --task-definition $NEW_TASK_DEF_ARN \
             --desired-count 1 \
             --force-new-deployment
+        

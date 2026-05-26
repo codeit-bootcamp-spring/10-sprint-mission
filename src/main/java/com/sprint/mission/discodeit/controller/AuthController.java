@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
-import jakarta.validation.Valid;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,36 +23,37 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController {
+public class AuthController implements AuthApi {
+
+  private final AuthService authService;
   private final UserService userService;
 
-  @GetMapping("/csrf-token")
-  public ResponseEntity<Void> csrfToken(CsrfToken csrfToken) {
-    // csrfToken.getToken()을 호출하면 토큰이 실제로 생성 후 응답 Set-Cookie 헤더로 내려감
-    String tokenValue = csrfToken.getToken();
-
-    log.debug("CSRF 토큰 요청: {}", tokenValue);
-
-    // 응답 203 , body X
-    return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).build();
+  @GetMapping("csrf-token")
+  public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
+    log.debug("CSRF 토큰 요청");
+    log.trace("CSRF 토큰: {}", csrfToken.getToken());
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
   }
 
-  @GetMapping("/me")
+  @GetMapping("me")
   public ResponseEntity<UserDto> me(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-    if (userDetails == null) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-    UserDto currentUser = userDetails.getUserDto();
-
-    log.debug("현재 사용자 정보 조회: userId={}, username={}", currentUser.id(), currentUser.username());
-
-    return ResponseEntity.status(HttpStatus.OK).body(currentUser);
+    log.info("내 정보 조회 요청");
+    UUID userId = userDetails.getUserDto().id();
+    UserDto userDto = userService.find(userId);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(userDto);
   }
 
-  @PutMapping("/role")
-  public ResponseEntity<UserDto> updateDto(@RequestBody @Valid UserRoleUpdateRequest request) {
-    UserDto updatedUser = userService.updateRole(request);
+  @PutMapping("role")
+  public ResponseEntity<UserDto> updateRole(@RequestBody RoleUpdateRequest request) {
+    log.info("권한 수정 요청");
+    UserDto userDto = authService.updateRole(request);
 
-    return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(userDto);
   }
 }
