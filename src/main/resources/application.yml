@@ -74,3 +74,8 @@ info:
     multipart:
       max-file-size: ${spring.servlet.multipart.max-file-size}
       max-request-size: ${spring.servlet.multipart.max-request-size}
+
+jwt:
+  secret: ${JWT_SECRET:ih8awvLLzBzgjrWS9kFtLXRVrFRYLtJNzexVgbenjLg=} # 로컬 환경에서는 뒤에 적힌 기본값을 사용하고,운영 환경에서 컨테이너 띄울 때는 OS 환경변수로 JWT_SECRET을 주입하여 덮어씌워 사용
+  access-expiration: 900000 # 15분 (1000 * 60 * 15)
+  refresh-expiration: 604800000 # 7일 (1000 * 60 * 60 * 24 * 7)
