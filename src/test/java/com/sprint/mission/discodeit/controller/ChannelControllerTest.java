@@ -31,6 +31,7 @@ import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateExcept
 import com.sprint.mission.discodeit.security.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.RefreshTokenCookieManager;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 @AutoConfigureMockMvc(addFilters = false)
@@ -54,6 +55,9 @@ class ChannelControllerTest {
 
 	@MockitoBean
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+	@MockitoBean
+	private RefreshTokenCookieManager refreshTokenCookieManager;
 
 	@Test
 	@DisplayName("공개 채널 생성 성공 테스트")

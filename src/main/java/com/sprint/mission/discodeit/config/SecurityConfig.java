@@ -1,13 +1,11 @@
 package com.sprint.mission.discodeit.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
@@ -18,7 +16,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -26,7 +23,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
-import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.exception.ErrorCode;
@@ -34,6 +30,7 @@ import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.RefreshTokenCookieManager;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 
 import lombok.RequiredArgsConstructor;
@@ -46,26 +43,19 @@ public class SecurityConfig {
 	private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
 	private final LoginFailureHandler loginFailureHandler;
 	private final ObjectMapper objectMapper;
-
-	@Value("${discodeit.security.remember-me.key}")
-	private String rememberMeKey;
-
-	@Value("${discodeit.security.remember-me.token-validity-seconds:1209600}")
-	private int rememberMeTokenValiditySeconds;
+	private final RefreshTokenCookieManager refreshTokenCookieManager;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(
 		HttpSecurity http,
-		UserDetailsService userDetailsService,
 		JwtAuthenticationFilter jwtAuthenticationFilter
 	) throws Exception {
-		validateSecurityProperties();
-
 		http
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.csrf(csrf -> csrf
 				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 				.csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+				.ignoringRequestMatchers("/api/auth/refresh")
 			)
 			.formLogin(login -> login
 				.loginProcessingUrl("/api/auth/login")
@@ -73,21 +63,15 @@ public class SecurityConfig {
 				.failureHandler(loginFailureHandler)
 				.permitAll()
 			)
-			.rememberMe(rememberMe -> rememberMe
-				.rememberMeParameter("remember-me")
-				.key(rememberMeKey)
-				.userDetailsService(userDetailsService)
-				.tokenValiditySeconds(rememberMeTokenValiditySeconds)
-			)
+			.rememberMe(AbstractHttpConfigurer::disable)
 			.logout(logout -> logout
 				.logoutUrl("/api/auth/logout")
 				.addLogoutHandler((request, response, authentication) -> response.addHeader(
 					HttpHeaders.SET_COOKIE,
-					createExpiredRefreshTokenCookie(request.isSecure()).toString()
+					refreshTokenCookieManager.expire(request).toString()
 				))
-				.invalidateHttpSession(true)
+				.invalidateHttpSession(false)
 				.clearAuthentication(true)
-				.deleteCookies("JSESSIONID", "remember-me")
 				.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
 			)
 			.sessionManagement(management -> management
@@ -129,27 +113,12 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.GET, "/api/auth/csrf-token").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/users").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
 				.anyRequest().authenticated()
 			);
 
 		return http.build();
-	}
-
-	private ResponseCookie createExpiredRefreshTokenCookie(boolean secure) {
-		return ResponseCookie.from(JwtLoginSuccessHandler.REFRESH_TOKEN_COOKIE_NAME, "")
-			.httpOnly(true)
-			.secure(secure)
-			.sameSite("Lax")
-			.path("/")
-			.maxAge(0)
-			.build();
-	}
-
-	private void validateSecurityProperties() {
-		if (!StringUtils.hasText(rememberMeKey)) {
-			throw new IllegalStateException("REMEMBER_ME_KEY 또는 discodeit.security.remember-me.key 설정이 필요합니다.");
-		}
 	}
 
 	@Bean

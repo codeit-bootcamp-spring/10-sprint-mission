@@ -17,9 +17,6 @@ discodeit:
     email: ${ADMIN_EMAIL}
     password: ${ADMIN_PASSWORD}
   security:
-    remember-me:
-      key: ${REMEMBER_ME_KEY}
-      token-validity-seconds: ${REMEMBER_ME_TOKEN_VALIDITY_SECONDS:1209600}
     jwt:
       secret: ${JWT_SECRET}
       issuer: ${JWT_ISSUER:discodeit}

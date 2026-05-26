@@ -3,9 +3,9 @@ package com.sprint.mission.discodeit.controller.api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.csrf.CsrfToken;
 
+import com.sprint.mission.discodeit.dto.auth.JwtDto;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Tag(name = "Auth", description = "인증 API")
 public interface AuthApi {
@@ -26,12 +27,17 @@ public interface AuthApi {
 		@Parameter(hidden = true) CsrfToken csrfToken
 	);
 
-	@Operation(summary = "현재 로그인 사용자 조회")
+	@Operation(summary = "액세스 토큰 재발급")
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "현재 로그인 사용자 조회 성공")
+		@ApiResponse(
+			responseCode = "200", description = "액세스 토큰 재발급 성공",
+			content = @Content(schema = @Schema(implementation = JwtDto.class))
+		),
+		@ApiResponse(responseCode = "401", description = "리프레시 토큰이 유효하지 않음")
 	})
-	ResponseEntity<UserDto> getCurrentUser(
-		@Parameter(hidden = true) DiscodeitUserDetails userDetails
+	ResponseEntity<JwtDto> refresh(
+		@Parameter(hidden = true) String refreshToken,
+		@Parameter(hidden = true) HttpServletRequest request
 	);
 
 	@Operation(summary = "사용자 권한 수정")

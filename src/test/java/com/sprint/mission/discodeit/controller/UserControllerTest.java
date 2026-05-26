@@ -28,6 +28,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.security.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.RefreshTokenCookieManager;
 import com.sprint.mission.discodeit.service.UserService;
 
 @AutoConfigureMockMvc(addFilters = false)
@@ -51,6 +52,9 @@ class UserControllerTest {
 
 	@MockitoBean
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+	@MockitoBean
+	private RefreshTokenCookieManager refreshTokenCookieManager;
 
 	@Test
 	@DisplayName("사용자 생성 성공 테스트")

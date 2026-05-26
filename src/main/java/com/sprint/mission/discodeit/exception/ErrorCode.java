@@ -35,6 +35,9 @@ public enum ErrorCode {
 	@Schema(description = "인증이 필요합니다. (401)")
 	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
 
+	@Schema(description = "리프레시 토큰이 유효하지 않습니다. (401)")
+	INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 유효하지 않습니다."),
+
 	// 403
 	@Schema(description = "접근 권한이 없습니다. (403)")
 	FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),

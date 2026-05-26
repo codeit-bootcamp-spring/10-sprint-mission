@@ -108,7 +108,11 @@ public class JwtTokenProvider {
 	}
 
 	public UUID getUserId(String token) {
-		return UUID.fromString(getClaims(token).getSubject());
+		try {
+			return UUID.fromString(getClaims(token).getSubject());
+		} catch (IllegalArgumentException | NullPointerException exception) {
+			throw new JwtTokenException("JWT subject가 올바르지 않습니다.", exception);
+		}
 	}
 
 	public String getUsername(String token) {
@@ -116,7 +120,27 @@ public class JwtTokenProvider {
 	}
 
 	public Role getRole(String token) {
-		return Role.valueOf(getStringClaim(getClaims(token), ROLE_CLAIM));
+		try {
+			return Role.valueOf(getStringClaim(getClaims(token), ROLE_CLAIM));
+		} catch (IllegalArgumentException exception) {
+			throw new JwtTokenException("JWT 권한 클레임이 올바르지 않습니다.", exception);
+		}
+	}
+
+	public String getTokenId(String token) {
+		String tokenId = getClaims(token).getJWTID();
+		if (!StringUtils.hasText(tokenId)) {
+			throw new JwtTokenException("JWT ID가 비어 있습니다.");
+		}
+		return tokenId;
+	}
+
+	public Instant getExpiresAt(String token) {
+		Date expirationTime = getClaims(token).getExpirationTime();
+		if (expirationTime == null) {
+			throw new JwtTokenException("JWT 만료 시간이 비어 있습니다.");
+		}
+		return expirationTime.toInstant();
 	}
 
 	public JwtTokenType getTokenType(String token) {
