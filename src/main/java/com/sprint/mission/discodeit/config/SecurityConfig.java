@@ -3,9 +3,11 @@ package com.sprint.mission.discodeit.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
@@ -13,6 +15,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,8 +30,8 @@ import org.springframework.util.StringUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
+import com.sprint.mission.discodeit.security.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 
 import lombok.RequiredArgsConstructor;
@@ -38,7 +41,7 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 public class SecurityConfig {
 
-	private final LoginSuccessHandler loginSuccessHandler;
+	private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
 	private final LoginFailureHandler loginFailureHandler;
 	private final ObjectMapper objectMapper;
 
@@ -51,7 +54,6 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(
 		HttpSecurity http,
-		SessionRegistry sessionRegistry,
 		UserDetailsService userDetailsService
 	) throws Exception {
 		validateSecurityProperties();
@@ -64,7 +66,7 @@ public class SecurityConfig {
 			)
 			.formLogin(login -> login
 				.loginProcessingUrl("/api/auth/login")
-				.successHandler(loginSuccessHandler)
+				.successHandler(jwtLoginSuccessHandler)
 				.failureHandler(loginFailureHandler)
 				.permitAll()
 			)
@@ -76,30 +78,17 @@ public class SecurityConfig {
 			)
 			.logout(logout -> logout
 				.logoutUrl("/api/auth/logout")
+				.addLogoutHandler((request, response, authentication) -> response.addHeader(
+					HttpHeaders.SET_COOKIE,
+					createExpiredRefreshTokenCookie(request.isSecure()).toString()
+				))
 				.invalidateHttpSession(true)
 				.clearAuthentication(true)
 				.deleteCookies("JSESSIONID", "remember-me")
 				.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
 			)
 			.sessionManagement(management -> management
-				.sessionConcurrency(concurrency -> concurrency
-					.maximumSessions(1)
-					.maxSessionsPreventsLogin(false)
-					.sessionRegistry(sessionRegistry)
-					.expiredSessionStrategy(event -> {
-						ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
-						ErrorResponse errorResponse = ErrorResponse.of(
-							errorCode,
-							"SessionExpiredException",
-							errorCode.getMessage()
-						);
-
-						event.getResponse().setStatus(errorCode.getHttpStatus().value());
-						event.getResponse().setContentType(MediaType.APPLICATION_JSON_VALUE);
-						event.getResponse().setCharacterEncoding("UTF-8");
-						objectMapper.writeValue(event.getResponse().getWriter(), errorResponse);
-					})
-				)
+				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			)
 			.exceptionHandling(exception -> exception
 				.authenticationEntryPoint((request, response, authException) -> {
@@ -141,6 +130,16 @@ public class SecurityConfig {
 			);
 
 		return http.build();
+	}
+
+	private ResponseCookie createExpiredRefreshTokenCookie(boolean secure) {
+		return ResponseCookie.from(JwtLoginSuccessHandler.REFRESH_TOKEN_COOKIE_NAME, "")
+			.httpOnly(true)
+			.secure(secure)
+			.sameSite("Lax")
+			.path("/")
+			.maxAge(0)
+			.build();
 	}
 
 	private void validateSecurityProperties() {
