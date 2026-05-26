@@ -71,3 +71,14 @@ CREATE TABLE read_statuses
     updated_at   TIMESTAMP WITH TIME ZONE,
     CONSTRAINT unique_user_channel UNIQUE (user_id, channel_id)
 );
+
+-- 9. RefreshToken 관리 테이블
+CREATE TABLE refresh_tokens
+(
+    id    UUID PRIMARY KEY,
+    token VARCHAR(500) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+
+    CONSTRAINT uk_refresh_tokens_token UNIQUE (token),
+    CONSTRAINT uk_refresh_tokens_email UNIQUE (email)
+);
