@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.filter.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.handler.*;
+import com.sprint.mission.discodeit.handler.jwt.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -9,11 +11,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
@@ -23,11 +27,12 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 @RequiredArgsConstructor
 @EnableMethodSecurity
 public class SecurityConfig {
-    private final LoginSuccessHandler loginSuccessHandler;
+    private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
     private final LoginFailureHandler loginFailureHandler;
     private final DiscodeitAccessDeniedHandler discodeitAccessDeniedHandler;
     private final DiscodeitAuthenticationEntryPoint discodeitAuthenticationEntryPoint;
     private final DiscodeitUserDetailsService discodeitUserDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
@@ -36,10 +41,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfTokenRepository())
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 로그인 설정
                 .formLogin(login -> login
                         .loginProcessingUrl("/api/auth/login")
-                        .successHandler(loginSuccessHandler)
+                        .successHandler(jwtLoginSuccessHandler)
                         .failureHandler(loginFailureHandler))
                 .rememberMe(remember -> remember
                         .rememberMeParameter("remember-me")
@@ -64,12 +71,10 @@ public class SecurityConfig {
                                 "/api/auth/csrf-token",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
+                                "/api/auth/refresh",
                                 "/actuator/**").permitAll()
                         .anyRequest().authenticated())
-                .sessionManagement(session -> session
-                        .sessionConcurrency(conCurrency -> conCurrency
-                                .maximumSessions(1)
-                                .sessionRegistry(sessionRegistry())))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
                         // 로그인 안한 상태에서 다른 작업 요청 시 예외
                         .authenticationEntryPoint(discodeitAuthenticationEntryPoint)
