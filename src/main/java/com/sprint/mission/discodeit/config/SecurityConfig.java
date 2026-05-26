@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.config;
 import com.sprint.mission.discodeit.filter.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.handler.*;
 import com.sprint.mission.discodeit.handler.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.handler.jwt.JwtLogoutHandler;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,7 @@ public class SecurityConfig {
     private final DiscodeitAuthenticationEntryPoint discodeitAuthenticationEntryPoint;
     private final DiscodeitUserDetailsService discodeitUserDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtLogoutHandler jwtLogoutHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
@@ -51,7 +53,8 @@ public class SecurityConfig {
                 // 로그아웃 설정
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
+                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+                        .addLogoutHandler(jwtLogoutHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers(
