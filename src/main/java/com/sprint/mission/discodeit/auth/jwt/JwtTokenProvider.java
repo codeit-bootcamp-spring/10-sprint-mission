@@ -5,6 +5,9 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 @Slf4j
@@ -39,13 +43,16 @@ public class JwtTokenProvider {
             JWSSigner signer = new MACSigner(secretKey.getBytes(StandardCharsets.UTF_8));
 
             // 인증 객체에서 정보를 꺼냄
-            String email = authentication.getName();
+            DiscodeitUserDetails userDetails = (DiscodeitUserDetails) authentication.getPrincipal();
+            UserDto userDto = userDetails.getUserDto();
             String role = authentication.getAuthorities().iterator().next().getAuthority();
 
             // 페이로드 준비
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                    .subject(email)
+                    .subject(userDto.getEmail())
                     .claim("role", role)
+                    .claim("id", userDto.getId().toString())
+                    .claim("username", userDto.getUsername())
                     .issueTime(new Date())
                     .expirationTime(new Date(System.currentTimeMillis() + accessTokenExpirationMinutes * 60 * 1000 ))
                     .build();
@@ -65,10 +72,16 @@ public class JwtTokenProvider {
     public String generateRefreshToken(Authentication authentication){
         try {
             JWSSigner signer = new MACSigner(secretKey.getBytes());
-            String email = authentication.getName();
+
+            DiscodeitUserDetails userDetails = (DiscodeitUserDetails) authentication.getPrincipal();
+            UserDto userDto = userDetails.getUserDto();
+            String role = authentication.getAuthorities().iterator().next().getAuthority();
 
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                    .subject(email)
+                    .subject(userDto.getEmail())
+                    .claim("role", role)
+                    .claim("id", userDto.getId().toString())
+                    .claim("username", userDto.getUsername())
                     .issueTime(new Date())
                     .expirationTime(new Date(System.currentTimeMillis() + refreshTokenExpirationMinutes * 60 * 1000))
                     .build();
@@ -108,11 +121,16 @@ public class JwtTokenProvider {
 
             // 토큰에 저장한 정보 꺼냄
             String email = claimsSet.getSubject();
-            String role = claimsSet.getStringClaim("role");
+            String roleString = claimsSet.getStringClaim("role");
+            Role role = Role.valueOf(roleString);
+            UUID id = UUID.fromString(claimsSet.getStringClaim("id"));
+            String username = claimsSet.getStringClaim("username");
 
-            SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
+            SimpleGrantedAuthority authority = new SimpleGrantedAuthority(roleString);
 
-            return new UsernamePasswordAuthenticationToken(email, null, Collections.singleton(authority));
+            UserDto userDto = new UserDto(id, username, email, null, role, true);
+
+            return new UsernamePasswordAuthenticationToken(userDto, null, Collections.singleton(authority));
         } catch (ParseException e) {
             throw new RuntimeException("토큰에서 정보를 추출할 수 없습니다");
         }

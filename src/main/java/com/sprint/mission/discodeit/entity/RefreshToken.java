@@ -11,16 +11,14 @@ import java.util.UUID;
 
 @Entity
 @Getter
+@Table(name = "refresh_tokens")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class RefreshToken {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private UUID id;
+public class RefreshToken extends BaseUpdatableEntity{
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 500)
     private String token;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     public RefreshToken(String email, String token) {

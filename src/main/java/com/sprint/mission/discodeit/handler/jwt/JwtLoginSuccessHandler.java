@@ -31,8 +31,13 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         // 토큰 생성
         String accessToken = jwtTokenProvider.generateAccessToken(authentication);
         String refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
+        String email = authentication.getName();
 
-        refreshTokenRepository.save(new RefreshToken(jwtTokenProvider.getEmailFromToken(refreshToken), refreshToken));
+        refreshTokenRepository.findByEmail(email)
+                .ifPresentOrElse(
+                        existingToken -> existingToken.updateToken(refreshToken), // 있으면 갱신
+                        () -> refreshTokenRepository.save(new RefreshToken(email, refreshToken)) // 없으면 생성
+                );
         // http 헤더 설정
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
