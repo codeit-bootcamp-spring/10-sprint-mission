@@ -11,4 +11,4 @@ public class BinaryContentException extends DiscodeitException {
     public BinaryContentException(ErrorCode errorCode, Throwable cause) {
         super(errorCode, cause);
     }
-} 
+}

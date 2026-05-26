@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,6 +19,8 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.entity.UserRole;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -31,9 +34,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -56,11 +66,26 @@ class MessageApiIntegrationTest {
   @Autowired
   private UserService userService;
 
+  private RequestPostProcessor asUser(UUID userId, UserRole role) {
+    UserDto userDto = new UserDto(userId, "testuser", "test@example.com", null, false, role);
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, "password");
+    Authentication auth = new UsernamePasswordAuthenticationToken(
+        userDetails, null, userDetails.getAuthorities());
+    return authentication(auth);
+  }
+
+  private void setCurrentUser(UUID userId, UserRole role) {
+    UserDto userDto = new UserDto(userId, "testuser", "test@example.com", null, false, role);
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, "password");
+    SecurityContextHolder.getContext().setAuthentication(
+        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
+  }
+
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("메시지 생성 API 통합 테스트")
   void createMessage_Success() throws Exception {
-    // Given
-    // 테스트 채널 생성
+
     PublicChannelCreateRequest channelRequest = new PublicChannelCreateRequest(
         "테스트 채널",
         "테스트 채널 설명입니다."
@@ -68,7 +93,6 @@ class MessageApiIntegrationTest {
 
     ChannelDto channel = channelService.create(channelRequest);
 
-    // 테스트 사용자 생성
     UserCreateRequest userRequest = new UserCreateRequest(
         "messageuser",
         "messageuser@example.com",
@@ -77,7 +101,6 @@ class MessageApiIntegrationTest {
 
     UserDto user = userService.create(userRequest, Optional.empty());
 
-    // 메시지 생성 요청
     MessageCreateRequest createRequest = new MessageCreateRequest(
         "테스트 메시지 내용입니다.",
         channel.id(),
@@ -98,10 +121,11 @@ class MessageApiIntegrationTest {
         "테스트 첨부 파일 내용".getBytes()
     );
 
-    // When & Then
     mockMvc.perform(multipart("/api/messages")
             .file(messageCreateRequestPart)
-            .file(attachmentPart))
+            .file(attachmentPart)
+            .with(csrf())
+            .with(asUser(user.id(), UserRole.USER)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id", notNullValue()))
         .andExpect(jsonPath("$.content", is("테스트 메시지 내용입니다.")))
@@ -114,9 +138,9 @@ class MessageApiIntegrationTest {
   @Test
   @DisplayName("메시지 생성 실패 API 통합 테스트 - 유효하지 않은 요청")
   void createMessage_Failure_InvalidRequest() throws Exception {
-    // Given
+
     MessageCreateRequest invalidRequest = new MessageCreateRequest(
-        "", // 내용이 비어있음
+        "",
         UUID.randomUUID(),
         UUID.randomUUID()
     );
@@ -128,17 +152,18 @@ class MessageApiIntegrationTest {
         objectMapper.writeValueAsBytes(invalidRequest)
     );
 
-    // When & Then
     mockMvc.perform(multipart("/api/messages")
-            .file(messageCreateRequestPart))
+            .file(messageCreateRequestPart)
+            .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isBadRequest());
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("채널별 메시지 목록 조회 API 통합 테스트")
   void findAllMessagesByChannelId_Success() throws Exception {
-    // Given
-    // 테스트 채널 생성
+
     PublicChannelCreateRequest channelRequest = new PublicChannelCreateRequest(
         "테스트 채널",
         "테스트 채널 설명입니다."
@@ -146,7 +171,6 @@ class MessageApiIntegrationTest {
 
     ChannelDto channel = channelService.create(channelRequest);
 
-    // 테스트 사용자 생성
     UserCreateRequest userRequest = new UserCreateRequest(
         "messageuser",
         "messageuser@example.com",
@@ -155,7 +179,6 @@ class MessageApiIntegrationTest {
 
     UserDto user = userService.create(userRequest, Optional.empty());
 
-    // 메시지 생성
     MessageCreateRequest messageRequest1 = new MessageCreateRequest(
         "첫 번째 메시지 내용입니다.",
         channel.id(),
@@ -168,13 +191,14 @@ class MessageApiIntegrationTest {
         user.id()
     );
 
+    setCurrentUser(user.id(), UserRole.USER);
     messageService.create(messageRequest1, new ArrayList<>());
     messageService.create(messageRequest2, new ArrayList<>());
 
-    // When & Then
     mockMvc.perform(get("/api/messages")
             .param("channelId", channel.id().toString())
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(2)))
         .andExpect(jsonPath("$.content[0].content", is("두 번째 메시지 내용입니다.")))
@@ -185,10 +209,10 @@ class MessageApiIntegrationTest {
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("메시지 업데이트 API 통합 테스트")
   void updateMessage_Success() throws Exception {
-    // Given
-    // 테스트 채널 생성
+
     PublicChannelCreateRequest channelRequest = new PublicChannelCreateRequest(
         "테스트 채널",
         "테스트 채널 설명입니다."
@@ -196,7 +220,6 @@ class MessageApiIntegrationTest {
 
     ChannelDto channel = channelService.create(channelRequest);
 
-    // 테스트 사용자 생성
     UserCreateRequest userRequest = new UserCreateRequest(
         "messageuser",
         "messageuser@example.com",
@@ -205,25 +228,25 @@ class MessageApiIntegrationTest {
 
     UserDto user = userService.create(userRequest, Optional.empty());
 
-    // 메시지 생성
     MessageCreateRequest createRequest = new MessageCreateRequest(
         "원본 메시지 내용입니다.",
         channel.id(),
         user.id()
     );
 
+    setCurrentUser(user.id(), UserRole.USER);
     MessageDto createdMessage = messageService.create(createRequest, new ArrayList<>());
     UUID messageId = createdMessage.id();
 
-    // 메시지 업데이트 요청
     MessageUpdateRequest updateRequest = new MessageUpdateRequest(
         "수정된 메시지 내용입니다."
     );
 
     String requestBody = objectMapper.writeValueAsString(updateRequest);
 
-    // When & Then
     mockMvc.perform(patch("/api/messages/{messageId}", messageId)
+            .with(csrf())
+            .with(asUser(user.id(), UserRole.USER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isOk())
@@ -235,7 +258,7 @@ class MessageApiIntegrationTest {
   @Test
   @DisplayName("메시지 업데이트 실패 API 통합 테스트 - 존재하지 않는 메시지")
   void updateMessage_Failure_MessageNotFound() throws Exception {
-    // Given
+
     UUID nonExistentMessageId = UUID.randomUUID();
 
     MessageUpdateRequest updateRequest = new MessageUpdateRequest(
@@ -244,18 +267,19 @@ class MessageApiIntegrationTest {
 
     String requestBody = objectMapper.writeValueAsString(updateRequest);
 
-    // When & Then
     mockMvc.perform(patch("/api/messages/{messageId}", nonExistentMessageId)
+            .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.USER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isNotFound());
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("메시지 삭제 API 통합 테스트")
   void deleteMessage_Success() throws Exception {
-    // Given
-    // 테스트 채널 생성
+
     PublicChannelCreateRequest channelRequest = new PublicChannelCreateRequest(
         "테스트 채널",
         "테스트 채널 설명입니다."
@@ -263,7 +287,6 @@ class MessageApiIntegrationTest {
 
     ChannelDto channel = channelService.create(channelRequest);
 
-    // 테스트 사용자 생성
     UserCreateRequest userRequest = new UserCreateRequest(
         "messageuser",
         "messageuser@example.com",
@@ -272,24 +295,25 @@ class MessageApiIntegrationTest {
 
     UserDto user = userService.create(userRequest, Optional.empty());
 
-    // 메시지 생성
     MessageCreateRequest createRequest = new MessageCreateRequest(
         "삭제할 메시지 내용입니다.",
         channel.id(),
         user.id()
     );
 
+    setCurrentUser(user.id(), UserRole.USER);
     MessageDto createdMessage = messageService.create(createRequest, new ArrayList<>());
     UUID messageId = createdMessage.id();
 
-    // When & Then
-    mockMvc.perform(delete("/api/messages/{messageId}", messageId))
+    mockMvc.perform(delete("/api/messages/{messageId}", messageId)
+            .with(csrf())
+            .with(asUser(user.id(), UserRole.USER)))
         .andExpect(status().isNoContent());
 
-    // 삭제 확인 - 채널의 메시지 목록 조회 시 삭제된 메시지는 조회되지 않아야 함
     mockMvc.perform(get("/api/messages")
             .param("channelId", channel.id().toString())
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(0)));
   }
@@ -297,11 +321,12 @@ class MessageApiIntegrationTest {
   @Test
   @DisplayName("메시지 삭제 실패 API 통합 테스트 - 존재하지 않는 메시지")
   void deleteMessage_Failure_MessageNotFound() throws Exception {
-    // Given
+
     UUID nonExistentMessageId = UUID.randomUUID();
 
-    // When & Then
-    mockMvc.perform(delete("/api/messages/{messageId}", nonExistentMessageId))
+    mockMvc.perform(delete("/api/messages/{messageId}", nonExistentMessageId)
+            .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isNotFound());
   }
-} 
+}

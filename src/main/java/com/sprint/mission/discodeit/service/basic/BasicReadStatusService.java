@@ -45,21 +45,19 @@ public class BasicReadStatusService implements ReadStatusService {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
 
-    // FIX: 동일 (user, channel) 조합의 ReadStatus가 이미 존재하면 중복 생성 예외
-    readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId())
-        .ifPresent(existing -> {
-          throw DuplicateReadStatusException.withUserIdAndChannelId(userId, channelId);
-        });
+    if (readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId()).isPresent()) {
+      throw DuplicateReadStatusException.withUserIdAndChannelId(userId, channelId);
+    }
 
     ReadStatus readStatus = readStatusRepository.save(
-        new ReadStatus(user, channel, request.lastReadAt())
-    );
+        new ReadStatus(user, channel, request.lastReadAt()));
 
     log.info("읽음 상태 생성 완료: id={}, userId={}, channelId={}",
         readStatus.getId(), userId, channelId);
     return readStatusMapper.toDto(readStatus);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public ReadStatusDto find(UUID readStatusId) {
     log.debug("읽음 상태 조회 시작: id={}", readStatusId);
@@ -70,6 +68,7 @@ public class BasicReadStatusService implements ReadStatusService {
     return dto;
   }
 
+  @Transactional(readOnly = true)
   @Override
   public List<ReadStatusDto> findAllByUserId(UUID userId) {
     log.debug("사용자별 읽음 상태 목록 조회 시작: userId={}", userId);

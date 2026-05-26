@@ -64,4 +64,4 @@ public interface ReadStatusApi {
   ResponseEntity<List<ReadStatusDto>> findAllByUserId(
       @Parameter(description = "조회할 User ID") UUID userId
   );
-} 
+}

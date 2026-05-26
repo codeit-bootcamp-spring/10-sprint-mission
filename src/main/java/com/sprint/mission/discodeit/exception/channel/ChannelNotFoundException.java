@@ -14,4 +14,4 @@ public class ChannelNotFoundException extends ChannelException {
         exception.addDetail("channelId", channelId);
         return exception;
     }
-} 
+}

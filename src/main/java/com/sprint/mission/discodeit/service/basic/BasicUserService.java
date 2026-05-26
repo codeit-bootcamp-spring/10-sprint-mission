@@ -6,23 +6,26 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.entity.UserRole;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,17 +33,18 @@ import lombok.extern.slf4j.Slf4j;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
   private final UserMapper userMapper;
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
+  private final PasswordEncoder passwordEncoder;
+  private final SessionRegistry sessionRegistry;
 
   @Transactional
   @Override
   public UserDto create(UserCreateRequest userCreateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     log.debug("사용자 생성 시작: {}", userCreateRequest);
-    
+
     String username = userCreateRequest.username();
     String email = userCreateRequest.email();
 
@@ -63,17 +67,16 @@ public class BasicUserService implements UserService {
           return binaryContent;
         })
         .orElse(null);
-    String password = userCreateRequest.password();
+    String password = passwordEncoder.encode(userCreateRequest.password());
 
-    User user = new User(username, email, password, nullableProfile);
-    Instant now = Instant.now();
-    UserStatus userStatus = new UserStatus(user, now);
+    User user = new User(username, email, password, nullableProfile, UserRole.USER);
 
     userRepository.save(user);
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
     return userMapper.toDto(user);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public UserDto find(UUID userId) {
     log.debug("사용자 조회 시작: id={}", userId);
@@ -84,10 +87,11 @@ public class BasicUserService implements UserService {
     return userDto;
   }
 
+  @Transactional(readOnly = true)
   @Override
   public List<UserDto> findAll() {
     log.debug("모든 사용자 조회 시작");
-    List<UserDto> userDtos = userRepository.findAllWithProfileAndStatus()
+    List<UserDto> userDtos = userRepository.findAllWithProfile()
         .stream()
         .map(userMapper::toDto)
         .toList();
@@ -95,12 +99,13 @@ public class BasicUserService implements UserService {
     return userDtos;
   }
 
+  @PreAuthorize("principal.userDto.id == #userId")
   @Transactional
   @Override
   public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     log.debug("사용자 수정 시작: id={}, request={}", userId, userUpdateRequest);
-    
+
     User user = userRepository.findById(userId)
         .orElseThrow(() -> {
           UserNotFoundException exception = UserNotFoundException.withId(userId);
@@ -109,11 +114,11 @@ public class BasicUserService implements UserService {
 
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
-    
+
     if (userRepository.existsByEmail(newEmail)) {
       throw UserAlreadyExistsException.withEmail(newEmail);
     }
-    
+
     if (userRepository.existsByUsername(newUsername)) {
       throw UserAlreadyExistsException.withUsername(newUsername);
     }
@@ -132,7 +137,9 @@ public class BasicUserService implements UserService {
         })
         .orElse(null);
 
-    String newPassword = userUpdateRequest.newPassword();
+    String newPassword = userUpdateRequest.newPassword() != null
+        ? passwordEncoder.encode(userUpdateRequest.newPassword())
+        : user.getPassword();
     user.update(newUsername, newEmail, newPassword, nullableProfile);
 
     log.info("사용자 수정 완료: id={}", userId);
@@ -141,9 +148,35 @@ public class BasicUserService implements UserService {
 
   @Transactional
   @Override
+  @PreAuthorize("hasRole('ADMIN')")
+  public UserDto updateRole(UUID userId, UserRole newRole) {
+    log.debug("사용자 권한 수정 시작: id={}, newRole={}", userId, newRole);
+
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> {
+          UserNotFoundException exception = UserNotFoundException.withId(userId);
+          return exception;
+        });
+
+    user.updateRole(newRole);
+
+    sessionRegistry.getAllPrincipals().stream()
+        .filter(p -> p instanceof DiscodeitUserDetails)
+        .map(p -> (DiscodeitUserDetails) p)
+        .filter(ud -> ud.getUserDto().id().equals(userId))
+        .flatMap(ud -> sessionRegistry.getAllSessions(ud, false).stream())
+        .forEach(SessionInformation::expireNow);
+
+    log.info("사용자 권한 수정 완료: id={}, newRole={}", userId, newRole);
+    return userMapper.toDto(user);
+  }
+
+  @PreAuthorize("principal.userDto.id == #userId")
+  @Transactional
+  @Override
   public void delete(UUID userId) {
     log.debug("사용자 삭제 시작: id={}", userId);
-    
+
     if (!userRepository.existsById(userId)) {
       throw UserNotFoundException.withId(userId);
     }

@@ -7,8 +7,8 @@ public class InvalidCredentialsException extends UserException {
         super(ErrorCode.INVALID_USER_CREDENTIALS);
     }
 
-    public static InvalidCredentialsException wrongPassword() {
+    public static InvalidCredentialsException wrongCredentials() {
         InvalidCredentialsException exception = new InvalidCredentialsException();
         return exception;
     }
-} 
+}

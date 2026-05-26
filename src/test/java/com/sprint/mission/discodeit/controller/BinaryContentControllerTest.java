@@ -22,10 +22,12 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(BinaryContentController.class)
+@WithMockUser
 class BinaryContentControllerTest {
 
   @Autowired
@@ -43,7 +45,7 @@ class BinaryContentControllerTest {
   @Test
   @DisplayName("바이너리 컨텐츠 조회 성공 테스트")
   void find_Success() throws Exception {
-    // Given
+
     UUID binaryContentId = UUID.randomUUID();
     BinaryContentDto binaryContent = new BinaryContentDto(
         binaryContentId,
@@ -54,7 +56,6 @@ class BinaryContentControllerTest {
 
     given(binaryContentService.find(binaryContentId)).willReturn(binaryContent);
 
-    // When & Then
     mockMvc.perform(get("/api/binaryContents/{binaryContentId}", binaryContentId)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -67,13 +68,12 @@ class BinaryContentControllerTest {
   @Test
   @DisplayName("바이너리 컨텐츠 조회 실패 테스트 - 존재하지 않는 컨텐츠")
   void find_Failure_BinaryContentNotFound() throws Exception {
-    // Given
+
     UUID nonExistentId = UUID.randomUUID();
 
     given(binaryContentService.find(nonExistentId))
         .willThrow(BinaryContentNotFoundException.withId(nonExistentId));
 
-    // When & Then
     mockMvc.perform(get("/api/binaryContents/{binaryContentId}", nonExistentId)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
@@ -82,7 +82,7 @@ class BinaryContentControllerTest {
   @Test
   @DisplayName("ID 목록으로 바이너리 컨텐츠 조회 성공 테스트")
   void findAllByIdIn_Success() throws Exception {
-    // Given
+
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
 
@@ -95,7 +95,6 @@ class BinaryContentControllerTest {
 
     given(binaryContentService.findAllByIdIn(binaryContentIds)).willReturn(binaryContents);
 
-    // When & Then
     mockMvc.perform(get("/api/binaryContents")
             .param("binaryContentIds", id1.toString(), id2.toString())
             .contentType(MediaType.APPLICATION_JSON))
@@ -109,7 +108,7 @@ class BinaryContentControllerTest {
   @Test
   @DisplayName("바이너리 컨텐츠 다운로드 성공 테스트")
   void download_Success() throws Exception {
-    // Given
+
     UUID binaryContentId = UUID.randomUUID();
     BinaryContentDto binaryContent = new BinaryContentDto(
         binaryContentId,
@@ -120,7 +119,6 @@ class BinaryContentControllerTest {
 
     given(binaryContentService.find(binaryContentId)).willReturn(binaryContent);
 
-    // doReturn 사용하여 타입 문제 우회
     ResponseEntity<ByteArrayResource> mockResponse = ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"test.jpg\"")
         .header(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_JPEG_VALUE)
@@ -128,7 +126,6 @@ class BinaryContentControllerTest {
 
     doReturn(mockResponse).when(binaryContentStorage).download(any(BinaryContentDto.class));
 
-    // When & Then
     mockMvc.perform(get("/api/binaryContents/{binaryContentId}/download", binaryContentId))
         .andExpect(status().isOk());
   }
@@ -136,14 +133,13 @@ class BinaryContentControllerTest {
   @Test
   @DisplayName("바이너리 컨텐츠 다운로드 실패 테스트 - 존재하지 않는 컨텐츠")
   void download_Failure_BinaryContentNotFound() throws Exception {
-    // Given
+
     UUID nonExistentId = UUID.randomUUID();
 
     given(binaryContentService.find(nonExistentId))
         .willThrow(BinaryContentNotFoundException.withId(nonExistentId));
 
-    // When & Then
     mockMvc.perform(get("/api/binaryContents/{binaryContentId}/download", nonExistentId))
         .andExpect(status().isNotFound());
   }
-} 
+}

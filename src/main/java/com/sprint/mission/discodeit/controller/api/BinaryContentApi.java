@@ -54,4 +54,4 @@ public interface BinaryContentApi {
   ResponseEntity<?> download(
       @Parameter(description = "다운로드할 파일 ID") UUID binaryContentId
   );
-} 
+}

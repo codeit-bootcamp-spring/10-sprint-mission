@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '1.2-M8'
+version = '2.0-M9'
 
 java {
     toolchain {
@@ -18,6 +18,9 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    testCompileOnly {
+        extendsFrom testAnnotationProcessor
+    }
 }
 
 repositories {
@@ -25,54 +28,26 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-    // Documentation
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4'
-    // FIXME: 보안 취약점 관련 내용 확인 후 수정 요망 CVE-2025-48924
-
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
-
-    // Testing
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    // H2 DB (테스트 환경)
-    testImplementation 'com.h2database:h2'
-
-    // JPA 및 트랜잭션 관리를 위한 라이브러리
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
-    // Validation - Spring Validation 의존성
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-    // PostgreSQL Driver
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'software.amazon.awssdk:s3:2.31.7'
     runtimeOnly 'org.postgresql:postgresql'
 
-    // MapStruct
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
     implementation 'org.mapstruct:mapstruct:1.6.3'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
-    // Lombok과 MapStruct 연동을 위한 바인딩
-    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
-
-    // AWS SDK v2 BOM
-    implementation platform('software.amazon.awssdk:bom:2.20.70')
-
-    // S3와의 통신을 위한 AWS SDK v2 라이브러리
-    implementation 'software.amazon.awssdk:s3'
-
-    // AWS 인증 처리 모듈
-    implementation 'software.amazon.awssdk:auth'
-
-    // JUnit5
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.0'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'com.h2database:h2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {

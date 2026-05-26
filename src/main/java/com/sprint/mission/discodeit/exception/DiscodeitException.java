@@ -29,4 +29,4 @@ public class DiscodeitException extends RuntimeException {
     public void addDetail(String key, Object value) {
         this.details.put(key, value);
     }
-} 
+}

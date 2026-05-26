@@ -86,4 +86,4 @@ public interface ChannelApi {
   ResponseEntity<List<ChannelDto>> findAll(
       @Parameter(description = "조회할 User ID") UUID userId
   );
-} 
+}

@@ -11,20 +11,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  sql:
-    init:
-      mode: never # schema.sql 무시. H2 호환 스키마 자동 생성
-
-discodeit:
-  storage:
-    type: local
-    local:
-      root-path: .discodeit/storage-test
 
 logging:
   level:
     com.sprint.mission.discodeit: debug
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
-
-# TODO: Testcontainers 방식으로 변경 - 컨테이너 재사용으로 시간 단축

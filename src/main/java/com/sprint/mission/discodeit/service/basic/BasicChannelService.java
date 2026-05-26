@@ -18,9 +18,10 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -28,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 public class BasicChannelService implements ChannelService {
 
   private final ChannelRepository channelRepository;
-  //
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
@@ -36,6 +36,7 @@ public class BasicChannelService implements ChannelService {
 
   @Transactional
   @Override
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   public ChannelDto create(PublicChannelCreateRequest request) {
     log.debug("채널 생성 시작: {}", request);
     String name = request.name();
@@ -87,6 +88,7 @@ public class BasicChannelService implements ChannelService {
 
   @Transactional
   @Override
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
     log.debug("채널 수정 시작: id={}, request={}", channelId, request);
     String newName = request.newName();
@@ -103,6 +105,7 @@ public class BasicChannelService implements ChannelService {
 
   @Transactional
   @Override
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   public void delete(UUID channelId) {
     log.debug("채널 삭제 시작: id={}", channelId);
     if (!channelRepository.existsById(channelId)) {

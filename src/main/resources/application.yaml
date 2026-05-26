@@ -3,22 +3,18 @@ spring:
     name: discodeit
   servlet:
     multipart:
-      maxFileSize: 10MB # 파일 하나의 최대 크기
-      maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
+      maxFileSize: 10MB
+      maxRequestSize: 30MB
   datasource:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: validate
     open-in-view: false
-  # 각 환경에서 명시적으로 주입하도록 수정
-  #  profiles:
-  #    active:
-  #      - prod
+  profiles:
+    active:
+      - dev
   config:
-    # optional: - 파일이 없어도 에러 없이 무시 (로컬 환경 아닐 때를 위함)
-    # file:.env - classpath가 아닌 파일시스템 경로 .env를 가리킴
-    # [.properties] - 해당 파일을 KEY=VALUE 형식으로 파싱하라
     import: optional:file:.env[.properties]
 
 management:
@@ -52,7 +48,7 @@ info:
 
 discodeit:
   storage:
-    type: ${STORAGE_TYPE:local}  # local | s3 (기본값: local)
+    type: ${STORAGE_TYPE:local}
     local:
       root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
     s3:
@@ -60,10 +56,11 @@ discodeit:
       secret-key: ${AWS_S3_SECRET_KEY}
       region: ${AWS_S3_REGION}
       bucket: ${AWS_S3_BUCKET}
-      # Default is 3600 seconds. Maximum is 604800 seconds. (AWS CLI 기준)
-      # Java SDK(S3Presigner)는 기본값 X. Maximum - 7일.
-      # .env 설정값 - 600 (10분)
-      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:300} # (기본값: 300s = 5분)
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
+  admin:
+    username: ${DISCODEIT_ADMIN_USERNAME:admin}
+    email: ${DISCODEIT_ADMIN_EMAIL:admin@discodeit.com}
+    password: ${DISCODEIT_ADMIN_PASSWORD:admin1234}
 
 logging:
   level:

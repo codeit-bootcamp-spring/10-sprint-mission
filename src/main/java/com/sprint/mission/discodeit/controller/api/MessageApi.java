@@ -87,4 +87,4 @@ public interface MessageApi {
       @Parameter(description = "페이징 커서 정보") Instant cursor,
       @Parameter(description = "페이징 정보", example = "{\"size\": 50, \"sort\": \"createdAt,desc\"}") Pageable pageable
   );
-} 
+}
