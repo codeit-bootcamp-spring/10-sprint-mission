@@ -53,11 +53,11 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
       refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);
       response.addCookie(refreshTokenCookie);
 
-      log.debug("로그인 성공: username={}", userDetails.getUsername());
+      log.debug("[LOGIN] 로그인 성공: username={}", userDetails.getUsername());
     } else {
       Object principal = authentication.getPrincipal();
       String principalType = (principal != null) ? principal.getClass().getName() : "null";
-      log.error("인증 객체 타입이 불일치: class={}", principalType);
+      log.error("[LOGIN] 인증 객체 타입이 불일치: class={}", principalType);
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "인증 시스템 내부 오류");
     }
   }

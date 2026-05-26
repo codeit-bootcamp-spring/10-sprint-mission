@@ -50,7 +50,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
     ReadStatus readStatus = new ReadStatus(user, channel, request.lastReadAt());
     readStatusRepository.save(readStatus);
-    log.info("ReadStatus 생성 완료: readStatusId={}", readStatus.getId());
+    log.info("[READ_STATUS] ReadStatus 생성 완료: readStatusId={}", readStatus.getId());
     return readStatusMapper.toDto(readStatus);
   }
 
@@ -59,7 +59,7 @@ public class BasicReadStatusService implements ReadStatusService {
   public ReadStatusDto findById(UUID readStatusId) {
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> new ReadStatusNotFoundException(Map.of("readStatusId", readStatusId)));
-    log.debug("ReadStatus 조회 완료: readStatusId={}", readStatus.getId());
+    log.debug("[READ_STATUS] ReadStatus 조회 완료: readStatusId={}", readStatus.getId());
     return readStatusMapper.toDto(readStatus);
   }
 
@@ -67,7 +67,7 @@ public class BasicReadStatusService implements ReadStatusService {
   @Transactional(readOnly = true)
   public List<ReadStatusDto> findAllByUserId(UUID userId) {
     List<ReadStatus> readStatuses = readStatusRepository.findAllByUserId(userId);
-    log.debug("유저의 ReadStatus 목록 조회 완료: readStatusCount={}", readStatuses.size());
+    log.debug("[READ_STATUS] 유저의 ReadStatus 목록 조회 완료: readStatusCount={}", readStatuses.size());
     return readStatuses.stream()
         .map(readStatusMapper::toDto)
         .toList();
@@ -78,7 +78,7 @@ public class BasicReadStatusService implements ReadStatusService {
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> new ReadStatusNotFoundException(Map.of("readStatusId", readStatusId)));
     readStatus.updateLastReadAt(request.newLastReadAt());
-    log.info("ReadStatus 수정 완료: readStatusId={}", readStatus.getId());
+    log.info("[READ_STATUS] ReadStatus 수정 완료: readStatusId={}", readStatus.getId());
     return readStatusMapper.toDto(readStatus);
   }
 
@@ -87,6 +87,6 @@ public class BasicReadStatusService implements ReadStatusService {
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> new ReadStatusNotFoundException(Map.of("readStatusId", readStatusId)));
     readStatusRepository.delete(readStatus);
-    log.info("ReadStatus 삭제 완료: readStatusId={}", readStatusId);
+    log.info("[READ_STATUS] ReadStatus 삭제 완료: readStatusId={}", readStatusId);
   }
 }

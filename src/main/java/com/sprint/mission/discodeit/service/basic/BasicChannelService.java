@@ -38,7 +38,7 @@ public class BasicChannelService implements ChannelService {
   public ChannelDto createPublic(PublicChannelCreateRequest request) {
     Channel channel = channelMapper.toEntity(request);
     channelRepository.save(channel);
-    log.info("Public 채널 생성 완료: channelId={}", channel.getId());
+    log.info("[CHANNEL] Public 채널 생성 완료: channelId={}", channel.getId());
     return channelMapper.toDto(channel);
   }
 
@@ -51,8 +51,9 @@ public class BasicChannelService implements ChannelService {
             .orElseThrow(UserNotFoundException::new))
         .forEach(user -> readStatusRepository.save(
             new ReadStatus(user, channel, channel.getCreatedAt())));
-    log.debug("ReadStatus 생성 완료: readStatusCount={}", request.participantIds().size());
-    log.info("Private 채널 생성 완료: channelId={}", channel.getId());
+    log.debug("[CHANNEL] ReadStatus 생성 완료: readStatusCount={}",
+        request.participantIds().size());
+    log.info("[CHANNEL] Private 채널 생성 완료: channelId={}", channel.getId());
     return channelMapper.toDto(channel);
   }
 
@@ -61,7 +62,8 @@ public class BasicChannelService implements ChannelService {
   public ChannelDto findById(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", channelId)));
-    log.debug("채널 조회 완료: channelId={}, channelType={}", channel.getId(), channel.getType());
+    log.debug("[CHANNEL] 채널 조회 완료: channelId={}, channelType={}", channel.getId(),
+        channel.getType());
     return channelMapper.toDto(channel);
   }
 
@@ -70,7 +72,7 @@ public class BasicChannelService implements ChannelService {
   @Transactional(readOnly = true)
   public List<ChannelDto> findAllByUserId(UUID userId) {
     List<Channel> channels = channelRepository.findAllByUserId(userId); //쿼리튜닝
-    log.debug("유저가 참여 중인 채널 목록 조회 완료: channelCount={}", channels.size());
+    log.debug("[CHANNEL] 유저가 참여 중인 채널 목록 조회 완료: channelCount={}", channels.size());
     return channels.stream()
         .map(channelMapper::toDto) //이 메서드는 매핑 과정에서 MessageRepository와 ReadStatusRepository를 각각 호출
         .toList();
@@ -85,7 +87,7 @@ public class BasicChannelService implements ChannelService {
       throw new PrivateChannelUpdateException(Map.of("channelId", channelId));
     }
     channel.update(request);
-    log.info("Public 채널 수정 완료: channelId={}", channelId);
+    log.info("[CHANNEL] Public 채널 수정 완료: channelId={}", channelId);
     return channelMapper.toDto(channel);
   }
 
@@ -94,6 +96,6 @@ public class BasicChannelService implements ChannelService {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", channelId)));
     channelRepository.delete(channel);
-    log.info("채널 삭제 완료: channelId={}", channelId);
+    log.info("[CHANNEL] 채널 삭제 완료: channelId={}", channelId);
   }
 }

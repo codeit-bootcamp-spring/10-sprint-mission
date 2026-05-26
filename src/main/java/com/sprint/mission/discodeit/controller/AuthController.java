@@ -40,7 +40,7 @@ public class AuthController {
   @GetMapping("/csrf-token")
   public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
     String tokenValue = csrfToken.getToken();
-    log.debug("CSRF 토큰 요청: {}", tokenValue);
+    log.debug("[AUTH] CSRF 토큰 요청: {}", tokenValue);
     return ResponseEntity.noContent().build();
   }
 
@@ -55,7 +55,7 @@ public class AuthController {
         .maxAge(60 * 60 * 24 * 7)
         .build();
     JwtDto jwtDto = new JwtDto(jwtInformation.userDto(), jwtInformation.accessToken());
-    log.debug("인증된 유저: userId={}", jwtInformation.userDto().id());
+    log.debug("[AUTH] 인증된 유저: userId={}", jwtInformation.userDto().id());
     return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.SET_COOKIE, cookie.toString())
         .body(jwtDto);
   }

@@ -19,9 +19,9 @@ public class HttpStatusReturningLogoutSuccessHandler implements LogoutSuccessHan
     response.setStatus(204);
     if (authentication != null
         && authentication.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
-      log.debug("로그아웃 성공: username={}", userDetails.getUsername());
+      log.debug("[LOGOUT] 로그아웃 성공: username={}", userDetails.getUsername());
     } else {
-      log.debug("이미 세션이 만료되었거나 인증되지 않은 사용자가 로그아웃을 시도");
+      log.debug("[LOGOUT] 이미 세션이 만료되었거나 인증되지 않은 사용자가 로그아웃을 시도");
     }
   }
 }

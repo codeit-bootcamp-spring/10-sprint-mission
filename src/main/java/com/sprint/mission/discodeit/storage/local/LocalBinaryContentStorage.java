@@ -81,7 +81,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     Resource resource = new InputStreamResource(inputStream);
 
     String headerContent = "attachment; filename=\"" + binaryContentDto.fileName() + "\"";
-    log.info("파일 다운로드 완료: binaryContentId={}", binaryContentDto.id());
+    log.info("[BINARY_CONTENT] 파일 다운로드 완료: binaryContentId={}", binaryContentDto.id());
     return ResponseEntity
         .status(HttpStatus.OK)
         .header(HttpHeaders.CONTENT_DISPOSITION, headerContent)

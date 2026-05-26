@@ -54,7 +54,7 @@ public class JwtTokenProvider {
       return signedJWT.serialize();
 
     } catch (Exception e) {
-      throw new RuntimeException("JWT 발급 실패", e);
+      throw new RuntimeException("[JWT] JWT 발급 실패", e);
     }
   }
 

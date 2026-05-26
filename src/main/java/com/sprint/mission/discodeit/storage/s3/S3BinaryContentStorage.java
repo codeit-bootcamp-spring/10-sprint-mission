@@ -53,7 +53,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
   @PostConstruct
   public void init() {
-    log.info("S3 스토리지 활성화: 버킷명 = {}", bucket);
+    log.info("[BINARY_CONTENT] S3 스토리지 활성화: 버킷명 = {}", bucket);
     this.s3Client = getS3Client();
     this.s3Presigner = getS3Presigner();
   }

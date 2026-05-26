@@ -30,7 +30,7 @@ public class BasicAuthService implements AuthService {
   @Override
   public void expireUserSessions(UUID userId) {
     jwtRegistry.invalidateJwtInformationByUserId(userId);
-    log.debug("권한 변경 유저 로그인 상태 변경: userId={}", userId);
+    log.debug("[AUTH] 권한 변경 유저 로그인 상태 변경: userId={}", userId);
   }
 
   @Override

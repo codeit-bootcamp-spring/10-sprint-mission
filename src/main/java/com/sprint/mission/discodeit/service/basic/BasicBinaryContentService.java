@@ -41,7 +41,7 @@ public class BasicBinaryContentService implements BinaryContentService {
       binaryContentRepository.save(binaryContent);
       //실제 byte[] 저장
       binaryContentStorage.put(binaryContent.getId(), multipartFile.getBytes());
-      log.info("파일 저장 성공: binaryContentId={}", binaryContent.getId());
+      log.info("[BINARY_CONTENT] 파일 저장 성공: binaryContentId={}", binaryContent.getId());
       return binaryContentMapper.toDto(binaryContent);
     } catch (IOException e) {
       throw new BinaryContentUploadException();
@@ -54,7 +54,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
         .orElseThrow(() -> new BinaryContentNotFoundException(
             Map.of("binaryContentId", binaryContentId)));
-    log.debug("파일 조회 완료: binaryContentId={}, fileName={}, size={}, contentType={}",
+    log.debug("[BINARY_CONTENT] 파일 조회 완료: binaryContentId={}, fileName={}, size={}, contentType={}",
         binaryContent.getId(), binaryContent.getFileName(), binaryContent.getSize(),
         binaryContent.getContentType());
     return binaryContentMapper.toDto(binaryContent);
@@ -64,7 +64,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Transactional(readOnly = true)
   public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
     List<BinaryContent> allByIdIn = binaryContentRepository.findAllByIdIn(ids);
-    log.debug("파일 목록 조회 완료: binaryContentCount={}", allByIdIn.size());
+    log.debug("[BINARY_CONTENT] 파일 목록 조회 완료: binaryContentCount={}", allByIdIn.size());
     return allByIdIn.stream()
         .map(binaryContentMapper::toDto)
         .toList();
@@ -76,6 +76,6 @@ public class BasicBinaryContentService implements BinaryContentService {
         .orElseThrow(() -> new BinaryContentNotFoundException(
             Map.of("binaryContentId", binaryContentId)));
     binaryContentRepository.delete(binaryContent);
-    log.info("파일 삭제 성공: binaryContentId={}", binaryContentId);
+    log.info("[BINARY_CONTENT] 파일 삭제 성공: binaryContentId={}", binaryContentId);
   }
 }

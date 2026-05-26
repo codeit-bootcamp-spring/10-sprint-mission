@@ -46,7 +46,7 @@ public class ChannelController {
   @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨")
   public ResponseEntity<ChannelDto> createPublic(
       @Valid @RequestBody PublicChannelCreateRequest request) {
-    log.info("Public 채널 생성 요청: name={}", request.name());
+    log.info("[CHANNEL] Public 채널 생성 요청: name={}", request.name());
     ChannelDto response = channelService.createPublic(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
@@ -56,7 +56,7 @@ public class ChannelController {
   @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨")
   public ResponseEntity<ChannelDto> createPrivate(
       @Valid @RequestBody PrivateChannelCreateRequest request) {
-    log.info("Private 채널 생성 요청: participantIdCount={}", request.participantIds().size());
+    log.info("[CHANNEL] Private 채널 생성 요청: participantIdCount={}", request.participantIds().size());
     ChannelDto response = channelService.createPrivate(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
@@ -74,7 +74,7 @@ public class ChannelController {
       @NotNull @PathVariable UUID channelId,
       @Valid @RequestBody PublicChannelUpdateRequest request
   ) {
-    log.info("Public 채널 수정 요청: id={}", channelId);
+    log.info("[CHANNEL] Public 채널 수정 요청: id={}", channelId);
     ChannelDto response = channelService.update(channelId, request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
@@ -90,7 +90,7 @@ public class ChannelController {
       @Parameter(description = "삭제할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @NotNull @PathVariable UUID channelId
   ) {
-    log.info("채널 삭제 요청: id={}", channelId);
+    log.info("[CHANNEL] 채널 삭제 요청: id={}", channelId);
     channelService.delete(channelId);
     return ResponseEntity.noContent().build();
   }
@@ -102,7 +102,7 @@ public class ChannelController {
       @Parameter(description = "조회할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @NotNull @RequestParam("userId") UUID userId
   ) {
-    log.debug("유저가 참여 중인 채널 목록 조회 요청: userId={}", userId);
+    log.debug("[CHANNEL] 유저가 참여 중인 채널 목록 조회 요청: userId={}", userId);
     List<ChannelDto> responses = channelService.findAllByUserId(userId);
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }

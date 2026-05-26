@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler
   public ResponseEntity<ErrorResponse> handleBusinessLogicException(DiscodeitException e) {
-    log.warn("비즈니스 예외 발생 - code: {}, message: {}, details: {}",
+    log.warn("[ERROR] 비즈니스 예외 발생 - code: {}, message: {}, details: {}",
         e.getErrorCode().name(), e.getMessage(), e.getDetails());
     return ResponseEntity
         .status(e.getErrorCode().getStatusCode())
@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler
   public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
       MethodArgumentNotValidException e) {
-    log.warn("DTO 유효성 검증 실패", e);
+    log.warn("[ERROR] DTO 유효성 검증 실패", e);
     Map<String, Object> details = new HashMap<>();
     e.getBindingResult().getFieldErrors().forEach(
         fieldError -> details.put(fieldError.getField(), fieldError.getDefaultMessage())
@@ -58,7 +58,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler
   public ResponseEntity<ErrorResponse> handleConstraintViolationException(
       ConstraintViolationException e) {
-    log.warn("Parameter 유효성 검증 실패", e);
+    log.warn("[ERROR] Parameter 유효성 검증 실패", e);
     Map<String, Object> details = new HashMap<>();
     e.getConstraintViolations().forEach(violation -> {
       String propertyPath = violation.getPropertyPath().toString();
@@ -78,7 +78,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler
   public ResponseEntity<ErrorResponse> handleException(Exception e) {
-    log.error("예상치 못한 서버 내부 오류 발생", e);
+    log.error("[ERROR] 예상치 못한 서버 내부 오류 발생", e);
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(ErrorResponse.of(
@@ -93,7 +93,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler
   public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException e) {
-    log.warn("인증 실패", e);
+    log.warn("[ERROR] 인증 실패", e);
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
         .body(ErrorResponse.of(
@@ -108,7 +108,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler
   public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
-    log.warn("인가 실패", e);
+    log.warn("[ERROR] 인가 실패", e);
     return ResponseEntity
         .status(HttpStatus.FORBIDDEN)
         .body(ErrorResponse.of(

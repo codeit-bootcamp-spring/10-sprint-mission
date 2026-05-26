@@ -55,7 +55,7 @@ public class MessageController {
       @Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
-    log.info("메시지 생성 요청: authorId={}, channelId={}", request.authorId(),
+    log.info("[MESSAGE] 메시지 생성 요청: authorId={}, channelId={}", request.authorId(),
         request.channelId());
     MessageDto response = messageService.create(request, attachments);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -73,7 +73,7 @@ public class MessageController {
       @NotNull @PathVariable UUID messageId,
       @Valid @RequestBody MessageUpdateRequest request
   ) {
-    log.info("메시지 수정 요청: messageId={}", messageId);
+    log.info("[MESSAGE] 메시지 수정 요청: messageId={}", messageId);
     MessageDto response = messageService.update(messageId, request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
@@ -89,7 +89,7 @@ public class MessageController {
       @Parameter(description = "삭제할 Message ID", example = "4e23cb1a-e2ae-4171-811f-ccc4c13fc577")
       @NotNull @PathVariable UUID messageId
   ) {
-    log.info("메시지 삭제 요청: messageId={}", messageId);
+    log.info("[MESSAGE] 메시지 삭제 요청: messageId={}", messageId);
     messageService.delete(messageId);
     return ResponseEntity.noContent().build();
   }
@@ -104,7 +104,7 @@ public class MessageController {
       @RequestParam(value = "cursor", required = false) Instant cursor,
       Pageable pageable
   ) {
-    log.debug("메시지 목록 조회 요청: channelId={}", channelId);
+    log.debug("[MESSAGE] 메시지 목록 조회 요청: channelId={}", channelId);
     PageResponse<MessageDto> response = messageService.findAllByChannelId(channelId, cursor,
         pageable);
     return ResponseEntity.status(HttpStatus.OK).body(response);

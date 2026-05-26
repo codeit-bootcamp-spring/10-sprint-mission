@@ -31,7 +31,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
     response.setStatus(401);
     response.setContentType("application/json;charset=UTF-8");
 
-    log.debug("로그인 실패 유저 이름: username={}", request.getParameter("username"));
+    log.debug("[LOGIN] 로그인 실패 유저 이름: username={}", request.getParameter("username"));
 
     ErrorResponse errorResponse = ErrorResponse.of(
         Instant.now(),

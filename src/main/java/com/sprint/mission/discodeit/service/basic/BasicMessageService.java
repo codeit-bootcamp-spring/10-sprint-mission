@@ -76,7 +76,8 @@ public class BasicMessageService implements MessageService {
           continue;
         }
         try {
-          log.debug("첨부 파일 업로드 시작: name={}, size={}", file.getOriginalFilename(), file.getSize());
+          log.debug("[MESSAGE] 첨부 파일 업로드 시작: name={}, size={}", file.getOriginalFilename(),
+              file.getSize());
           BinaryContent attachment = new BinaryContent(
               file.getOriginalFilename(),
               file.getSize(),
@@ -85,14 +86,14 @@ public class BasicMessageService implements MessageService {
           binaryContentRepository.save(attachment);
           binaryContentStorage.put(attachment.getId(), file.getBytes());
           message.addAttachment(attachment); //편의 메서드 사용
-          log.info("첨부 파일 저장 성공: attachmentId={}", attachment.getId());
+          log.info("[MESSAGE] 첨부 파일 저장 성공: attachmentId={}", attachment.getId());
         } catch (IOException e) {
           throw new BinaryContentUploadException(e);
         }
       }
     }
     messageRepository.save(message); //cascade로 attachment들도 같이 INSERT
-    log.info("메시지 생성 완료: messageId={}", message.getId());
+    log.info("[MESSAGE] 메시지 생성 완료: messageId={}", message.getId());
     return messageMapper.toDto(message);
   }
 
@@ -101,7 +102,8 @@ public class BasicMessageService implements MessageService {
   public MessageDto findById(UUID messageId) {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
-    log.debug("메시지 조회 완료: messageId={}, content={}", message.getId(), message.getContent());
+    log.debug("[MESSAGE] 메시지 조회 완료: messageId={}, content={}", message.getId(),
+        message.getContent());
     return messageMapper.toDto(message);
   }
 
@@ -120,7 +122,7 @@ public class BasicMessageService implements MessageService {
     if (!slice.getContent().isEmpty() && slice.hasNext()) {
       nextCursor = slice.getContent().get(slice.getContent().size() - 1).createdAt();
     }
-    log.debug("메시지 목록 조회 완료: channelId={}, count={}, hasNext={}, nextCursor={}",
+    log.debug("[MESSAGE] 메시지 목록 조회 완료: channelId={}, count={}, hasNext={}, nextCursor={}",
         channelId, slice.getContent().size(), slice.hasNext(), nextCursor);
     return pageMapper.fromSlice(slice, nextCursor);
   }
@@ -130,7 +132,7 @@ public class BasicMessageService implements MessageService {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
     message.update(request.newContent());
-    log.info("메시지 수정 완료: messageId={}", message.getId());
+    log.info("[MESSAGE] 메시지 수정 완료: messageId={}", message.getId());
     return messageMapper.toDto(message);
   }
 
@@ -139,7 +141,7 @@ public class BasicMessageService implements MessageService {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
     messageRepository.delete(message);
-    log.info("메시지 삭제 완료: messageId={}", message.getId());
+    log.info("[MESSAGE] 메시지 삭제 완료: messageId={}", message.getId());
   }
 
   @Transactional(readOnly = true)

@@ -52,7 +52,8 @@ public class BasicUserService implements UserService {
     //요청에 프로필이 있다면 binaryContent 객체 생성 후 저장
     if (file != null && !file.isEmpty()) {
       try {
-        log.debug("프로필 사진 업로드 시작: name={}, size={}", file.getOriginalFilename(), file.getSize());
+        log.debug("[USER] 프로필 사진 업로드 시작: name={}, size={}", file.getOriginalFilename(),
+            file.getSize());
         profile = new BinaryContent(
             file.getOriginalFilename(),
             file.getSize(),
@@ -60,7 +61,7 @@ public class BasicUserService implements UserService {
         );
         binaryContentRepository.save(profile);
         binaryContentStorage.put(profile.getId(), file.getBytes());
-        log.info("프로필 사진 저장 성공: profileId={}", profile.getId());
+        log.info("[USER] 프로필 사진 저장 성공: profileId={}", profile.getId());
       } catch (IOException e) {
         throw new BinaryContentUploadException(e);
       }
@@ -75,7 +76,7 @@ public class BasicUserService implements UserService {
     );
 
     userRepository.save(user);
-    log.info("유저 생성 완료: userId={}", user.getId());
+    log.info("[USER] 유저 생성 완료: userId={}", user.getId());
     return userMapper.toDto(user, false);
   }
 
@@ -85,7 +86,7 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
     boolean isLoggedIn = authService.isUserLoggedIn(userId);
-    log.debug("유저 조회 완료: user={}, username={}", user.getId(), user.getUsername());
+    log.debug("[USER] 유저 조회 완료: user={}, username={}", user.getId(), user.getUsername());
     return userMapper.toDto(user, isLoggedIn);
   }
 
@@ -93,7 +94,7 @@ public class BasicUserService implements UserService {
   @Transactional(readOnly = true)
   public List<UserDto> findAll() {
     List<User> users = userRepository.findAll();
-    log.debug("유저 목록 조회 완료: userCount={}", users.size());
+    log.debug("[USER] 유저 목록 조회 완료: userCount={}", users.size());
     return users.stream()
         .map(user -> {
           boolean isOnline = authService.isUserLoggedIn(user.getId());
@@ -117,7 +118,7 @@ public class BasicUserService implements UserService {
 
     if (file != null && !file.isEmpty()) { //요청에 프로필 파일이 있는지 확인
       try {
-        log.debug("새로운 프로필 사진 업로드 시작: name={}, size={}", file.getOriginalFilename(),
+        log.debug("[USER] 새로운 프로필 사진 업로드 시작: name={}, size={}", file.getOriginalFilename(),
             file.getSize());
         BinaryContent newProfile = new BinaryContent(
             file.getOriginalFilename(),
@@ -127,12 +128,12 @@ public class BasicUserService implements UserService {
         binaryContentRepository.save(newProfile);
         binaryContentStorage.put(newProfile.getId(), file.getBytes());
         user.updateProfile(newProfile);
-        log.info("새로운 프로필 사진 저장 성공: profileId={}", newProfile.getId());
+        log.info("[USER] 새로운 프로필 사진 저장 성공: profileId={}", newProfile.getId());
       } catch (IOException e) {
         throw new BinaryContentUploadException(e);
       }
     }
-    log.info("유저 수정 완료: userId={}", user.getId());
+    log.info("[USER] 유저 수정 완료: userId={}", user.getId());
     boolean isOnline = authService.isUserLoggedIn(userId);
     return userMapper.toDto(user, isOnline);
   }
@@ -143,7 +144,7 @@ public class BasicUserService implements UserService {
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", request.userId())));
     user.updateRole(request.newRole());
     authService.expireUserSessions(user.getId());
-    log.info("유저 역할 수정 완료: userId={}", user.getId());
+    log.info("[USER] 유저 역할 수정 완료: userId={}", user.getId());
     return userMapper.toDto(user, false);
   }
 
@@ -152,7 +153,7 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
     userRepository.delete(user);
-    log.info("유저 삭제 완료: userId={}", userId);
+    log.info("[USER] 유저 삭제 완료: userId={}", userId);
   }
 
   //유저명 중복체크

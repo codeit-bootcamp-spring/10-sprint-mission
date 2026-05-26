@@ -43,7 +43,7 @@ public class BinaryContentController {
       @Parameter(description = "조회할 첨부 파일 ID", example = "0b71409f-f489-40a2-a075-c2c93640351c")
       @NotNull @PathVariable UUID binaryContentId
   ) {
-    log.debug("파일 조회 요청: binaryContentId={}", binaryContentId);
+    log.debug("[BINARY_CONTENT] 파일 조회 요청: binaryContentId={}", binaryContentId);
     BinaryContentDto response = binaryContentService.findById(binaryContentId);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
@@ -58,7 +58,7 @@ public class BinaryContentController {
       )
       @NotNull @RequestParam("binaryContentIds") List<UUID> binaryContentIds
   ) {
-    log.debug("파일 목록 조회 요청: binaryContentIdCount={}", binaryContentIds.size());
+    log.debug("[BINARY_CONTENT] 파일 목록 조회 요청: binaryContentIdCount={}", binaryContentIds.size());
     List<BinaryContentDto> response = binaryContentService.findAllByIdIn(binaryContentIds);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
@@ -70,7 +70,7 @@ public class BinaryContentController {
       @Parameter(description = "다운로드할 파일 ID")
       @NotNull @PathVariable UUID binaryContentId
   ) {
-    log.info("파일 다운로드 요청: binaryContentId={}", binaryContentId);
+    log.info("[BINARY_CONTENT] 파일 다운로드 요청: binaryContentId={}", binaryContentId);
     BinaryContentDto response = binaryContentService.findById(binaryContentId);
     return binaryContentStorage.download(response);
   }

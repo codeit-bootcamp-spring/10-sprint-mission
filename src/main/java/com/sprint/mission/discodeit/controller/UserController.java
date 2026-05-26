@@ -51,7 +51,7 @@ public class UserController {
       @Valid @RequestPart("userCreateRequest") UserCreateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    log.info("유저 생성 요청: username={}, email={}", request.username(), request.email());
+    log.info("[USER] 유저 생성 요청: username={}, email={}", request.username(), request.email());
     UserDto response = userService.create(request, profile);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
@@ -65,7 +65,7 @@ public class UserController {
       @Valid @RequestPart("userUpdateRequest") UserUpdateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    log.info("유저 수정 요청: userId={}", userId);
+    log.info("[USER] 유저 수정 요청: userId={}", userId);
     UserDto response = userService.update(userId, request, profile);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
@@ -81,7 +81,7 @@ public class UserController {
       @Parameter(description = "삭제할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @NotNull @PathVariable UUID userId
   ) {
-    log.info("유저 삭제 요청: userId={}", userId);
+    log.info("[USER] 유저 삭제 요청: userId={}", userId);
     userService.delete(userId);
     return ResponseEntity.noContent().build();
   }
@@ -90,7 +90,7 @@ public class UserController {
   @Operation(summary = "전체 User 목록 조회")
   @ApiResponse(responseCode = "200", description = "User 목록 조회 성공")
   public ResponseEntity<List<UserDto>> findAll() {
-    log.debug("유저 목록 조회 요청");
+    log.debug("[USER] 유저 목록 조회 요청");
     List<UserDto> responses = userService.findAll();
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
