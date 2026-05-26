@@ -26,11 +26,11 @@ public class JwtTokenProvider {
     private String secretKey;
 
     @Getter
-    @Value("${jwt.key}")
+    @Value("${jwt.access-token-expiration-minutes}")
     private int accessTokenExpirationMinutes;
 
     @Getter
-    @Value("${jwt.key}")
+    @Value("${jwt.refresh-token-expiration-minutes}")
     private int refreshTokenExpirationMinutes;
 
     public String generateAccessToken(Authentication authentication){
