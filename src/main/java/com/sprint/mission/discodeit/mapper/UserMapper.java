@@ -11,21 +11,13 @@ import org.springframework.security.core.session.SessionRegistry;
 @Mapper(componentModel = "spring", uses = {BinaryContentMapper.class})
 public abstract class UserMapper {
 
-  @Autowired
-  protected SessionRegistry sessionRegistry;
-
   @Mapping(target = "online", expression = "java(isUserOnline(user))")
   public abstract UserDto toDto(User user);
 
   // 현재 유저가 로그인 상태인지 판별
   protected boolean isUserOnline(User user) {
-    if (sessionRegistry == null) {
-      return false;
-    }
-    // 현재 로그인된 사용자 객체들 순회
-    return sessionRegistry.getAllPrincipals().stream()
-        .filter(principal -> principal instanceof DiscodeitUserDetails)
-        .map(principal -> (DiscodeitUserDetails) principal)
-        .anyMatch(userDetails -> userDetails.getId().equals(user.getId()));
+    // [임시 조치] 현재 완벽한 무상태로 전환되었으므로 서버 단독으로는 접속 여부를 알 수 없어 항상 false 반환하도록 함
+    // 향후 JwtRegistry 활용하여 접속 여부 판별 로직 구현 예정
+    return false;
   }
 }
