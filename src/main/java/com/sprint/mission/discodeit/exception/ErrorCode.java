@@ -11,6 +11,8 @@ public enum ErrorCode {
   LOGIN_FAILED("A002", "아이디 또는 비밀번호가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED),
   ACCESS_DENIED("A003", "해당 리소스에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN),
   INVALID_TOKEN("A004", "유효하지 않거나 만료된 토큰입니다.", HttpStatus.UNAUTHORIZED),
+  TOKEN_GENERATION_FAILED("A005", "토큰 생성 중 서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+  TOKEN_PARSE_ERROR("A006", "토큰 식별자 추출 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
   // ==== 유저 관련 ====
   USER_NOT_FOUND("U001", "해당 유저를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),

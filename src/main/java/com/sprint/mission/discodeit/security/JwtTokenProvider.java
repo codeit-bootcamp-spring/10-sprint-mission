@@ -9,8 +9,13 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.auth.AuthException;
+import com.sprint.mission.discodeit.exception.auth.TokenGenerationException;
+import com.sprint.mission.discodeit.exception.auth.TokenParseException;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,7 +72,8 @@ public class JwtTokenProvider {
       signedJWT.sign(signer);
       return signedJWT.serialize();
     } catch (JOSEException e) {
-      throw new RuntimeException("토큰 생성 중 오류가 발생했습니다.", e);
+      log.error("Failed to sign and serialize JWT token for subject: {}", subject, e);
+      throw new TokenGenerationException(Map.of("reason", "토큰 서명 암호화에 실패했습니다."), e);
     }
   }
 
@@ -76,14 +82,19 @@ public class JwtTokenProvider {
     try { // 검증되었는지 확인
       SignedJWT signedJWT = SignedJWT.parse(token);
       if (!signedJWT.verify(verifier)) {
-        return false;
+        log.debug("JWT signature verification failed");
+        return false; // 필터 단은 글로벌 핸들러가 처리 못 하니 false 반환 -> 401
       }
       // 만료 여부 확인
       Instant expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime().toInstant();
-      return expirationTime.isAfter(Instant.now());
+      if (!expirationTime.isAfter(Instant.now())) {
+        log.debug("JWT token is expired");
+        return false; // 필터 단은 글로벌 핸들러가 처리 못 하니 false 반환 -> 401
+      }
+      return true;
     } catch (Exception e) {
-      log.debug("유효하지 않은 JWT 토큰입니다.", e);
-      return false;
+      log.debug("Invalid or malformed JWT token provided", e);
+      return false; // 필터 단은 글로벌 핸들러가 처리 못 하니 false 반환 -> 401
     }
   }
 
@@ -93,7 +104,19 @@ public class JwtTokenProvider {
       SignedJWT signedJWT = SignedJWT.parse(token);
       return signedJWT.getJWTClaimsSet().getSubject();
     } catch (Exception e) {
-      throw new RuntimeException("토큰 파싱 중 오류가 발생했습니다.", e);
+      log.error("Failed to parse subject from JWT token", e);
+      throw new TokenParseException(Map.of("reason", "토큰 식별자(Subject) 파싱에 실패했습니다."), e);
+    }
+  }
+
+  // 토큰에서 만료시간 추출
+  public Instant getExpirationFromToken(String token) {
+    try {
+      SignedJWT signedJWT = SignedJWT.parse(token);
+      return signedJWT.getJWTClaimsSet().getExpirationTime().toInstant();
+    } catch (Exception e) {
+      log.error("Failed to parse expiration from JWT token", e);
+      throw new TokenParseException(Map.of("reason", "토큰 만료시간 파싱에 실패했습니다."), e);
     }
   }
 }
