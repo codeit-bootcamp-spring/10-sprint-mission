@@ -48,12 +48,6 @@ public class SecurityConfig {
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(jwtLoginSuccessHandler)
                         .failureHandler(loginFailureHandler))
-                .rememberMe(remember -> remember
-                        .rememberMeParameter("remember-me")
-                        .rememberMeCookieName("my-remember-me")
-                        .tokenValiditySeconds(7 * 24 * 60 * 60)
-                        .key("my-remember-key")
-                        .userDetailsService(discodeitUserDetailsService))
                 // 로그아웃 설정
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
