@@ -4,22 +4,23 @@ import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.exception.file.FileUploadFailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.exception.userStatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -28,9 +29,10 @@ import java.util.*;
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     @Override
     @Transactional
@@ -43,7 +45,8 @@ public class BasicUserService implements UserService {
         // 유저 객체 생성
         User user = new User(request.getUsername(),
                 request.getEmail(),
-                request.getPassword());
+                passwordEncoder.encode(request.getPassword()),
+                Role.USER);
 
         // 프로필 등록 여부 & binaryContent객체 생성
         if(profile != null){
@@ -67,11 +70,6 @@ public class BasicUserService implements UserService {
         // 유저 저장
         userRepository.save(user);
 
-        // 유저 상태 생성
-        UserStatus userStatus = new UserStatus(user);
-        userStatusRepository.save(userStatus);
-        log.info("유저 회원가입 성공: userId = {}", user.getId());
-
         return userMapper.toDto(user,true);
     }
 
@@ -79,10 +77,9 @@ public class BasicUserService implements UserService {
     @Transactional(readOnly = true)
     public UserDto findUser(UUID userId) {
         User user = getUser(userId);
-        UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new UserStatusNotFoundException(userId));
 
-        boolean online = isOnline(userStatus.getLastActiveAt());
+        UserDto dummyDto = userMapper.toDto(user,true);
+        boolean online =  authService.isOnline(dummyDto);
         log.trace("유저 조회 성공: 사용자 id = {}, 이름 = {}, 온라인 상태 = {}",user.getId(), user.getUsername(), online);
         return userMapper.toDto(user,online);
     }
@@ -95,10 +92,9 @@ public class BasicUserService implements UserService {
             // 가져온 객체들을 dto로 변환
             return userList.stream()
                     .map(user -> {
-                        // n + 1 문제 지점
-                        boolean online = userStatusRepository.findByUserId(user.getId())
-                                .map(us -> isOnline(us.getLastActiveAt()))
-                                .orElseThrow(() -> new UserStatusNotFoundException(user.getId()));
+                        UserDto dummyDto = userMapper.toDto(user,true);
+                        boolean online =  authService.isOnline(dummyDto);
+
                         return userMapper.toDto(user, online);
                     })
                     .toList();
@@ -109,6 +105,7 @@ public class BasicUserService implements UserService {
 
     @Override
     @Transactional
+    @PreAuthorize("#userId == principal.userDto.id")
     public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile profile) {
         User user = getUser(userId);
         // 이름 수정
@@ -124,7 +121,8 @@ public class BasicUserService implements UserService {
         }
         // 비밀번호 수정
         if(request.getNewPassword() != null){
-            user.updatePassword(request.getNewPassword());
+            String newPassword = passwordEncoder.encode(request.getNewPassword());
+            user.updatePassword(newPassword);
         }
         // 프로필 수정(기존에 있던 binaryContent를 삭제하고 업데이트 dto에 있는 binaryContent를 생성
         if(profile != null){
@@ -148,6 +146,7 @@ public class BasicUserService implements UserService {
 
     @Override
     @Transactional
+    @PreAuthorize("#userId == principal.userDto.id")
     public void delete(UUID userId) {
         User user = getUser(userId);
         BinaryContent profileImg = user.getProfile();
@@ -160,11 +159,6 @@ public class BasicUserService implements UserService {
             binaryContentRepository.delete(profileImg);
         }
         log.info("유저 삭제 성공: 유저 id = {}", userId);
-    }
-
-    private boolean isOnline(Instant lastOnlineAt){
-        // 만약 최종접속시간이 현재시간의 5분전 이내라면 참 반환
-        return lastOnlineAt.isAfter(Instant.now().minus(Duration.ofMinutes(5)));
     }
 
     // 유효성 검사

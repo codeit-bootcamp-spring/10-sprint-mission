@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.Instant;
@@ -12,6 +13,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
+    @Override
+    @EntityGraph(attributePaths = {"author"})
+    Optional<Message> findById(UUID uuid);
+
     Optional<Message> findFirstByChannelIdOrderByCreatedAtDesc(UUID channelId);
     Slice<Message> findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(UUID channelId, Instant cursor, Pageable pageable);
     Slice<Message> findByChannelIdOrderByCreatedAtDesc(UUID channelId, Pageable pageable);

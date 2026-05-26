@@ -35,19 +35,10 @@ CREATE TABLE users
     username  VARCHAR(50) UNIQUE  NOT NULL,
     email      VARCHAR(100) UNIQUE NOT NULL,
     password   VARCHAR(60)         NOT NULL,
+    role       VARCHAR(20)         NOT NULL,
     profile_id UUID UNIQUE REFERENCES binary_contents (id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ         NOT NULL,
     updated_at TIMESTAMPTZ
-);
-
--- 5. 유저 온라인 상태 확인 테이블
-CREATE TABLE user_statuses
-(
-    id             UUID PRIMARY KEY,
-    user_id        UUID UNIQUE NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    last_active_at TIMESTAMPTZ NOT NULL,
-    created_at     TIMESTAMPTZ NOT NULL,
-    updated_at     TIMESTAMPTZ
 );
 
 -- 6. 메시지 관리 테이블
@@ -79,4 +70,18 @@ CREATE TABLE read_statuses
     created_at   TIMESTAMPTZ NOT NULL,
     updated_at   TIMESTAMPTZ,
     CONSTRAINT unique_user_channel UNIQUE (user_id, channel_id)
+);
+
+-- 9. RefreshToken 관리 테이블
+
+CREATE TABLE refresh_tokens
+(
+    id    UUID PRIMARY KEY,
+    token VARCHAR(500) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    created_at   TIMESTAMPTZ NOT NULL,
+    updated_at   TIMESTAMPTZ,
+
+    CONSTRAINT uk_refresh_tokens_token UNIQUE (token),
+    CONSTRAINT uk_refresh_tokens_email UNIQUE (email)
 );
