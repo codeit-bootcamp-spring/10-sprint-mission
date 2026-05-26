@@ -8,6 +8,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -31,18 +32,19 @@ public class JwtTokenProvider {
     @Value("${jwt.refresh-token-expiration-minutes}")
     private int refreshTokenExpirationMinutes;
 
-    public String generateAccessToken(Map<String, Object> claims, String subject) {
+    public String generateAccessToken(UserDto userDto) {
         try {
             JWSSigner signer = new MACSigner(secretKey.getBytes(StandardCharsets.UTF_8));
 
             Date expiration = new Date(System.currentTimeMillis() + accessTokenExpirationMinutes * 60 * 1000);
 
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                    .subject(subject)
-                    .claim("roles", claims.get("roles"))
+                    .subject(userDto.id().toString())
+                    .claim("email", userDto.email())
+                    .claim("username", userDto.username())
                     .expirationTime(expiration)
                     .issueTime(new Date())
-                    .issuer("example.com")
+                    .issuer("discodeit.com")
                     .build();
 
             SignedJWT signedJWT = new SignedJWT(
@@ -57,14 +59,14 @@ public class JwtTokenProvider {
         }
     }
 
-    public String generateRefreshToken(String subject) {
+    public String generateRefreshToken(UserDto userDto) {
         try {
             JWSSigner signer = new MACSigner(secretKey.getBytes(StandardCharsets.UTF_8));
 
             Date expiration = new Date(System.currentTimeMillis() + refreshTokenExpirationMinutes * 60 * 1000);
 
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                    .subject(subject)
+                    .subject(userDto.id().toString())
                     .expirationTime(expiration)
                     .issueTime(new Date())
                     .issuer("example.com")
