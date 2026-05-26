@@ -19,6 +19,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenProvider {
 
+  public static String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
+
   @Getter
   @Value("${discodeit.jwt.key}")
   private String secretKey;
@@ -36,10 +38,9 @@ public class JwtTokenProvider {
       JWSSigner signer = new MACSigner(secretKey.getBytes(StandardCharsets.UTF_8));
       Date expiration = new Date(
           System.currentTimeMillis() + accessTokenExpirationMinutes * 60 * 1000);
-
-      JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+      JWTClaimsSet baseClaimsSet = JWTClaimsSet.parse(claims);
+      JWTClaimsSet claimsSet = new JWTClaimsSet.Builder(baseClaimsSet)
           .subject(subject)
-          .claim("roles", claims.get("roles"))
           .expirationTime(expiration)
           .issueTime(new Date())
           .issuer("discodeit.com")
@@ -95,6 +96,21 @@ public class JwtTokenProvider {
 
       JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
       return claimsSet.getClaims();
+    } catch (Exception e) {
+      throw new RuntimeException("JWT 파싱 실패", e);
+    }
+  }
+
+  public String getSubject(String token) {
+    try {
+      SignedJWT signedJWT = SignedJWT.parse(token);
+      JWSVerifier verifier = new MACVerifier(secretKey.getBytes(StandardCharsets.UTF_8));
+
+      if (!signedJWT.verify(verifier)) {
+        throw new RuntimeException("JWT 검증 실패");
+      }
+
+      return signedJWT.getJWTClaimsSet().getSubject();
     } catch (Exception e) {
       throw new RuntimeException("JWT 파싱 실패", e);
     }

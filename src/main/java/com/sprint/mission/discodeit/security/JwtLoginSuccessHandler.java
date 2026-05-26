@@ -39,7 +39,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
       response.getWriter().write(json);
 
       String refreshToken = delegateRefreshToken(userDto);
-      Cookie refreshTokenCookie = new Cookie("REFRESH_TOKEN", refreshToken);
+      Cookie refreshTokenCookie = new Cookie(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME,
+          refreshToken);
       refreshTokenCookie.setHttpOnly(true);
       refreshTokenCookie.setPath("/");
       refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);
@@ -61,14 +62,14 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     claims.put("roles", userDto.role().getDbKey());
     claims.put("userId", userDto.id());
 
-    String subject = userDto.username();
+    String subject = userDto.id().toString();
 
     return jwtTokenProvider.generateAccessToken(
         claims, subject);
   }
 
   private String delegateRefreshToken(UserDto userDto) {
-    String subject = userDto.username();
+    String subject = userDto.id().toString();
     return jwtTokenProvider.generateRefreshToken(subject);
   }
 }

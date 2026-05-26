@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.user.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.exception.user.DiscodeitUnauthorizedException;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.JwtService;
 import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,7 +52,8 @@ public class AuthController {
   public ResponseEntity<JwtDto> refresh(
       @CookieValue(value = "REFRESH_TOKEN") String oldRefreshToken) {
     JwtInformation jwtInformation = jwtService.rotateToken(oldRefreshToken);
-    ResponseCookie cookie = ResponseCookie.from("REFRESH_TOKEN", jwtInformation.refreshToken())
+    ResponseCookie cookie = ResponseCookie.from(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME,
+            jwtInformation.refreshToken())
         .httpOnly(true)
         .path("/")
         .maxAge(60 * 60 * 24 * 7)
