@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,7 +63,6 @@ public class BasicMessageService implements MessageService {
 
         Message message = new Message(user, channel, dto.content(), attachmentEntities);
 
-        user.getUserStatus().updateLastActiveAt(Instant.now());
         // id를 만들기 위해 저장
         Message savedMessage = messageRepository.saveAndFlush(message);
         // storage에 반영
@@ -138,6 +138,7 @@ public class BasicMessageService implements MessageService {
         return messageMapper.toDto(findMessageOrThrow(messageId));
     }
 
+    @PreAuthorize("@messageSecurity.isOwner(#messageId, authentication.principal.id)")
     @Override
     public MessageDto updateMessage(UUID messageId, UpdateMessageRequestDTO dto) {
         Message message = findMessageOrThrow(messageId);
@@ -155,6 +156,7 @@ public class BasicMessageService implements MessageService {
         return messageMapper.toDto(message);
     }
 
+    @PreAuthorize("@messageSecurity.isOwner(#messageId, authentication.principal.id)")
     @Override
     public void deleteMessage(UUID messageId) {
         findMessageOrThrow(messageId).getAttachments();

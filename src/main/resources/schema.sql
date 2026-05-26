@@ -41,7 +41,8 @@ create table users
         unique,
     password   varchar(255)                not null,
     username   varchar(255)                not null
-        unique
+        unique,
+    role       varchar(20) NOT NULL
 );
 
 alter table users
@@ -100,21 +101,3 @@ create table read_statuses
 
 alter table read_statuses
     owner to discodeit_user;
-
-create table user_statuses
-(
-    created_at     timestamp(6) with time zone not null,
-    last_active_at timestamp(6) with time zone,
-    updated_at     timestamp(6) with time zone not null,
-    id             uuid                        not null
-        primary key,
-    user_id        uuid                        not null
-        unique
-        constraint fk4lfl3ei2ubchgcxrrpo3pw4mm
-            references users
-);
-
-alter table user_statuses
-    owner to discodeit_user;
-
-

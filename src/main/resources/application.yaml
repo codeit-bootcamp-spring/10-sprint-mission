@@ -18,10 +18,14 @@ discodeit:
       region: ${AWS_REGION}
       bucket: ${AWS_BUCKET}
       presigned-url-expiration: ${AWS_PRESIGNED_URL_EXPIRATION:600}
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    email: ${ADMIN_EMAIL:admin@gmail.com}
+    password: ${ADMIN_PASSWORD:admin1234}
 
 spring:
   profiles:
-    active: prod
+    active: dev
   servlet:
     multipart:    # binaryContent 활성화
       enabled: true
@@ -35,3 +39,8 @@ logging:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
     org.hibernate.orm.jdbc.extract: trace
+
+jwt:
+  key: ${JWT_SECRET_KEY}
+  access-token-expiration-minutes: 30
+  refresh-token-expiration-minutes: 420
