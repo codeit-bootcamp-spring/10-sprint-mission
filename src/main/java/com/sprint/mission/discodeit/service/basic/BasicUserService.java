@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,17 +11,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.UserEmailAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UsernameAlreadyExistsException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.security.SessionManager;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -42,7 +37,7 @@ public class BasicUserService implements UserService {
 	private final BinaryContentRepository binaryContentRepository;
 	private final BinaryContentStorage binaryContentStorage;
 	private final PasswordEncoder passwordEncoder;
-	private final SessionRegistry sessionRegistry;
+	private final SessionManager sessionManager;
 
 	@Transactional
 	@Override
@@ -137,26 +132,6 @@ public class BasicUserService implements UserService {
 		return userMapper.toDto(user);
 	}
 
-	@PreAuthorize("hasRole('ADMIN')")
-	@Transactional
-	@Override
-	public UserDto updateRole(UserRoleUpdateRequest request) {
-		UUID userId = request.userId();
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new UserNotFoundException(userId));
-
-		Role previousRole = user.getRole();
-		Role newRole = request.newRole();
-		user.updateRole(newRole);
-
-		if (newRole != null && !previousRole.equals(newRole)) {
-			expireUserSessions(userId);
-		}
-
-		log.info("[USER_ROLE_UPDATE] 사용자 권한 수정 완료: userId={}, role={}", userId, user.getRole());
-		return userMapper.toDto(user);
-	}
-
 	@Transactional
 	@Override
 	public void delete(UUID userId) {
@@ -164,23 +139,9 @@ public class BasicUserService implements UserService {
 			throw new UserNotFoundException(userId);
 		}
 
-		expireUserSessions(userId);
+		sessionManager.invalidateSessionsByUserId(userId);
 		userRepository.deleteById(userId);
 		log.info("[USER_DELETE] 사용자 삭제 완료: userId={}", userId);
 	}
 
-	private void expireUserSessions(UUID userId) {
-		sessionRegistry.getAllPrincipals().stream()
-			.filter(DiscodeitUserDetails.class::isInstance)
-			.map(DiscodeitUserDetails.class::cast)
-			.filter(principal -> userId.equals(principal.getUserDto().id()))
-			.forEach(principal -> sessionRegistry.getAllSessions(principal, false).stream()
-				.map(SessionInformation::getSessionId)
-				.forEach(sessionId -> {
-					SessionInformation sessionInformation = sessionRegistry.getSessionInformation(sessionId);
-					if (sessionInformation != null) {
-						sessionInformation.expireNow();
-					}
-				}));
-	}
 }
