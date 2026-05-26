@@ -34,7 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       Map<String, Object> claims = verifyJws(request);
       setAuthenticationToContext(claims);
     } catch (Exception e) {
-      log.error("JWT 필터 예외 발생 - 요청 URL: {}, 원인: {}", request.getRequestURI(), e.getMessage(), e);
+      log.error("JWT 필터 예외 발생 - 요청 URL: {}, 원인: {}", request.getRequestURI(), e.getMessage());
       SecurityContextHolder.clearContext();
     }
     filterChain.doFilter(request, response);

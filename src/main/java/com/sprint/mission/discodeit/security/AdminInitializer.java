@@ -34,6 +34,8 @@ public class AdminInitializer implements CommandLineRunner {
       admin.updateRole(Role.ADMIN);
       userRepository.save(admin);
       log.info("초기 어드민 계정 생성 완료");
+    } else {
+      log.debug("이미 어드민 계정이 존재합니다.");
     }
   }
 }

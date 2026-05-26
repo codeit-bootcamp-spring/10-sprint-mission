@@ -102,6 +102,5 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     origin.values().forEach(queue -> queue
         .removeIf(info -> jwtTokenProvider.isExpired(info.refreshToken()))
     );
-    origin.entrySet().removeIf(entry -> entry.getValue().isEmpty());
   }
 }
