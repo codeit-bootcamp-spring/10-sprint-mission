@@ -29,7 +29,7 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler, LoginFailureHandler loginFailureHandler, AuthenticationEntryPoint authenticationEntryPoint, AccessDeniedHandler accessDeniedHandler, SessionRegistry sessionRegistry, UserDetailsService userDetailsService, DiscodeitUserDetailsService discodeitUserDetailsService, JwtLoginSuccessHandler jwtLoginSuccessHandler, JwtLogoutHandler jwtLogoutHandler) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, LoginFailureHandler loginFailureHandler, AuthenticationEntryPoint authenticationEntryPoint, AccessDeniedHandler accessDeniedHandler, SessionRegistry sessionRegistry, UserDetailsService userDetailsService, DiscodeitUserDetailsService discodeitUserDetailsService, JwtLoginSuccessHandler jwtLoginSuccessHandler, JwtLogoutHandler jwtLogoutHandler) throws Exception {
         http
                 .headers().frameOptions().sameOrigin()
                 .and()

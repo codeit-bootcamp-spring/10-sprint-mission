@@ -41,8 +41,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
         String subject = userDto.email();
 
-        String accessToken = jwtTokenProvider.generateAccessToken(claims, subject);
-        String refreshToken = jwtTokenProvider.generateRefreshToken(subject);
+        String accessToken = jwtTokenProvider.generateAccessToken(userDto);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(userDto);
 
         Cookie refreshTokenCookie = new Cookie("REFRESH_TOKEN", refreshToken);
         refreshTokenCookie.setHttpOnly(true);

@@ -101,8 +101,8 @@ public class BasicAuthService implements AuthService {
             "roles", roles
     );
 
-    String newAccessToken = jwtTokenProvider.generateAccessToken(accessClaims, email);
-    String newRefreshToken = jwtTokenProvider.generateRefreshToken(email);
+    String newAccessToken = jwtTokenProvider.generateAccessToken(userDto);
+    String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDto);
 
     Cookie refreshTokenCookie = new Cookie("REFRESH_TOKEN", newRefreshToken);
 
