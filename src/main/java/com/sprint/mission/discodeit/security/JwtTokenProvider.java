@@ -69,7 +69,7 @@ public class JwtTokenProvider {
           .subject(subject)
           .expirationTime(expiration)
           .issueTime(new Date())
-          .issuer("example.com")
+          .issuer("discodeit.com")
           .build();
 
       SignedJWT signedJWT = new SignedJWT(

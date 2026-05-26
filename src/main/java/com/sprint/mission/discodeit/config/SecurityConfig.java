@@ -61,6 +61,7 @@ public class SecurityConfig {
             .requestMatchers("/").permitAll()
             .requestMatchers("/index.html").permitAll()
             .requestMatchers("/api/auth/csrf-token").permitAll()
+            .requestMatchers("/api/auth/refresh").permitAll()
             .requestMatchers("/api/auth/login").permitAll()
             .requestMatchers("/api/auth/logout").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
@@ -73,12 +74,6 @@ public class SecurityConfig {
         )
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
-        .rememberMe(remember -> remember
-            .key("discodeit-remember-me")
-            .tokenValiditySeconds(7 * 24 * 60 * 60)
-            .rememberMeParameter("remember-me")
-            .userDetailsService(userDetailsService)
         );
 
     return http.build();
@@ -94,15 +89,5 @@ public class SecurityConfig {
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
-  }
-
-  @Bean
-  public SessionRegistry sessionRegistry() {
-    return new SessionRegistryImpl();
-  }
-
-  @Bean
-  public HttpSessionEventPublisher httpSessionEventPublisher() {
-    return new HttpSessionEventPublisher();
   }
 }
