@@ -10,6 +10,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -61,7 +62,7 @@ public class SecurityConfig {
   // Security 필터 체인 등록
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
-      LoginSuccessHandler loginSuccessfulHandler,
+      JwtLoginSuccessHandler jwtLoginSuccessfulHandler,
       LoginFailureHandler loginFailureHandler,
       SessionRegistry sessionRegistry
   )
@@ -132,7 +133,7 @@ public class SecurityConfig {
         )
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
-            .successHandler(loginSuccessfulHandler)
+            .successHandler(jwtLoginSuccessfulHandler)
             .failureHandler(loginFailureHandler))
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
@@ -142,11 +143,7 @@ public class SecurityConfig {
 
         // 동시 세션 제어
         .sessionManagement(management -> management
-            .sessionConcurrency(concurrency -> concurrency
-                .maximumSessions(1) // 최대 세션은 1
-                .maxSessionsPreventsLogin(false) // 새로 로그인 시 기존 세션을 만료시킴
-                .sessionRegistry(sessionRegistry)
-            )
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         .build();
   }
