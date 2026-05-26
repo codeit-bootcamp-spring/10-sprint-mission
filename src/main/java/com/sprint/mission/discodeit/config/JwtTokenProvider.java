@@ -42,6 +42,7 @@ public class JwtTokenProvider {
   private final Duration accessTokenValidity; // 액세스 토큰의 유효기간
   private final Duration refreshTokenValidity; // Refresh 토큰의 유효기간
 
+  // 환경 변수가 있으면 해당 값 사용, 없으면 기본 값
   public JwtTokenProvider(
       @Value("${discodeit.jwt.secret:discodeit-local-development-jwt-secret}") String secret,
       @Value("${discodeit.jwt.access-token-validity-seconds:1800}") long accessTokenValiditySeconds,
@@ -93,7 +94,7 @@ public class JwtTokenProvider {
     return null;
   }
 
-  // 토큰을 실질적으로 생성하는 ㅔㅁ서드
+  // 토큰을 실질적으로 생성하는 메서드
   private String createToken(UserDto userDto, String tokenType, Duration validity) {
     Objects.requireNonNull(userDto, "userDto must not be null");
 
@@ -112,20 +113,25 @@ public class JwtTokenProvider {
         .claim(ROLE_CLAIM, userDto.role().name())
         .build();
 
-    // 이건 머죠
+    // 서명할 JWT 객체를 준비, 헤더는 HS256 알고리즘을 사용한다고 명시,
+    // 페이로드는 claims를 사용
     SignedJWT signedJWT = new SignedJWT(
         new JWSHeader.Builder(JWSAlgorithm.HS256).build(),
         claims
     );
 
+    // 위에서 만든 signedJWT에 서명 시도
     try {
       signedJWT.sign(new MACSigner(secretKey));
-      return signedJWT.serialize();
+      return signedJWT.serialize(); // 서명 성공 시 signedJWT를 직렬화하여 반환한다.
     } catch (JOSEException e) {
       throw new IllegalStateException("Failed to issue JWT", e);
     }
   }
 
+  // 토큰을 검증하는 메소드
+  // 매개변수로 검증할 token, 토큰의 타입을 받는다.
+  // 정상 토큰이면 true, 문제 토큰이면 false를 반환한다.
   private boolean isValid(String token, String expectedType) {
     try {
       parseAndValidate(token, expectedType);
@@ -135,7 +141,9 @@ public class JwtTokenProvider {
     }
   }
 
+  // 실제 검증을 수행하고 검증이 성공하면 JWT 안에 들어있는 claim을 반환한다.
   private JWTClaimsSet parseAndValidate(String token, String expectedType) {
+    // 빈 토큰인지 확인하고 예외 처리
     if (!StringUtils.hasText(token)) {
       throw new IllegalArgumentException("Token is empty");
     }

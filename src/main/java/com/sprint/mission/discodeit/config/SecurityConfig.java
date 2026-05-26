@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,6 +17,7 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -64,8 +66,8 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
       JwtLoginSuccessHandler jwtLoginSuccessfulHandler,
       LoginFailureHandler loginFailureHandler,
-      SessionRegistry sessionRegistry
-  )
+      SessionRegistry sessionRegistry,
+      JwtAuthenticationFilter jwtAuthenticationFilter)
       throws Exception {
     return http
         // RememberMe 사용 시 세션 무효화되어도 자동으로 로그인
@@ -135,6 +137,7 @@ public class SecurityConfig {
             .loginProcessingUrl("/api/auth/login")
             .successHandler(jwtLoginSuccessfulHandler)
             .failureHandler(loginFailureHandler))
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
             .logoutSuccessHandler(
