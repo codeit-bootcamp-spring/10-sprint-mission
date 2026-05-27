@@ -19,6 +19,7 @@ import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -31,10 +32,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
 @WebMvcTest(ChannelController.class)
+@WithMockUser
 class ChannelControllerTest {
 
   @Autowired
@@ -70,6 +75,7 @@ class ChannelControllerTest {
 
     // When & Then
     mockMvc.perform(post("/api/channels/public")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(createRequest)))
         .andExpect(status().isCreated())
@@ -90,6 +96,7 @@ class ChannelControllerTest {
 
     // When & Then
     mockMvc.perform(post("/api/channels/public")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
         .andExpect(status().isBadRequest());
@@ -106,7 +113,7 @@ class ChannelControllerTest {
     List<UserDto> participants = new ArrayList<>();
     for (UUID userId : participantIds) {
       participants.add(new UserDto(userId, "user-" + userId.toString().substring(0, 5),
-          "user" + userId.toString().substring(0, 5) + "@example.com", null, false));
+          "user" + userId.toString().substring(0, 5) + "@example.com", Role.USER, null, false));
     }
 
     ChannelDto createdChannel = new ChannelDto(
@@ -123,6 +130,7 @@ class ChannelControllerTest {
 
     // When & Then
     mockMvc.perform(post("/api/channels/private")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(createRequest)))
         .andExpect(status().isCreated())
@@ -156,6 +164,7 @@ class ChannelControllerTest {
 
     // When & Then
     mockMvc.perform(patch("/api/channels/{channelId}", channelId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isOk())
@@ -179,6 +188,7 @@ class ChannelControllerTest {
 
     // When & Then
     mockMvc.perform(patch("/api/channels/{channelId}", nonExistentChannelId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isNotFound());
@@ -199,6 +209,7 @@ class ChannelControllerTest {
 
     // When & Then
     mockMvc.perform(patch("/api/channels/{channelId}", privateChannelId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isBadRequest());
@@ -213,6 +224,7 @@ class ChannelControllerTest {
 
     // When & Then
     mockMvc.perform(delete("/api/channels/{channelId}", channelId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
   }
@@ -227,6 +239,7 @@ class ChannelControllerTest {
 
     // When & Then
     mockMvc.perform(delete("/api/channels/{channelId}", nonExistentChannelId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
@@ -253,7 +266,7 @@ class ChannelControllerTest {
             ChannelType.PRIVATE,
             null,
             null,
-            List.of(new UserDto(userId, "user1", "user1@example.com", null, true)),
+            List.of(new UserDto(userId, "user1", "user1@example.com", Role.USER, null, true)),
             Instant.now().minusSeconds(3600)
         )
     );

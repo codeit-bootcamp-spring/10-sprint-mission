@@ -11,11 +11,12 @@ import static org.mockito.Mockito.verify;
 import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.exception.userStatus.DuplicateUserStatusException;
-import com.sprint.mission.discodeit.exception.userStatus.UserStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.DuplicateUserStatusException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -60,7 +61,7 @@ class BasicUserStatusServiceTest {
     userId = UUID.randomUUID();
     lastActiveAt = Instant.now();
 
-    user = new User("testUser", "test@example.com", "password", null);
+    user = new User("testUser", "test@example.com", "password", Role.USER, null);
     ReflectionTestUtils.setField(user, "id", userId);
     
     userStatus = new UserStatus(user, lastActiveAt);

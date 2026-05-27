@@ -58,6 +58,7 @@ public class BasicReadStatusService implements ReadStatusService {
     return readStatusMapper.toDto(readStatus);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public ReadStatusDto find(UUID readStatusId) {
     log.debug("읽음 상태 조회 시작: id={}", readStatusId);
@@ -68,13 +69,14 @@ public class BasicReadStatusService implements ReadStatusService {
     return dto;
   }
 
+  @Transactional(readOnly = true)
   @Override
   public List<ReadStatusDto> findAllByUserId(UUID userId) {
-    log.debug("사용자 읽음 상태 목록 조회 시작: userId={}", userId);
+    log.debug("사용자별 읽음 상태 목록 조회 시작: userId={}", userId);
     List<ReadStatusDto> dtos = readStatusRepository.findAllByUserId(userId).stream()
         .map(readStatusMapper::toDto)
         .toList();
-    log.info("사용자 읽음 상태 목록 조회 완료: userId={}, 조회된 항목 수={}", userId, dtos.size());
+    log.info("사용자별 읽음 상태 목록 조회 완료: userId={}, 조회된 항목 수={}", userId, dtos.size());
     return dtos;
   }
 

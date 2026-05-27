@@ -31,14 +31,18 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@WithMockUser
 class MessageApiIntegrationTest {
 
   @Autowired
@@ -101,7 +105,8 @@ class MessageApiIntegrationTest {
     // When & Then
     mockMvc.perform(multipart("/api/messages")
             .file(messageCreateRequestPart)
-            .file(attachmentPart))
+            .file(attachmentPart)
+            .with(csrf()))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id", notNullValue()))
         .andExpect(jsonPath("$.content", is("테스트 메시지 내용입니다.")))
@@ -130,7 +135,8 @@ class MessageApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(multipart("/api/messages")
-            .file(messageCreateRequestPart))
+            .file(messageCreateRequestPart)
+            .with(csrf()))
         .andExpect(status().isBadRequest());
   }
 
@@ -224,6 +230,7 @@ class MessageApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(patch("/api/messages/{messageId}", messageId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isOk())
@@ -246,6 +253,7 @@ class MessageApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(patch("/api/messages/{messageId}", nonExistentMessageId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isNotFound());
@@ -283,7 +291,8 @@ class MessageApiIntegrationTest {
     UUID messageId = createdMessage.id();
 
     // When & Then
-    mockMvc.perform(delete("/api/messages/{messageId}", messageId))
+    mockMvc.perform(delete("/api/messages/{messageId}", messageId)
+            .with(csrf()))
         .andExpect(status().isNoContent());
 
     // 삭제 확인 - 채널의 메시지 목록 조회 시 삭제된 메시지는 조회되지 않아야 함
@@ -301,7 +310,8 @@ class MessageApiIntegrationTest {
     UUID nonExistentMessageId = UUID.randomUUID();
 
     // When & Then
-    mockMvc.perform(delete("/api/messages/{messageId}", nonExistentMessageId))
+    mockMvc.perform(delete("/api/messages/{messageId}", nonExistentMessageId)
+            .with(csrf()))
         .andExpect(status().isNotFound());
   }
 } 

@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
@@ -93,7 +94,7 @@ class BasicMessageServiceTest {
     channel = new Channel(ChannelType.PUBLIC, "testChannel", "testDescription");
     ReflectionTestUtils.setField(channel, "id", channelId);
 
-    author = new User("testUser", "test@example.com", "password", null);
+    author = new User("testUser", "test@example.com", "password", Role.USER, null);
     ReflectionTestUtils.setField(author, "id", authorId);
 
     attachment = new BinaryContent("test.txt", 100L, "text/plain");
@@ -109,7 +110,7 @@ class BasicMessageServiceTest {
         Instant.now(),
         content,
         channelId,
-        new UserDto(authorId, "testUser", "test@example.com", null, true),
+        new UserDto(authorId, "testUser", "test@example.com", Role.USER, null, true),
         List.of(attachmentDto)
     );
   }
@@ -223,7 +224,7 @@ class BasicMessageServiceTest {
         message1CreatedAt,
         content + "1",
         channelId,
-        new UserDto(authorId, "testUser", "test@example.com", null, true),
+        new UserDto(authorId, "testUser", "test@example.com", Role.USER, null, true),
         List.of(attachmentDto)
     );
     
@@ -233,7 +234,7 @@ class BasicMessageServiceTest {
         message2CreatedAt,
         content + "2",
         channelId,
-        new UserDto(authorId, "testUser", "test@example.com", null, true),
+        new UserDto(authorId, "testUser", "test@example.com", Role.USER, null, true),
         List.of(attachmentDto)
     );
     
@@ -278,7 +279,7 @@ class BasicMessageServiceTest {
         message3CreatedAt,
         content + "3",
         channelId,
-        new UserDto(authorId, "testUser", "test@example.com", null, true),
+        new UserDto(authorId, "testUser", "test@example.com", Role.USER, null, true),
         List.of(attachmentDto)
     );
     List<MessageDto> secondPageDtos = List.of(messageDto3);

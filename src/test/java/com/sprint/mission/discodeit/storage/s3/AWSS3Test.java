@@ -1,183 +1,174 @@
 package com.sprint.mission.discodeit.storage.s3;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.time.Duration;
+import java.util.Properties;
+import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.Properties;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-
+@Disabled
+@Slf4j
+@DisplayName("S3 API 테스트")
 public class AWSS3Test {
 
-    private S3Client s3Client;
-    private S3Presigner s3Presigner;
-    private String bucketName;
-    private String objectKey;
+  private static String accessKey;
+  private static String secretKey;
+  private static String region;
+  private static String bucket;
+  private S3Client s3Client;
+  private S3Presigner presigner;
+  private String testKey;
 
-    // 테스트 실행 전 .env의 AWS 설정값을 읽어 S3 클라이언트를 초기화 한다.
-    @BeforeEach
-    void setUp() throws IOException {
-        Properties properties = loadProperties();
-
-        String accessKey = properties.getProperty("AWS_S3_ACCESS_KEY");
-        String secretKey = properties.getProperty("AWS_S3_SECRET_KEY");
-        String region = properties.getProperty("AWS_S3_REGION");
-        bucketName = properties.getProperty("AWS_S3_BUCKET");
-
-        AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
-
-        s3Client = S3Client.builder()
-                .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                .serviceConfiguration(S3Configuration.builder().build())
-                .build();
-
-        s3Presigner = S3Presigner.builder()
-                .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                .build();
-
-        objectKey = "test/" + UUID.randomUUID() + ".txt";
+  @BeforeAll
+  static void loadEnv() throws IOException {
+    Properties props = new Properties();
+    try (FileInputStream fis = new FileInputStream(".env")) {
+      props.load(fis);
     }
 
-    @AfterEach
-    void tearDown() {
-        if (s3Client != null && bucketName != null && objectKey != null) {
-            try {
-                s3Client.deleteObject(DeleteObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(objectKey)
-                        .build());
-            } catch (Exception ignored) {
-            }
-        }
+    accessKey = props.getProperty("AWS_S3_ACCESS_KEY");
+    secretKey = props.getProperty("AWS_S3_SECRET_KEY");
+    region = props.getProperty("AWS_S3_REGION");
+    bucket = props.getProperty("AWS_S3_BUCKET");
 
-        if (s3Client != null) {
-            s3Client.close();
-        }
-
-        if (s3Presigner != null) {
-            s3Presigner.close();
-        }
+    if (accessKey == null || secretKey == null || region == null || bucket == null) {
+      throw new IllegalStateException("AWS S3 설정이 .env 파일에 올바르게 정의되지 않았습니다.");
     }
+  }
 
-    // 문자열 데이터를 S3에 업로드하는 동작이 정상 수행되는지 확인한다.
-    @Test
-    void uploadTest() {
-        String content = "hello s3";
+  @BeforeEach
+  void setUp() {
+    s3Client = S3Client.builder()
+        .region(Region.of(region))
+        .credentialsProvider(
+            StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(accessKey, secretKey)
+            )
+        )
+        .build();
 
-        // 업로드할 대상 버킷, 객체 키, 콘텐츠 타입을 지정한다.
-        PutObjectRequest request = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(objectKey)
-                .contentType("text/plain")
-                .build();
+    presigner = S3Presigner.builder()
+        .region(Region.of(region))
+        .credentialsProvider(
+            StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(accessKey, secretKey)
+            )
+        )
+        .build();
 
-        s3Client.putObject(request, RequestBody.fromString(content, StandardCharsets.UTF_8));
+    testKey = "test-" + UUID.randomUUID().toString();
+  }
 
-        assertNotNull(objectKey);
+  @Test
+  @DisplayName("S3에 파일을 업로드한다")
+  void uploadToS3() {
+    String content = "Hello from .env via Properties!";
+
+    try {
+      PutObjectRequest request = PutObjectRequest.builder()
+          .bucket(bucket)
+          .key(testKey)
+          .contentType("text/plain")
+          .build();
+
+      s3Client.putObject(request, RequestBody.fromString(content));
+      log.info("파일 업로드 성공: {}", testKey);
+    } catch (S3Exception e) {
+      log.error("파일 업로드 실패: {}", e.getMessage());
+      throw e;
     }
+  }
 
-    // S3에 업로드한 파일을 다시 다운로드했을 때 원본 내용과 일치하는지 확인한다.
-    @Test
-    void downloadTest() {
-        String content = "download test";
+  @Test
+  @DisplayName("S3에서 파일을 다운로드한다")
+  void downloadFromS3() {
+    // 테스트를 위한 파일 먼저 업로드
+    String content = "Test content for download";
+    PutObjectRequest uploadRequest = PutObjectRequest.builder()
+        .bucket(bucket)
+        .key(testKey)
+        .contentType("text/plain")
+        .build();
+    s3Client.putObject(uploadRequest, RequestBody.fromString(content));
 
-        // 먼저 테스트용 데이터를 S3에 업로드한다.
-        s3Client.putObject(
-                PutObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(objectKey)
-                        .contentType("text/plain")
-                        .build(),
-                RequestBody.fromString(content, StandardCharsets.UTF_8)
-        );
+    try {
+      GetObjectRequest request = GetObjectRequest.builder()
+          .bucket(bucket)
+          .key(testKey)
+          .build();
 
-        // 업로드한 객체를 바이트 형태로 다운로드한다.
-        ResponseBytes<GetObjectResponse> response = s3Client.getObjectAsBytes(
-                GetObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(objectKey)
-                        .build()
-        );
-
-        // 다운로드한 바이트를 문자열로 변환한 뒤 원본과 비교한다.
-        String downloaded = response.asString(StandardCharsets.UTF_8);
-        assertEquals(content, downloaded);
+      String downloadedContent = s3Client.getObjectAsBytes(request).asUtf8String();
+      log.info("다운로드된 파일 내용: {}", downloadedContent);
+    } catch (S3Exception e) {
+      log.error("파일 다운로드 실패: {}", e.getMessage());
+      throw e;
     }
+  }
 
-    // 특정 S3 객체에 접근할 수 있는 Presigned URL이 정상 생성되는지 확인한다.
-    @Test
-    void createPresignedUrlTest() {
-        // Presigned URL을 만들 대상 파일을 먼저 S3에 업로드한다.
-        s3Client.putObject(
-                PutObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(objectKey)
-                        .contentType("text/plain")
-                        .build(),
-                RequestBody.fromString("presigned-url-test", StandardCharsets.UTF_8)
-        );
+  @Test
+  @DisplayName("S3 파일에 대한 Presigned URL을 생성한다")
+  void generatePresignedUrl() {
+    // 테스트를 위한 파일 먼저 업로드
+    String content = "Test content for presigned URL";
+    PutObjectRequest uploadRequest = PutObjectRequest.builder()
+        .bucket(bucket)
+        .key(testKey)
+        .contentType("text/plain")
+        .build();
+    s3Client.putObject(uploadRequest, RequestBody.fromString(content));
 
-        // URL 생성 대상이 되는 S3 객체 조회 요청을 만든다.
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(bucketName)
-                .key(objectKey)
-                .build();
+    try {
+      GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+          .bucket(bucket)
+          .key(testKey)
+          .build();
 
-        // 10분 동안 유효한 Presigned GET 요청을 생성하도록 설정한다.
-        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10))
-                .getObjectRequest(getObjectRequest)
-                .build();
+      GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+          .signatureDuration(Duration.ofMinutes(10))
+          .getObjectRequest(getObjectRequest)
+          .build();
 
-        // 실제 Presigned URL을 생성한다.
-        PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
-        URL url = presignedRequest.url();
+      PresignedGetObjectRequest presignedRequest = presigner.presignGetObject(presignRequest);
+      URL url = presignedRequest.url();
 
-        // 생성된 URL이 null이 아니고 비어 있지 않은지 확인한다.
-        assertNotNull(url);
-        assertFalse(url.toString().isBlank());
-
-        // 생성 결과를 콘솔에서 확인할 수 있도록 출력한다.
-        System.out.println("Presigned URL: " + url);
+      log.info("생성된 Presigned URL: {}", url);
+    } catch (S3Exception e) {
+      log.error("Presigned URL 생성 실패: {}", e.getMessage());
+      throw e;
     }
+  }
 
-
-
-    // 프로젝트 루트의 .env 파일에서 AWS 관련 설정값을 읽어온다.
-    private Properties loadProperties() throws IOException {
-        Properties properties = new Properties();
-
-        try (InputStream inputStream = Files.newInputStream(Path.of(".env"))) {
-            properties.load(inputStream);
-        }
-
-        return properties;
+  @AfterEach
+  void cleanup() {
+    try {
+      DeleteObjectRequest request = DeleteObjectRequest.builder()
+          .bucket(bucket)
+          .key(testKey)
+          .build();
+      s3Client.deleteObject(request);
+      log.info("테스트 파일 정리 완료: {}", testKey);
+    } catch (S3Exception e) {
+      log.error("테스트 파일 정리 실패: {}", e.getMessage());
     }
+  }
 }

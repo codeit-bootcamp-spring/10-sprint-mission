@@ -1,28 +1,23 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL
+    url: jdbc:h2:mem:testdb-${random.uuid};MODE=PostgreSQL
     driver-class-name: org.h2.Driver
     username: sa
     password:
-  sql:
-    init:
-      mode: never
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-
-discodeit:
-  storage:
-    type: local
-    local:
-      root-path: build/test-storage
 
 logging:
   level:
     com.sprint.mission.discodeit: debug
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+
+discodeit:
+  storage:
+    type: local

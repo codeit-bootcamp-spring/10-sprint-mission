@@ -26,14 +26,18 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@WithMockUser
 class UserApiIntegrationTest {
 
   @Autowired
@@ -74,6 +78,7 @@ class UserApiIntegrationTest {
     mockMvc.perform(multipart("/api/users")
             .file(userCreateRequestPart)
             .file(profilePart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id", notNullValue()))
@@ -103,6 +108,7 @@ class UserApiIntegrationTest {
     // When & Then
     mockMvc.perform(multipart("/api/users")
             .file(userCreateRequestPart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
         .andExpect(status().isBadRequest());
   }
@@ -176,6 +182,7 @@ class UserApiIntegrationTest {
     mockMvc.perform(multipart("/api/users/{userId}", userId)
             .file(userUpdateRequestPart)
             .file(profilePart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
             .with(request -> {
               request.setMethod("PATCH");
@@ -209,6 +216,7 @@ class UserApiIntegrationTest {
     // When & Then
     mockMvc.perform(multipart("/api/users/{userId}", nonExistentUserId)
             .file(userUpdateRequestPart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
             .with(request -> {
               request.setMethod("PATCH");
@@ -232,7 +240,8 @@ class UserApiIntegrationTest {
     UUID userId = createdUser.id();
 
     // When & Then
-    mockMvc.perform(delete("/api/users/{userId}", userId))
+    mockMvc.perform(delete("/api/users/{userId}", userId)
+            .with(csrf()))
         .andExpect(status().isNoContent());
 
     // 삭제 확인
@@ -248,7 +257,8 @@ class UserApiIntegrationTest {
     UUID nonExistentUserId = UUID.randomUUID();
 
     // When & Then
-    mockMvc.perform(delete("/api/users/{userId}", nonExistentUserId))
+    mockMvc.perform(delete("/api/users/{userId}", nonExistentUserId)
+            .with(csrf()))
         .andExpect(status().isNotFound());
   }
 
@@ -274,6 +284,7 @@ class UserApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isOk())
@@ -292,6 +303,7 @@ class UserApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(patch("/api/users/{userId}/userStatus", nonExistentUserId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isNotFound());

@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
@@ -76,7 +77,7 @@ class BasicChannelServiceTest {
     ReflectionTestUtils.setField(channel, "id", channelId);
     channelDto = new ChannelDto(channelId, ChannelType.PUBLIC, channelName, channelDescription,
         List.of(), Instant.now());
-    user = new User("testUser", "test@example.com", "password", null);
+    user = new User("testUser", "test@example.com", "password", Role.USER, null);
   }
 
   @Test

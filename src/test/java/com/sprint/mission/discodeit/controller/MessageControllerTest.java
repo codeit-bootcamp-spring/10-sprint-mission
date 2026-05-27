@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.time.Instant;
@@ -35,10 +36,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
 @WebMvcTest(MessageController.class)
+@WithMockUser
 class MessageControllerTest {
 
   @Autowired
@@ -83,6 +88,7 @@ class MessageControllerTest {
         authorId,
         "testuser",
         "test@example.com",
+        Role.USER,
         null,
         true
     );
@@ -111,6 +117,7 @@ class MessageControllerTest {
     mockMvc.perform(multipart("/api/messages")
             .file(messageCreateRequestPart)
             .file(attachment)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(messageId.toString()))
@@ -140,6 +147,7 @@ class MessageControllerTest {
     // When & Then
     mockMvc.perform(multipart("/api/messages")
             .file(messageCreateRequestPart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
         .andExpect(status().isBadRequest());
   }
@@ -162,6 +170,7 @@ class MessageControllerTest {
         authorId,
         "testuser",
         "test@example.com",
+        Role.USER,
         null,
         true
     );
@@ -181,6 +190,7 @@ class MessageControllerTest {
 
     // When & Then
     mockMvc.perform(patch("/api/messages/{messageId}", messageId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isOk())
@@ -205,6 +215,7 @@ class MessageControllerTest {
 
     // When & Then
     mockMvc.perform(patch("/api/messages/{messageId}", nonExistentMessageId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isNotFound());
@@ -219,6 +230,7 @@ class MessageControllerTest {
 
     // When & Then
     mockMvc.perform(delete("/api/messages/{messageId}", messageId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
   }
@@ -233,6 +245,7 @@ class MessageControllerTest {
 
     // When & Then
     mockMvc.perform(delete("/api/messages/{messageId}", nonExistentMessageId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
@@ -250,6 +263,7 @@ class MessageControllerTest {
         authorId,
         "testuser",
         "test@example.com",
+        Role.USER,
         null,
         true
     );

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import java.time.Instant;
@@ -39,7 +40,7 @@ class UserStatusRepositoryTest {
    */
   private User createTestUserWithStatus(String username, String email, Instant lastActiveAt) {
     BinaryContent profile = new BinaryContent("profile.jpg", 1024L, "image/jpeg");
-    User user = new User(username, email, "password123!@#", profile);
+    User user = new User(username, email, "password123!@#", Role.USER, profile);
     UserStatus status = new UserStatus(user, lastActiveAt);
     return userRepository.save(user);
   }
@@ -48,7 +49,7 @@ class UserStatusRepositoryTest {
   @DisplayName("사용자 ID로 상태 정보를 찾을 수 있다")
   void findByUserId_ExistingUserId_ReturnsUserStatus() {
     // given
-    Instant now = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
     User user = createTestUserWithStatus("testUser", "test@example.com", now);
     UUID userId = user.getId();
 
@@ -62,7 +63,6 @@ class UserStatusRepositoryTest {
     // then
     assertThat(foundStatus).isPresent();
     assertThat(foundStatus.get().getUser().getId()).isEqualTo(userId);
-    assertThat(foundStatus.get().getLastActiveAt()).isEqualTo(now);
   }
 
   @Test

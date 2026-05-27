@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -33,10 +34,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
 @WebMvcTest(UserController.class)
+@WithMockUser
 class UserControllerTest {
 
   @Autowired
@@ -87,6 +92,7 @@ class UserControllerTest {
         userId,
         "testuser",
         "test@example.com",
+        Role.USER,
         profileDto,
         false
     );
@@ -98,6 +104,7 @@ class UserControllerTest {
     mockMvc.perform(multipart("/api/users")
             .file(userCreateRequestPart)
             .file(profilePart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(userId.toString()))
@@ -127,6 +134,7 @@ class UserControllerTest {
     // When & Then
     mockMvc.perform(multipart("/api/users")
             .file(userCreateRequestPart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
         .andExpect(status().isBadRequest());
   }
@@ -142,6 +150,7 @@ class UserControllerTest {
         userId1,
         "user1",
         "user1@example.com",
+        Role.USER,
         null,
         true
     );
@@ -150,6 +159,7 @@ class UserControllerTest {
         userId2,
         "user2",
         "user2@example.com",
+        Role.USER,
         null,
         false
     );
@@ -206,6 +216,7 @@ class UserControllerTest {
         userId,
         "updateduser",
         "updated@example.com",
+        Role.USER,
         profileDto,
         true
     );
@@ -217,6 +228,7 @@ class UserControllerTest {
     mockMvc.perform(multipart("/api/users/{userId}", userId)
             .file(userUpdateRequestPart)
             .file(profilePart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
             .with(request -> {
               request.setMethod("PATCH");
@@ -263,6 +275,7 @@ class UserControllerTest {
     mockMvc.perform(multipart("/api/users/{userId}", nonExistentUserId)
             .file(userUpdateRequestPart)
             .file(profilePart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
             .with(request -> {
               request.setMethod("PATCH");
@@ -280,6 +293,7 @@ class UserControllerTest {
 
     // When & Then
     mockMvc.perform(delete("/api/users/{userId}", userId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
   }
@@ -294,6 +308,7 @@ class UserControllerTest {
 
     // When & Then
     mockMvc.perform(delete("/api/users/{userId}", nonExistentUserId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
@@ -314,6 +329,7 @@ class UserControllerTest {
 
     // When & Then
     mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isOk())
@@ -336,6 +352,7 @@ class UserControllerTest {
 
     // When & Then
     mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isNotFound());
