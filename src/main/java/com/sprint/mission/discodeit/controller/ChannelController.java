@@ -1,120 +1,85 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.*;
+import com.sprint.mission.discodeit.controller.api.ChannelApi;
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.service.ChannelService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "Channel")
+@Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/channels")
-@RequiredArgsConstructor
-public class ChannelController {
+public class ChannelController implements ChannelApi {
 
   private final ChannelService channelService;
 
-  @Operation(summary = "Public Channel 생성", operationId = "create_3")
-  @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨",
-      content = @Content(schema = @Schema(implementation = ChannelDto.class)))
-  @PostMapping("/public")
-  @ResponseStatus(HttpStatus.CREATED)
-  public ChannelDto createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
-    return channelService.createPublicChannel(request);
+  @PostMapping(path = "public")
+  public ResponseEntity<ChannelDto> create(@RequestBody @Valid PublicChannelCreateRequest request) {
+    log.info("공개 채널 생성 요청: {}", request);
+    ChannelDto createdChannel = channelService.create(request);
+    log.debug("공개 채널 생성 응답: {}", createdChannel);
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(createdChannel);
   }
 
-  @Operation(summary = "Private Channel 생성", operationId = "create_4")
-  @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨",
-      content = @Content(schema = @Schema(implementation = ChannelDto.class)))
-  @PostMapping("/private")
-  @ResponseStatus(HttpStatus.CREATED)
-  public ChannelDto createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
-    return channelService.createPrivateChannel(request);
+  @PostMapping(path = "private")
+  public ResponseEntity<ChannelDto> create(@RequestBody @Valid PrivateChannelCreateRequest request) {
+    log.info("비공개 채널 생성 요청: {}", request);
+    ChannelDto createdChannel = channelService.create(request);
+    log.debug("비공개 채널 생성 응답: {}", createdChannel);
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(createdChannel);
   }
 
-  @Operation(summary = "Channel 정보 수정", operationId = "update_3")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Channel 정보가 성공적으로 수정됨",
-          content = @Content(schema = @Schema(implementation = ChannelDto.class))),
-      @ApiResponse(responseCode = "400", description = "Private Channel은 수정할 수 없음",
-          content = @Content(examples = @ExampleObject(value = "Private channel cannot be updated"))),
-      @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음",
-          content = @Content(examples = @ExampleObject(value = "Channel with id {channelId} not found")))
-  })
-  @PatchMapping("/{channelId}")
-  @ResponseStatus(HttpStatus.OK)
-  public ChannelDto updateChannel(
-      @Parameter(description = "수정할 Channel ID", required = true)
-      @PathVariable UUID channelId,
-      @RequestBody PublicChannelUpdateRequest request) {
-    return channelService.updateChannel(channelId, request);
+  @PatchMapping(path = "{channelId}")
+  public ResponseEntity<ChannelDto> update(
+      @PathVariable("channelId") UUID channelId,
+      @RequestBody @Valid PublicChannelUpdateRequest request) {
+    log.info("채널 수정 요청: id={}, request={}", channelId, request);
+    ChannelDto updatedChannel = channelService.update(channelId, request);
+    log.debug("채널 수정 응답: {}", updatedChannel);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(updatedChannel);
   }
 
-  @Operation(summary = "Channel 삭제", operationId = "delete_2")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "204", description = "Channel이 성공적으로 삭제됨"),
-      @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음",
-          content = @Content(examples = @ExampleObject(value = "Channel with id {channelId} not found")))
-  })
-  @DeleteMapping("/{channelId}")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteChannel(
-      @Parameter(description = "삭제할 Channel ID", required = true)
-      @PathVariable UUID channelId) {
-    channelService.deleteChannel(channelId);
+  @DeleteMapping(path = "{channelId}")
+  public ResponseEntity<Void> delete(@PathVariable("channelId") UUID channelId) {
+    log.info("채널 삭제 요청: id={}", channelId);
+    channelService.delete(channelId);
+    log.debug("채널 삭제 완료");
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
   }
 
-  @Operation(summary = "User가 참여 중인 Channel 목록 조회", operationId = "findAll_1")
-  @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공",
-      content = @Content(schema = @Schema(implementation = ChannelDto.class)))
   @GetMapping
-  @ResponseStatus(HttpStatus.OK)
-  public List<ChannelDto> getChannels(
-      @Parameter(description = "조회할 User ID", required = true)
-      @RequestParam UUID userId) {
-    return channelService.findAllByUserId(userId);
-  }
-
-  @GetMapping("/all")
-  @ResponseStatus(HttpStatus.OK)
-  public List<ChannelDto> getAllChannels() {
-    return channelService.getAllChannels();
-  }
-
-  @GetMapping("/{id}")
-  @ResponseStatus(HttpStatus.OK)
-  public ChannelDto getChannel(@PathVariable UUID id) {
-    return channelService.getChannel(id);
-  }
-
-  @Operation(summary = "Channel 입장", operationId = "enter_1")
-  @PostMapping("/{channelId}/members")
-  @ResponseStatus(HttpStatus.OK)
-  public ChannelDto enterChannel(
-      @Parameter(description = "입장할 User ID", required = true)
-      @RequestParam UUID userId,
-      @PathVariable UUID channelId) {
-    return channelService.enterChannel(userId, channelId);
-  }
-
-  @Operation(summary = "Channel 퇴장", operationId = "leave_1")
-  @DeleteMapping("/{channelId}/members/{userId}")
-  @ResponseStatus(HttpStatus.OK)
-  public void leaveChannel(
-      @Parameter(description = "퇴장할 User ID", required = true)
-      @PathVariable UUID userId,
-      @PathVariable UUID channelId) {
-    channelService.leaveChannel(userId, channelId);
+  public ResponseEntity<List<ChannelDto>> findAll(@RequestParam("userId") UUID userId) {
+    log.info("사용자별 채널 목록 조회 요청: userId={}", userId);
+    List<ChannelDto> channels = channelService.findAllByUserId(userId);
+    log.debug("사용자별 채널 목록 조회 응답: count={}", channels.size());
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(channels);
   }
 }

@@ -1,26 +1,27 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.MessageDto;
-import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
-import org.springframework.data.domain.Slice;
-import org.springframework.web.multipart.MultipartFile;
-
+import com.sprint.mission.discodeit.dto.data.MessageDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 
 public interface MessageService {
-    MessageDto createMessage(MessageCreateRequest request, List<MultipartFile> files);
 
-    MessageDto getMessage(UUID id);
+  MessageDto create(MessageCreateRequest messageCreateRequest,
+      List<BinaryContentCreateRequest> binaryContentCreateRequests);
 
-    List<MessageDto> getAllMessages();
+  MessageDto find(UUID messageId);
 
-    Slice<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, int size);
+  PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createdAt, Pageable pageable);
 
-    MessageDto updateMessage(UUID messageId, MessageUpdateRequest request);
+  MessageDto update(UUID messageId, MessageUpdateRequest request);
 
-    void deleteMessage(UUID id);
+  void delete(UUID messageId);
 
-    List<MessageDto> getMessagesByUserId(UUID userId);
+  boolean isAuthor(UUID messageId, UUID userId);
 }
