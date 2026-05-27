@@ -13,16 +13,13 @@ public class UserMapper {
   private final BinaryContentMapper binaryContentMapper;
 
   public UserDto toDto(User user) {
-    Boolean online = user.getUserStatus() != null
-        ? user.getUserStatus().isOnline()
-        : null;
     return new UserDto(user.getId(),
         user.getCreatedAt(),
         user.getUpdatedAt(),
         user.getUsername(),
         user.getEmail(),
         binaryContentMapper.toDto(user.getProfile()),
-        online
+        user.getRole()
     );
 
   }

@@ -1,56 +1,45 @@
 package com.sprint.mission.discodeit.auth.controller;
 
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.auth.service.AuthService;
-import com.sprint.mission.discodeit.auth.dto.UserLoginRequest;
+import com.sprint.mission.discodeit.user.dto.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.user.dto.UserDto;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import com.sprint.mission.discodeit.user.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 
 @Tag(name = "Auth")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
+  private final UserService userService;
   private final AuthService authService;
 
-  @Operation(summary = "로그인")
-  @ApiResponses(value = {
-      @ApiResponse(
-          responseCode = "200",
-          description = "로그인 성공"
-      ),
-      @ApiResponse(
-          responseCode = "400",
-          description = "비밀번호가 일치하지 않음",
-          content = @Content(
-              examples = @ExampleObject(value = "Wrong password")
-          )
-      ),
-      @ApiResponse(
-          responseCode = "404",
-          description = "사용자를 찾을 수 없음",
-          content = @Content(
-              examples = @ExampleObject(value = "User with username {username} not found")
-          )
-      )
-  })
-  @PostMapping("/login")
-  public ResponseEntity<UserDto> login(
-      @io.swagger.v3.oas.annotations.parameters.RequestBody
-      @Valid @RequestBody UserLoginRequest request) {
-    UserDto user = authService.login(request);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(user);
+  @GetMapping("/csrf-token")
+  public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
+    String tokenValue = csrfToken.getToken();
+    log.debug("CSRF 토큰 요청: {}", tokenValue);
+    return ResponseEntity.status(203).build();
+  }
+
+  @GetMapping("/me")
+  public ResponseEntity<UserDto> me(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
+    return ResponseEntity.ok(userDetails.getUserDto());
+  }
+
+  @PutMapping("/role")
+  public ResponseEntity<UserDto> updateRole(
+      @RequestBody UserRoleUpdateRequest request) {
+    UserDto updatedUser = userService.updateRole(request);
+    authService.expireUserSession(request.userId());
+    return ResponseEntity.ok(updatedUser);
   }
 }

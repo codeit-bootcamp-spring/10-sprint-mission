@@ -33,11 +33,11 @@ discodeit:
     local:
       root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
     s3:
-      access-key: ${AWS_S3_ACCESS_KEY}
-      secret-key: ${AWS_S3_SECRET_KEY}
-      region: ${AWS_S3_REGION}
-      bucket: ${AWS_S3_BUCKET}
-      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
+      access-key: ${AWS_S3_ACCESS_KEY:dummy}
+      secret-key: ${AWS_S3_SECRET_KEY:dummy}
+      region: ${AWS_S3_REGION:ap-northeast-2}
+      bucket: ${AWS_S3_BUCKET:dummy}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
 
 logging:
   level:
@@ -45,6 +45,7 @@ logging:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
     org.hibernate.orm.jdbc.extract: trace
+    org.springframework.security: trace
   file:
     name: .logs/app.log
 
@@ -76,3 +77,11 @@ info:
     multipart:
       max-file-size: ${spring.servlet.multipart.max-file-size}
       max-request-size: ${spring.servlet.multipart.max-request-size}
+
+aws:
+  region: ap-northeast-2
+  credentials:
+    access-key: dummy
+    secret-key: dummy
+  s3:
+    bucket: dummy

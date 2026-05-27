@@ -25,7 +25,8 @@ CREATE TABLE users
     username   VARCHAR(50)  NOT NULL UNIQUE,
     email      VARCHAR(100) NOT NULL UNIQUE,
     password   VARCHAR(60)  NOT NULL,
-    profile_id UUID UNIQUE  REFERENCES binary_contents (id) ON DELETE SET NULL
+    profile_id UUID UNIQUE  REFERENCES binary_contents (id) ON DELETE SET NULL,
+    role       varchar(20)  NOT NULL
 );
 
 CREATE TABLE messages
@@ -36,15 +37,6 @@ CREATE TABLE messages
     content    TEXT,
     channel_id UUID        NOT NULL REFERENCES channels (id) ON DELETE CASCADE,
     author_id  UUID        REFERENCES users (id) ON DELETE SET NULL
-);
-
-CREATE TABLE user_statuses
-(
-    id             UUID PRIMARY KEY,
-    created_at     TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at     TIMESTAMPTZ,
-    user_id        UUID        NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,
-    last_active_at TIMESTAMPTZ NOT NULL
 );
 
 CREATE TABLE read_statuses

@@ -17,6 +17,7 @@ import com.sprint.mission.discodeit.user.repository.JPAUserRepository;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -62,6 +63,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   public ChannelDto create(ChannelCreatePublicRequest request) {
     log.info("[CHANNEL_CREATE] public 채널 생성 시작 : channelName={}, channelDescription={}",
         request.name(), request.description());
@@ -131,6 +133,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   public ChannelDto update(UUID channelId, ChannelUpdateRequest request) {
     log.info("[CHANNEL_UPDATE] 채널 정보 수정 시작 : channelId={}",
         channelId);
@@ -150,6 +153,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   public void delete(UUID channelId) {
 
     log.info("[CHANNEL_DELETE] 채널 삭제 시작 : channelId={} ", channelId);

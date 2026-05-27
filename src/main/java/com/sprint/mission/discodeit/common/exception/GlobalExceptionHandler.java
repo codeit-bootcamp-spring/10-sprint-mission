@@ -125,4 +125,5 @@ public class GlobalExceptionHandler {
         .body(e.getMessage() != null ? e.getMessage() : "잘못된 요청입니다.");
   }
 
+
 }

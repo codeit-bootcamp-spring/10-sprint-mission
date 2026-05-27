@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.user.controller;
 import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.user.dto.*;
 import com.sprint.mission.discodeit.user.service.UserService;
-import com.sprint.mission.discodeit.user.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,7 +32,6 @@ import java.util.UUID;
 public class UserController {
 
   private final UserService userService;
-  private final UserStatusService userStatusService;
 
   @Operation(summary = "User 등록",
       operationId = "create")
@@ -57,7 +55,7 @@ public class UserController {
     UserDto createdUser = userService.create(userCreateRequest, profileRequest);
 
     return ResponseEntity
-        .status(HttpStatus.CREATED)
+        .status(HttpStatus.OK)
         .body(createdUser);
   }
 
@@ -122,31 +120,6 @@ public class UserController {
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
         .build();
-  }
-
-  @Operation(summary = "User 온라인 상태 업데이트",
-      operationId = "updateUserStatusByUserId")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200",
-          description = "User 온라인 상태가 성공적으로 업데이트됨"),
-      @ApiResponse(responseCode = "404",
-          description = "해당 User의 UserStatus를 찾을 수 없음",
-          content = @Content
-              (examples =
-              @ExampleObject(value = "UserStatus with userId {userId} not found")))
-
-  })
-  @PatchMapping("/{userId}/userStatus")
-  public ResponseEntity<UserStatusDto> updateOnlineStatus(
-      @Parameter(description = "상태를 변경할 User ID")
-      @PathVariable UUID userId
-      ,
-      @Parameter(description = "변경할 User 온라인 상태 정보")
-      @RequestBody UserStatusUpdateRequest request) {
-    UserStatusDto userStatus = userStatusService.updateByUserId(userId, request);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(userStatus);
   }
 
   @Operation(summary = "전체 User 목록 조회")
