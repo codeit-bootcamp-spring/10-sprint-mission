@@ -44,3 +44,14 @@ out/
 
 # Local storage for Discodeit
 /discodeit-storage/
+
+# Logs
+.logs/
+*.log
+
+# env files
+.env
+discodeit.env
+
+# Generated files
+src/main/generated/

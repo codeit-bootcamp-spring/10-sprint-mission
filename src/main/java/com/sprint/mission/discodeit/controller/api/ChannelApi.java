@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -16,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -30,7 +32,7 @@ public interface ChannelApi {
           content = @Content(schema = @Schema(implementation = ChannelDto.class))
       )
   })
-  ResponseEntity<ChannelDto> create(@RequestBody PublicChannelCreateRequest request);
+  ResponseEntity<ChannelDto> createPublicChannel(@RequestBody PublicChannelCreateRequest request);
 
   @Operation(summary = "Private Channel 생성")
   @ApiResponses(value = {
@@ -40,7 +42,19 @@ public interface ChannelApi {
           content = @Content(schema = @Schema(implementation = ChannelDto.class))
       )
   })
-  ResponseEntity<ChannelDto> create(@RequestBody PrivateChannelCreateRequest request);
+  ResponseEntity<ChannelDto> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request);
+
+  @Operation(summary = "User가 참여 중인 Channel 목록 조회")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200",
+          description = "Channel 목록 조회 성공",
+          content = @Content(array = @ArraySchema(schema = @Schema(implementation = ChannelDto.class)))
+      )
+  })
+  ResponseEntity<List<ChannelDto>> findAllByUserId(
+      @Parameter(hidden = true) @AuthenticationPrincipal DiscodeitUserDetails userDetails
+  );
 
   @Operation(summary = "Channel 정보 수정")
   @ApiResponses(value = {
@@ -60,9 +74,8 @@ public interface ChannelApi {
           content = @Content(examples = @ExampleObject(value = "Private channel cannot be updated"))
       )
   })
-  ResponseEntity<List<ChannelDto>> findAllByUserId(
-      @Parameter(description = "조회할 User ID") UUID userId
-  );
+  ResponseEntity<ChannelDto> update(@PathVariable UUID channelId,
+      @RequestBody PublicChannelUpdateRequest request);
 
   @Operation(summary = "Channel 삭제")
   @ApiResponses(value = {
@@ -74,17 +87,6 @@ public interface ChannelApi {
           responseCode = "404",
           description = "Channel을 찾을 수 없음",
           content = @Content(examples = @ExampleObject(value = "Channel with id {channelId} not found"))
-      )
-  })
-  ResponseEntity<ChannelDto> update(@PathVariable UUID channelId,
-      @RequestBody PublicChannelUpdateRequest request);
-
-  @Operation(summary = "User가 참여 중인 Channel 목록 조회")
-  @ApiResponses(value = {
-      @ApiResponse(
-          responseCode = "200",
-          description = "Channel 목록 조회 성공",
-          content = @Content(array = @ArraySchema(schema = @Schema(implementation = ChannelDto.class)))
       )
   })
   ResponseEntity<Void> delete(

@@ -14,9 +14,9 @@ public class SwaggerConfig {
   public OpenAPI openAPI() {
     return new OpenAPI()
         .info(new Info()
-            .title("Discodeit API")
-            .description("스프린트 미션6 API 문서")
-            .version("v1.0.0")
+            .title("Discodeit API 문서")
+            .description("Discodeit 프로젝트의 Swagger API 문서입니다.")
+            .version("1.2")
         )
         .servers(List.of(
             new Server().url("/").description("API 서버")

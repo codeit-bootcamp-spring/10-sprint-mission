@@ -23,7 +23,7 @@ public interface BinaryContentApi {
       @ApiResponse(
           responseCode = "200",
           description = "첨부 파일 조회 성공",
-          content = @Content(schema = @Schema(implementation = BinaryContent.class))
+          content = @Content(schema = @Schema(implementation = BinaryContentDto.class))
       ),
       @ApiResponse(
           responseCode = "404",
@@ -53,7 +53,7 @@ public interface BinaryContentApi {
       @ApiResponse(
           responseCode = "200",
           description = "첨부 파일 목록 조회 성공",
-          content = @Content(array = @ArraySchema(schema = @Schema(implementation = BinaryContent.class)))
+          content = @Content(array = @ArraySchema(schema = @Schema(implementation = BinaryContentDto.class)))
       )
   })
   ResponseEntity<List<BinaryContentDto>> findAllById(

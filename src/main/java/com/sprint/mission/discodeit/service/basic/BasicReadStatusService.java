@@ -3,16 +3,18 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.*;
+import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import java.time.Instant;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 
@@ -34,7 +36,10 @@ public class BasicReadStatusService implements ReadStatusService {
     // 해당 채널에 참여 중인지 확인
     readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId())
         .ifPresent(rs -> {
-          throw new IllegalStateException("이미 해당 채널에 참여 중인 유저입니다.");
+          throw new AlreadyParticipatingException(Map.of(
+              "UserId", user.getId(),
+              "ChannelId", channel.getId(),
+              "reason", "이미 해당 채널에 참여 중인 유저입니다."));
         });
 
     ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
@@ -75,18 +80,18 @@ public class BasicReadStatusService implements ReadStatusService {
   // 유저 검증
   private User getOrThrowUser(UUID id) {
     return userRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다."));
+        .orElseThrow(() -> new UserNotFoundException(Map.of("requestedUserId", id)));
   }
 
   // 채널 검증
   private Channel getOrThrowChannel(UUID id) {
     return channelRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다."));
+        .orElseThrow(() -> new ChannelNotFoundException(Map.of("requestedChannelId", id)));
   }
 
   // 참여 정보 검증
   private ReadStatus getOrThrowReadStatus(UUID id) {
     return readStatusRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("해당 참여 정보를 찾을 수 없습니다."));
+        .orElseThrow(() -> new ReadStatusNotFoundException(Map.of("requestedReadStatusId", id)));
   }
 }

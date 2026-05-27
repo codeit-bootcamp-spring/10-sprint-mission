@@ -60,11 +60,6 @@ public class Message extends BaseUpdatableEntity {
     this.content = content;
   }
 
-  public void updateAttachments(List<BinaryContent> attachmentIds) {
-    this.attachments =
-        (attachmentIds != null) ? new ArrayList<>(attachments) : new ArrayList<>();
-  }
-
   // --- getter ---
   public List<BinaryContent> getAttachments() {
     return Collections.unmodifiableList(attachments);

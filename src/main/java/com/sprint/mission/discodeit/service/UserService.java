@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.UUID;
 import java.util.List;
@@ -19,6 +20,8 @@ public interface UserService {
 
   User update(UUID id, String newUsername, String newEmail, String newPassword,
       MultipartFile profileFile);
+
+  User updateUserRole(UUID userId, Role newRole);
 
   void deleteById(UUID id);
 }
