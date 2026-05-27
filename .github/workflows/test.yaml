@@ -1,6 +1,12 @@
 name: CI - Test and CodeCov
 
 on:
+  # 누군가 main이나 release에 코드를 직접 push하거나 merge했을 때 실행
+  push:
+    branches:
+      - main
+      - release
+  # 누군가 main으로 PR을 날렸을 때 미리 검사하기 위해 실행
   pull_request:
     branches:
       - main

@@ -1,38 +1,44 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.LoginRequestDto;
 import com.sprint.mission.discodeit.dto.UserDto;
-import com.sprint.mission.discodeit.service.AuthService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import com.sprint.mission.discodeit.dto.UserRoleUpdateRequestDto;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @Tag(name = "Auth")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
-    private final AuthService authService;
+    private final UserService userService;
 
-    @Operation(summary = "로그인", operationId = "login")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그인 성공"),
-            @ApiResponse(responseCode = "400", description = "비밀번호가 일치하지 않음",
-                    content = @Content(examples = @ExampleObject(value = "Wrong password"))),
-            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
-                    content = @Content(examples = @ExampleObject(value = "User with username {username} not found")))
-    })
-    @RequestMapping(method = RequestMethod.POST, value = "/login")
-    public UserDto login(@Valid @RequestBody LoginRequestDto request){
-        return authService.login(request);
+    @RequestMapping(method = RequestMethod.GET, value = "/csrf-token")
+    public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
+        log.debug("CSRF 토큰 요청: {}", csrfToken.getToken());
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/me")
+    public ResponseEntity<UserDto> getMe(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
+        return ResponseEntity.ok(userDetails.getUserDto());
+    }
+
+    // 권한 검증은 서비스 메서드(@PreAuthorize)에서 수행
+    @RequestMapping(method = RequestMethod.PUT, value = "/role")
+    public ResponseEntity<UserDto> updateRole(@Valid @RequestBody UserRoleUpdateRequestDto request) {
+        return ResponseEntity.ok(userService.updateRole(request));
     }
 }

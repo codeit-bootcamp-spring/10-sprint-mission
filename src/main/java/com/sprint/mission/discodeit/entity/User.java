@@ -27,10 +27,19 @@ public class User extends BaseUpdatableEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role;
+
     public User(String username, String email, String password) {
+        this(username, email, password, Role.USER);
+    }
+
+    public User(String username, String email, String password, Role role) {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.role = role;
     }
 
     public void update(String newUsername, String newEmail, String newPassword) {
@@ -43,6 +52,10 @@ public class User extends BaseUpdatableEntity {
         if (newPassword != null && !newPassword.isBlank() && !newPassword.equals(this.password)) {
             this.password = newPassword;
         }
+    }
+
+    public void updateRole(Role role) {
+        this.role = role;
     }
 
     public void updateProfileImageId(BinaryContent profile) {

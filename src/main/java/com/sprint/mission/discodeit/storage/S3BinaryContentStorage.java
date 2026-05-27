@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
+import java.time.temporal.ChronoUnit;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.convert.DurationUnit;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -34,6 +36,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     private final S3Presigner s3Presigner;
 
     @Value("${discodeit.storage.s3.presigned-url-expiration:600}")
+    @DurationUnit(ChronoUnit.SECONDS)
     private long expiration;
 
     public S3BinaryContentStorage(

@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.CreateUserRequestDto;
 import com.sprint.mission.discodeit.dto.UpdateUserRequestDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 
+import com.sprint.mission.discodeit.dto.UserRoleUpdateRequestDto;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,5 +15,6 @@ public interface UserService {
     UserDto find(UUID userId);
     List<UserDto> findAll();
     UserDto update(UUID userId, UpdateUserRequestDto request);
+    UserDto updateRole(UserRoleUpdateRequestDto request);
     void delete(UUID userId);
 }

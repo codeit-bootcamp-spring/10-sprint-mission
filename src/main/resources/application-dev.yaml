@@ -28,3 +28,4 @@ logging:
     org.hibernate.SQL: INFO
     org.hibernate.orm.jdbc.bind: INFO
     com.sprint.mission.discodeit: DEBUG
+    org.springframework.security: TRACE

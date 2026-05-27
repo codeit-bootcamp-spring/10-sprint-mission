@@ -4,7 +4,9 @@ import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.CreateUserRequestDto;
 import com.sprint.mission.discodeit.dto.UpdateUserRequestDto;
 import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.dto.UserRoleUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
@@ -17,11 +19,12 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,6 +39,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -43,7 +47,8 @@ public class BasicUserService implements UserService {
         log.debug("사용자 가입 요청: username={}, email={}", request.username(), request.email());
         validateDuplicateUser(request.username(), request.email());
 
-        User user = new User(request.username(), request.email(), request.password());
+        String encodedPassword = passwordEncoder.encode(request.password());
+        User user = new User(request.username(), request.email(), encodedPassword, Role.USER);
         uploadProfileImage(user, request.profileImage());
 
         userRepository.save(user);
@@ -87,6 +92,17 @@ public class BasicUserService implements UserService {
         }
 
         log.info("사용자 정보 수정 완료: userId={}", user.getId());
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserDto updateRole(UserRoleUpdateRequestDto request) {
+        log.warn("사용자 권한 변경 요청: userId={}, newRole={}", request.userId(), request.newRole());
+        User user = getUserEntity(request.userId());
+        user.updateRole(request.newRole());
+        log.info("사용자 권한 변경 완료: userId={}, role={}", user.getId(), user.getRole());
         return userMapper.toDto(user);
     }
 

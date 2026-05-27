@@ -23,6 +23,10 @@ discodeit:
       region: ${AWS_S3_REGION}
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    email: ${ADMIN_EMAIL:admin@codeit.kr}
+    password: ${ADMIN_PASSWORD:admin1234}
 
 springdoc:
   swagger-ui:

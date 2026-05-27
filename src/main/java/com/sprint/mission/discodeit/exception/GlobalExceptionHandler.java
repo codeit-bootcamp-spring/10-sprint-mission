@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -127,6 +128,21 @@ public class GlobalExceptionHandler {
             .build();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    // 권한 부족 예외: @PreAuthorize 등에서 인가 실패 시
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException e) {
+        log.warn("권한 부족으로 접근 거부: {}", e.getMessage());
+
+        ErrorResponse response = ErrorResponse.builder()
+            .code(ErrorCode.ACCESS_DENIED.name())
+            .message(ErrorCode.ACCESS_DENIED.getMessage())
+            .exceptionType(e.getClass().getSimpleName())
+            .status(ErrorCode.ACCESS_DENIED.getStatus().value()) // 403
+            .build();
+
+        return ResponseEntity.status(ErrorCode.ACCESS_DENIED.getStatus()).body(response);
     }
 
     // 서버 에러: 최상위 예외 핸들러
