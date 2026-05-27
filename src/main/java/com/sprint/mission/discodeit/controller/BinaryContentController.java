@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDTO;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -13,13 +12,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/binaryContents")
 @RequiredArgsConstructor
@@ -57,6 +57,7 @@ public class BinaryContentController {
             )
             @PathVariable UUID binaryContentId
     ){
+        log.debug("BinaryContentId: {}", binaryContentId);
         return ResponseEntity.ok(binaryContentService.find(binaryContentId));
     }
 
@@ -82,6 +83,7 @@ public class BinaryContentController {
             )
             @RequestParam List<UUID> binaryContentIds
     ){
+        log.debug("BinaryContentIds: {}", binaryContentIds);
         return ResponseEntity.ok(binaryContentService.findAllByIdIn(binaryContentIds));
     }
 
@@ -96,6 +98,7 @@ public class BinaryContentController {
             content=@Content(schema = @Schema(type= "string", format = "binary"))
     )
     public ResponseEntity<?> download(@PathVariable UUID binaryContentId){
+        log.info("파일 다운로드 요청 - binaryContentId: {}", binaryContentId);
         return binaryContentService.download(binaryContentId);
     }
 

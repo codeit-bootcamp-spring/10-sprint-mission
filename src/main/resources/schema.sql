@@ -24,6 +24,7 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(60) NOT NULL,
     profile_id UUID UNIQUE,
+    role VARCHAR(20) NOT NULL,
     CONSTRAINT fk_profile_id FOREIGN KEY (profile_id)
         REFERENCES binary_contents(id)
         ON DELETE SET NULL
@@ -44,17 +45,6 @@ CREATE TABLE read_statuses (
     last_read_at TIMESTAMPTZ NOT NULL
 );
 
-CREATE TABLE user_statuses (
-    id UUID PRIMARY KEY,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ,
-    user_id UUID NOT NULL UNIQUE,
-    CONSTRAINT fk_user_id FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-    last_active_at TIMESTAMPTZ
-);
-
 CREATE TABLE messages (
     id UUID PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL,
@@ -70,13 +60,13 @@ CREATE TABLE messages (
     content VARCHAR(500) NOT NULL
 );
 
-CREATE TABLE message_attachements (
+CREATE TABLE message_attachments (
     message_id UUID NOT NULL,
-    CONSTRAINT fk_message_attachements_message FOREIGN KEY (message_id)
+    CONSTRAINT fk_message_attachments_message FOREIGN KEY (message_id)
         REFERENCES messages(id)
         ON DELETE CASCADE,
     attachment_id UUID NOT NULL,
-    CONSTRAINT fk_message_attachements_attachment FOREIGN KEY (attachment_id)
+    CONSTRAINT fk_message_attachments_attachment FOREIGN KEY (attachment_id)
         REFERENCES binary_contents(id)
         ON DELETE CASCADE
 );

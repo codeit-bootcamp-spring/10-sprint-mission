@@ -6,6 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record BinaryContentCreateRequest(
         String fileName,
         String contentType,
-        Long size
+        byte[] bytes
 ) {}
 

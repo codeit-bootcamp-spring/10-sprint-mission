@@ -1,56 +1,54 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.auth.request.AuthServiceRequest;
+import com.sprint.mission.discodeit.dto.auth.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserDTO;
-import com.sprint.mission.discodeit.service.auth.AuthService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.service.basic.BasicAuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@Tag(name="Auth", description = "인증 API")
+@Tag(name = "Auth", description = "인증 API")
 public class AuthController {
-    private final AuthService authService;
 
-    // 로그인 - POST /api/auth/login
-    @PostMapping("/login")
-    @Operation(summary = "로그인")
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "로그인 성공",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UserDTO.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "사용자를 찾을 수 없음",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject("User with username : {username} not found")
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "비밀번호가 일치하지 않음",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject("Wrong password")
-                    )
-            )
-    })
-    ResponseEntity<UserDTO> login(@RequestBody AuthServiceRequest request){
-        return ResponseEntity.ok(authService.login(request));
+    private final BasicAuthService authService;
+
+    @GetMapping("/csrf-token")
+    public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
+        String tokenValue = csrfToken.getToken();
+        log.debug("CSRF Token: {}", tokenValue);
+        return ResponseEntity
+                .status(HttpStatus.NON_AUTHORITATIVE_INFORMATION)
+                .header("X-CSRF-TOKEN", tokenValue)
+                .build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getUserDto(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return ResponseEntity
+                .ok(((DiscodeitUserDetails) userDetails).getUserDTO());
+    }
+
+    // 왜 Put? Patch X??
+    @PutMapping("/role")
+    public ResponseEntity<UserDTO> updateUserRole(@Valid @RequestBody RoleUpdateRequest request) {
+        return ResponseEntity
+                .ok(authService.updateRole(request));
     }
 }

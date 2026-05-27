@@ -16,7 +16,6 @@ import lombok.Setter;
 @Table(name = "binary_contents")
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Getter
-@Setter
 public class BinaryContent extends BaseEntity {
     @Column(nullable = false)
     private String fileName;

@@ -1,21 +1,32 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.dto.user.response.UserDTO;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.storage.FileStorageException;
+import com.sprint.mission.discodeit.exception.user.AlreadyExistsEmailException;
+import com.sprint.mission.discodeit.exception.user.AlreadyExistsNameException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 @Transactional
@@ -25,54 +36,36 @@ public class BasicUserService implements UserService {
     private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
     private final BinaryContentRepository binaryContentRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
-    @Transactional
     public UserDTO create(UserCreateRequest userRequest, Optional<MultipartFile> profile) {
         // 이름, 이메일 유효성 검증
         validateName(userRequest.username());
         validateEmail(userRequest.email());
 
         // user 생성 with DTO
-        User user = userMapper.toEntity(userRequest);
-        UserStatus userStatus = new UserStatus(user);
-
-        user.setUserStatus(userStatus);
+        User user = new User(userRequest.username(), userRequest.email(), passwordEncoder.encode(userRequest.password()), null);
 
         // 선택적으로 프로필 등록
-        profile.ifPresent(file -> {
-                 try{
-                    BinaryContent bc = new BinaryContent(
-                         file.getOriginalFilename(),
-                         file.getContentType(),
-                         file.getSize()
-                    );
-                    BinaryContent savedBinaryContent = binaryContentRepository.save(bc);
-                    binaryContentStorage.put(savedBinaryContent.getId(), file.getBytes());
-                    user.updateProfile(savedBinaryContent);
+        profile.ifPresent(file -> postProfile(profile, user));
 
-                 } catch (IOException e){
-                     throw new RuntimeException("파일 처리 실패" + e.getMessage());
-                 }
-                });
-
-        User savedUser = userRepository.save(user);
-        return userMapper.toDTO(savedUser);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public UserDTO find(UUID userId) {
-        // user 조회
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+        userRepository.save(user);
+        log.info("사용자 생성 성공 - userId: {}", user.getId());
         return userMapper.toDTO(user);
     }
 
     @Override
     @Transactional(readOnly = true)
+    public UserDTO find(UUID userId) {
+        return userMapper.toDTO(userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId)));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<UserDTO> findAll() {
-        return userRepository.findAllWithStatus().stream()
+        return userRepository.findAllWithProfileAndStatus().stream()
                 .map(userMapper::toDTO)
                 .toList();
     }
@@ -81,9 +74,8 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional
     public UserDTO update(UUID userID, UserUpdateRequest request, Optional<MultipartFile> profile) {
-        // user 조회
         User user = userRepository.findById(userID)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
+                .orElseThrow(() -> new UserNotFoundException(userID));
 
         // user 이름 선택적 업데이트
         Optional.ofNullable(request.newUsername()).ifPresent(name -> {
@@ -97,22 +89,19 @@ public class BasicUserService implements UserService {
             user.updateEmail(email);
         });
 
+        // user 비밀번호 선택적 업데이트
+        Optional.ofNullable(request.newPassword()).ifPresent(newPassword -> user.updatePassword(passwordEncoder.encode(newPassword)));
+
         // user의 프로필 선택적 업데이트
         profile.ifPresent(file -> {
-                    try{
-                        BinaryContent bc = new BinaryContent(
-                                file.getOriginalFilename(),
-                                file.getContentType(),
-                                file.getSize()
-                        );
-                        BinaryContent savedBinaryContent = binaryContentRepository.save(bc);
-                        binaryContentStorage.put(savedBinaryContent.getId(), file.getBytes());
-                        user.updateProfile(savedBinaryContent);
-                    } catch (IOException e){
-                        throw new RuntimeException("파일 처리 실패" + e.getMessage());
-                    }
-                });
+            // 기존에 프로필 존재 시 삭제
+            if (user.getProfile() != null) {
+                binaryContentRepository.delete(user.getProfile());
+            }
+            postProfile(profile, user);
+        });
 
+        log.info("사용자 수정 성공 - userId: {}", userID);
         return userMapper.toDTO(user);
     }
 
@@ -120,25 +109,44 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional
     public void deleteUser(UUID userId) {
-        // 존재하는 user인지 검증
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
-        // [저장]
-        userRepository.deleteById(user.getId());
+        userRepository.delete(user);
+        log.info("사용자 삭제 성공 - userId: {}", userId);
     }
 
     // User 이름 유효성 검증
-    public void validateName(String username){
-        if(userRepository.existsByUsername(username)){
-            throw new IllegalArgumentException("Already Present name: " + username);
+    public void validateName(String username) {
+        if (userRepository.existsByUsername(username)) {
+            throw new AlreadyExistsNameException(username);
         }
     }
 
     // 이메일 유효성 검증
-    public void validateEmail(String email){
-        if(userRepository.existsByEmail(email)){
-            throw new IllegalArgumentException("Already Present email: " + email);
+    public void validateEmail(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new AlreadyExistsEmailException(email);
         }
+    }
+
+    // 프로필 등록
+    public void postProfile(Optional<MultipartFile> profile, User user) {
+        profile.ifPresent(file -> {
+            try {
+                log.debug("프로필 이미지 저장 - fileName: {}", file.getOriginalFilename());
+                BinaryContent bc = new BinaryContent(
+                        file.getOriginalFilename(),
+                        file.getContentType(),
+                        file.getSize()
+                );
+                binaryContentRepository.save(bc);
+                binaryContentStorage.put(bc.getId(), file.getBytes());
+                user.updateProfile(bc);
+                log.debug("프로필 이미지 저장 성공 - fileName: {}", file.getOriginalFilename());
+            } catch (IOException e) {
+                throw new FileStorageException(file.getOriginalFilename());
+            }
+        });
     }
 }

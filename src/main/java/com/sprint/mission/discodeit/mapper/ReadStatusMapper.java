@@ -9,14 +9,16 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ReadStatusMapper {
     // Entity -> DTO
+    @Mapping(target = "id", ignore = true)
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "channel.id", target = "channelId")
-    ReadStatusDTO toResponse(ReadStatus readStatus);
+    ReadStatusDTO toDto(ReadStatus readStatus);
 
     // DTO -> Entity
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "user.id", source = "userId")
-    @Mapping(target = "channel.id", source = "channelId")
-    @Mapping(target = "lastReadAt", expression = "java(java.time.Instant.now())")
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "user", ignore = true)     // 서비스에서 직접 주입
+    @Mapping(target = "channel", ignore = true)
     ReadStatus toEntity(ReadStatusCreateRequest request);
 }

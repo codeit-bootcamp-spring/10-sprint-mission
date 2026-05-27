@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
@@ -14,7 +15,7 @@ import java.util.UUID;
 
 public interface MessageService {
     // CRUD
-    MessageDTO create(MessageCreateRequest Request, Optional<List<MultipartFile>> attachments);
+    MessageDTO create(MessageCreateRequest Request, List<BinaryContentCreateRequest> attachments);
     MessageDTO find(UUID messageID);
     List<MessageDTO> findMessagesByUser(UUID userId);
     PageResponse<MessageDTO> findMessagesByChannel(UUID channelId, Instant cursor, Pageable pageable);

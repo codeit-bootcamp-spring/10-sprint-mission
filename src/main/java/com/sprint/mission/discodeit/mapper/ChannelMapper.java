@@ -17,12 +17,4 @@ import java.util.UUID;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ChannelMapper {
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "type", constant = "PUBLIC")
-    public abstract Channel toEntity(ChannelCreateRequestPublic req);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "type", constant = "PRIVATE")
-    public abstract Channel toEntity(ChannelCreateRequestPrivate req);
-
 }

@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.dto.userStatus.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusDTO;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -17,9 +16,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,13 +29,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 @Tag(name="User", description = "User API")
 public class UserController {
     private final UserService userService;
-    private final UserStatusService userStatusService;
 
     // user 등록 - POST /api/users
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -54,9 +56,11 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("username 혹은 email이 중복됩니다"))
             )
     })
-    public UserDTO postUser(@RequestPart("userCreateRequest") UserCreateRequest request,
+    public ResponseEntity<UserDTO> postUser(@Valid @RequestPart("userCreateRequest") UserCreateRequest request,
                             @RequestPart(value="profile", required = false) MultipartFile profile){
-        return userService.create(request, Optional.ofNullable(profile));
+        log.info("사용자 생성 요청 - username: {}, email: {}", request.username(), request.email());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(userService.create(request, Optional.ofNullable(profile)));
     }
 
     // user 정보 수정 - PATCH /api/users/{userId}
@@ -76,7 +80,8 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("username 혹은 email이 중복됩니다"))
             )
     })
-    public UserDTO updateUser(
+    @PreAuthorize("hasRole('USER') and #userId == authentication.principal.id")
+    public ResponseEntity<UserDTO> updateUser(
             @Parameter(
                     description = "수정할 userId",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -84,10 +89,11 @@ public class UserController {
                     schema = @Schema(type = "string", format = "uuid")
             )
             @PathVariable UUID userId,
-            @RequestPart("userUpdateRequest") UserUpdateRequest request,
+            @Valid @RequestPart("userUpdateRequest") UserUpdateRequest request,
             @RequestPart(value="profile", required = false) MultipartFile profile
     ){
-        return userService.update(userId, request, Optional.ofNullable(profile));
+        log.info("사용자 수정 요청 - userId: {}", userId);
+        return ResponseEntity.ok(userService.update(userId, request, Optional.ofNullable(profile)));
     }
 
     // user 삭제 - DELETE /api/users/{userId}
@@ -105,6 +111,7 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("해당 User를 찾지 못함"))
             )
     })
+    @PreAuthorize("hasRole('USER') and #userId == authentication.principal.id")
     public void deleteUser(
             @Parameter(
                     description = "삭제할 userId",
@@ -114,6 +121,7 @@ public class UserController {
             )
             @PathVariable UUID userId
     ){
+        log.info("사용자 삭제 요청 - userId: {}", userId);
         userService.deleteUser(userId);
     }
 
@@ -134,7 +142,7 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("해당 User를 찾을 수 없음"))
             )
     })
-    public UserDTO getUser(
+    public ResponseEntity<UserDTO> getUser(
             @Parameter(
                     description = "조회할 userId",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -143,7 +151,9 @@ public class UserController {
             )
             @PathVariable UUID userId
     ){
-        return userService.find(userId);
+        log.debug("사용자 단건 조회 요청 - userId: {}", userId);
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .body(userService.find(userId));
     }
 
     // user 다건 조회 - GET /api/users
@@ -155,36 +165,8 @@ public class UserController {
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDTO.class)))
     )
     public ResponseEntity<List<UserDTO>> getAllUsers(){
+        log.debug("전체 사용자 목록 조회 요청");
         List<UserDTO> users = userService.findAll();
         return ResponseEntity.ok(users);
     }
-
-    // user 온라인 상태 업데이트 - PATCH /api/users/{userId}/userStatus
-    @PatchMapping( "/{userId}/userStatus")
-    @Operation(summary = "User 온라인 상태 업데이트", operationId = "updateUserStatusByUserId")
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "User 온라인 상태 업데이트 성공",
-                    content = @Content(schema = @Schema(implementation = UserStatusDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "User 온라인 상태 업데이트 실패",
-                    content = @Content(examples = @ExampleObject("해당 User를 찾을 수 없음"))
-            )
-    })
-    public ResponseEntity<UserStatusDTO> updateStatus(
-            @Parameter(
-                    description = "업데이트할 userId",
-                    example = "123e4567-e89b-12d3-a456-426655440000",
-                    required = true,
-                    schema = @Schema(type = "string", format = "uuid")
-            )
-            @PathVariable UUID userId,
-            @RequestBody UserStatusUpdateRequest request
-    ){
-        return ResponseEntity.ok(userStatusService.updateByUserID(userId, request));
-    }
-
 }

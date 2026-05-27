@@ -1,0 +1,27 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+server:
+  port: 8081
+
+logging:
+  level:
+    root: INFO
+    com.sprint.mission.discodeit: INFO

@@ -13,11 +13,11 @@ public record MessageCreateRequest(
         String content,
 
         @Schema(description = "메시지가 작성될 채널 ID", example = "550e8400-e29b-41d4-a716-446655440000")
-        @NotNull
+        @NotNull(message = "채널 Id는 필수입니다.")
         UUID channelId,
 
         @Schema(description = "메시지 작성자 ID", example = "123e4567-e89b-12d3-a456-426655440000")
-        @NotNull
+        @NotNull(message = "작성자 Id는 필수입니다.")
         UUID authorId
 ) {
 }

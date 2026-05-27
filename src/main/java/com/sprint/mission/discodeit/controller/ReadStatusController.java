@@ -14,13 +14,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping( "/api/readStatuses")
@@ -47,7 +50,8 @@ public class ReadStatusController {
                     content = @Content(examples = @ExampleObject("Channel or user not found"))
             )
     })
-    public ResponseEntity<ReadStatusDTO> postReadStatus(@RequestBody ReadStatusCreateRequest request){
+    public ResponseEntity<ReadStatusDTO> postReadStatus(@Valid @RequestBody ReadStatusCreateRequest request){
+        log.debug("메시지 읽음 상태 생성 - userId : {}, channelId: {}, lastReadAt: {}", request.userId(), request.channelId(), request.lastReadAt());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(readStatusService.create(request));
     }
@@ -78,8 +82,9 @@ public class ReadStatusController {
                     schema = @Schema(type = "string", format = "uuid")
             )
             @PathVariable UUID readStatusId,
-            @RequestBody ReadStatusUpdateRequest request
+            @Valid @RequestBody ReadStatusUpdateRequest request
     ){
+        log.debug("수정할 readStatusId : {}, lastReadAt : {}: ", readStatusId, request.newLastReadAt());
         return ResponseEntity.ok(readStatusService.update(readStatusId, request));
     }
 
@@ -103,6 +108,7 @@ public class ReadStatusController {
     public List<ReadStatusDTO> getReadStatusByUserId(
             @Parameter(description = "조회할 userId", example = "123e4567-e89b-12d3-a456-426655440000", required = true)
             @RequestParam UUID userId){
+        log.debug("user의 읽음 상태 조회 : {}", userId);
         return readStatusService.findAllByUserId(userId);
     }
 }
