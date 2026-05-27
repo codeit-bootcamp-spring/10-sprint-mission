@@ -1,35 +1,66 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
+import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.details.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
-import com.sprint.mission.discodeit.service.UserService;
+import io.swagger.v3.oas.annotations.headers.Header;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.*;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController {
-    private final AuthService authService;
-    private final UserService userService;
+public class AuthController implements AuthApi {
 
-    public AuthController(AuthService authService, UserService userService) {
-        this.authService = authService;
-        this.userService = userService;
+  private final AuthService authService;
+
+  /*
+  @PostMapping(path = "login")
+  public ResponseEntity<UserDto> login(@RequestBody @Valid LoginRequest loginRequest) {
+    log.info("로그인 요청: username={}", loginRequest.username());
+    UserDto user = authService.login(loginRequest);
+    log.debug("로그인 응답: {}", user);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(user);
+  }
+   */
+
+  // CSRF 토큰을 발급하는 API를 구현하세요.
+  @GetMapping("/csrf-token")
+  public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
+    String tokenValue = csrfToken.getToken();
+    log.debug("CSRF 토큰 요청: {}", tokenValue);
+
+    return ResponseEntity
+            .status(HttpStatus.NON_AUTHORITATIVE_INFORMATION)
+            .build();
+  }
+
+  @GetMapping("/me")
+  public ResponseEntity<UserDto> getUserDtoFromSessionId(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
+    if (userDetails == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
-        System.out.println("로그인 시작");
-        User user = authService.login(loginRequest);
-        UserDto userDto = userService.find(user.getId());
-        System.out.println("로그인 성공");
-        return new ResponseEntity<>(user, HttpStatus.OK);
-    }
+    return ResponseEntity.status(HttpStatus.OK).body(userDetails.getUserDto());
+  }
+
+  @PutMapping("/role")
+  public ResponseEntity<UserDto> updateUserRole(@RequestBody RoleUpdateRequest userRoleUpdateRequest) {
+    UserDto userDto = authService.updateUserRole(userRoleUpdateRequest);
+    return ResponseEntity.status(HttpStatus.OK).body(userDto);
+  }
 }
