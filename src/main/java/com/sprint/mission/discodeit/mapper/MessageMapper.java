@@ -6,31 +6,54 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import lombok.AllArgsConstructor;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper(componentModel = "spring", uses = {UserMapper.class, BinaryContentMapper.class})
-public interface MessageMapper {
+@Mapper(componentModel = "spring")
+public abstract class MessageMapper {
 
-  @Mapping(source = "channel.id", target = "channelId")
-  MessageDto toDto(Message message);
+  @Autowired
+  protected UserMapper userMapper;
+  @Autowired
+  protected BinaryContentMapper binaryContentMapper;
+
+  public MessageDto toDto(Message message, Set<UUID> onlineUserIds) {
+    return new MessageDto(
+        message.getId(),
+        message.getContent(),
+        message.getChannel().getId(),
+        userMapper.toDto(message.getAuthor(), onlineUserIds.contains(message.getAuthor().getId())),
+        message.getAttachments().stream()
+            .map(a -> binaryContentMapper.toDto(a))
+            .collect(Collectors.toList()),
+        message.getCreatedAt(),
+        message.getUpdatedAt()
+    );
+  }
 
   //목록 조회용 디티오 매퍼
-  @Mapping(source = "message.channel.id", target = "channelId")
-  @Mapping(source = "attachments", target = "attachments")
 //인자로 받은 컨텐츠목록을 디티오 필드로 매핑
-  MessageDto toDto(Message message, List<BinaryContent> attachments);
+  public MessageDto toDto(Message message, List<BinaryContent> attachments,
+      Set<UUID> onlineUserIds) {
+    return new MessageDto(
+        message.getId(),
+        message.getContent(),
+        message.getChannel().getId(),
+        userMapper.toDto(message.getAuthor(), onlineUserIds.contains(message.getAuthor().getId())),
+        attachments.stream()
+            .map(a -> binaryContentMapper.toDto(a))
+            .collect(Collectors.toList()),
+        message.getCreatedAt(),
+        message.getUpdatedAt()
+    );
+  }
 
-  default Message toEntity(MessageCreateRequest dto, User user, Channel channel,
+  public Message toEntity(MessageCreateRequest dto, User user, Channel channel,
       List<BinaryContent> attachments) {
     return Message.create(dto.content(), channel, user, attachments);
   }

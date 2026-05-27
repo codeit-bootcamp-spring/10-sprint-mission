@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,7 +42,8 @@ public class ChannelController {
 
   @Operation(summary = "Public Channel 생성", operationId = "create_3")
   @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨")
-  @PostMapping("/public")//나중에 소유자 지정
+  @PostMapping("/public")
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   public ResponseEntity<ChannelDto> createPublicChannel(
       @Valid @RequestBody PublicChannelCreateRequest dto) {
     return ResponseEntity.status(HttpStatus.CREATED).body(channelService.create(dto));
@@ -92,7 +94,8 @@ public class ChannelController {
           )
       )
   })
-  @PatchMapping("/{channelId}")//나중에 소유자가 정해진다면, 권한확인필요
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+  @PatchMapping("/{channelId}")
   public ResponseEntity<ChannelDto> updatePublicChannel(@PathVariable UUID channelId,
       @Valid @RequestBody PublicChannelUpdateRequest dto) {
     return ResponseEntity.ok(channelService.update(channelId, dto));
@@ -119,7 +122,8 @@ public class ChannelController {
           )
       )
   })
-  @DeleteMapping("/{channelId}") //나중에 소유자가 정해진다면, 권한확인필요
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+  @DeleteMapping("/{channelId}")
   public ResponseEntity<Void> deleteChannel(@PathVariable UUID channelId) {
     channelService.delete(channelId);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

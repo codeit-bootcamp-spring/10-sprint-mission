@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -19,6 +20,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
+import com.sprint.mission.discodeit.util.UserSessionManager;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,7 @@ public class BasicChannelService implements ChannelService {
   private final UserRepository userRepository;//공개채널에 멤버추가를 위한 의존성
   private final ChannelMapper channelMapper;
   private final BinaryContentRepository binaryContentRepository;
+  private final UserSessionManager userSessionManager;
 
   @Override
   public ChannelDto create(PublicChannelCreateRequest dto) {
@@ -48,12 +51,13 @@ public class BasicChannelService implements ChannelService {
     channelRepository.save(channel);
     //모든 사용자가 멤버!
     log.debug("공개 채널 생성 중: 모든 사용자 조회 및 읽기 상태 생성&저장");
-    List<ReadStatus> readStatuses = userRepository.findAllFetchUserInfo().stream()
+    List<User> allUsers = userRepository.findAllFetchUserInfo();
+    List<ReadStatus> readStatuses = allUsers.stream()
         .map(u -> ReadStatus.create(u, channel, Instant.EPOCH))
         .toList();
     readStatusRepository.saveAll(readStatuses);
     log.info("공개 채널 생성 성공: channelId={}", channel.getId());
-    return channelMapper.toDto(channel);
+    return channelMapper.toDto(channel, allUsers, null, getOnlineUserIds());
   }
 
   @Override
@@ -74,14 +78,16 @@ public class BasicChannelService implements ChannelService {
         .toList();
     readStatusRepository.saveAll(readStatuses);
     log.info("비공개 채널 생성 성공: channelId={}", channel.getId());
-    return channelMapper.toDto(channel);
+    return channelMapper.toDto(channel, members,
+        null, getOnlineUserIds());
   }
 
   @Override
   @Transactional(readOnly = true)
   public ChannelDto find(UUID channelId) {
     Channel channel = get(channelId);
-    return channelMapper.toDto(channel);
+    return channelMapper.toDto(channel, getMembers(channelId), getLastMessageAt(channelId),
+        getOnlineUserIds());
   }
 
   @Override
@@ -118,9 +124,10 @@ public class BasicChannelService implements ChannelService {
           lastMessages.put(m.channelId(), m.maxCreatedAt());
         });
 
+    Set<UUID> onlineUserIds = userSessionManager.getOnlineUserIds();
     myChannels.values().forEach(c -> {
       response.add(channelMapper.toDto(c, userMap.get(c.getId()),
-          lastMessages.getOrDefault(c.getId(), null)));
+          lastMessages.getOrDefault(c.getId(), null), onlineUserIds));
     });
 
     return response.stream()
@@ -137,7 +144,7 @@ public class BasicChannelService implements ChannelService {
     }
     channel.update(dto.name(), dto.description());
     log.info("공개 채널 수정 성공: channelId={}", channel.getId());
-    return channelMapper.toDto(channel);
+    return channelMapper.toDto(channel, getMembers(id), getLastMessageAt(id), getOnlineUserIds());
   }
 
   @Override
@@ -159,5 +166,21 @@ public class BasicChannelService implements ChannelService {
   private Channel get(UUID channelId) {
     return channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException().addDetail("channelId", channelId));
+  }
+
+  private List<User> getMembers(UUID channelId) {
+    return readStatusRepository.findAllByChannelIdFetchUser(channelId).stream()
+        .map(ReadStatus::getUser)
+        .toList();
+  }
+
+  private Instant getLastMessageAt(UUID channelId) {
+    return messageRepository.findLastMessageByChannelId(channelId)
+        .map(Message::getCreatedAt)
+        .orElse(null);
+  }
+
+  private Set<UUID> getOnlineUserIds() {
+    return userSessionManager.getOnlineUserIds();
   }
 }

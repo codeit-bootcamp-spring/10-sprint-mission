@@ -30,11 +30,15 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.util.UserSessionManager;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -49,6 +53,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
+@Tag("unit")
 class BasicMessageServiceTest {
 
   @Mock
@@ -68,6 +73,9 @@ class BasicMessageServiceTest {
   @Mock
   private PageResponseMapper pageResponseMapper;
 
+  @Mock
+  private UserSessionManager userSessionManager;
+
   @InjectMocks
   private BasicMessageService messageService;
 
@@ -85,6 +93,7 @@ class BasicMessageServiceTest {
         mock(BinaryContentCreateDto.class));
     Message message = Message.create(dto.content(), channel, author,
         List.of(mock(BinaryContent.class), mock(BinaryContent.class)));
+    Set<UUID> onlineUsers = new HashSet<>(Set.of(UUID.randomUUID(), UUID.randomUUID()));
 
     given(userRepository.findById(authorId)).willReturn(Optional.of(author));
     given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
@@ -93,7 +102,9 @@ class BasicMessageServiceTest {
     given(binaryContentMapper.toEntity(any(BinaryContentCreateDto.class))).willReturn(
         mock(BinaryContent.class));
     given(messageMapper.toEntity(eq(dto), eq(author), eq(channel), anyList())).willReturn(message);
-    given(messageMapper.toDto(message)).willReturn(mock(MessageDto.class));
+    given(userSessionManager.getOnlineUserIds()).willReturn(onlineUsers);
+    given(messageMapper.toDto(message, onlineUsers)).willReturn(
+        mock(MessageDto.class));
 
     //when
     MessageDto result = messageService.create(dto, attachments);
@@ -155,12 +166,14 @@ class BasicMessageServiceTest {
     MessageDto d1 = mock(MessageDto.class);
     MessageDto d2 = mock(MessageDto.class);
     Slice<MessageDto> dtoSlice = new SliceImpl<>(List.of(d1, d2), pageable, true);
+    Set<UUID> onlineUsers = new HashSet<>(Set.of(UUID.randomUUID(), UUID.randomUUID()));
 
     given(
         messageRepository.findAllByChannelIdFetchUserInfo(channelId, pageable, cursor)).willReturn(
         messageSlice);
-    given(messageMapper.toDto(eq(m1), any())).willReturn(d1);
-    given(messageMapper.toDto(eq(m2), any())).willReturn(d2);
+    given(userSessionManager.getOnlineUserIds()).willReturn(onlineUsers);
+    given(messageMapper.toDto(eq(m1), any(), eq(onlineUsers))).willReturn(d1);
+    given(messageMapper.toDto(eq(m2), any(), eq(onlineUsers))).willReturn(d2);
     given(pageResponseMapper.fromSlice(any(Slice.class), any(Instant.class))).willReturn(
         new PageResponse<>(dtoSlice.getContent(), m2.getCreatedAt(),
             dtoSlice.getSize(), dtoSlice.hasNext(), null));
@@ -184,9 +197,11 @@ class BasicMessageServiceTest {
     Pageable pageable = PageRequest.of(0, 10, Sort.Direction.DESC, "createdAt");
     Instant cursor = Instant.now();
     Slice<Message> emptySlice = new SliceImpl<>(List.of(), pageable, false);
+    Set<UUID> onlineUsers = new HashSet<>(Set.of(UUID.randomUUID(), UUID.randomUUID()));
 
     given(messageRepository.findAllByChannelIdFetchUserInfo(any(), any(), any()))
         .willReturn(emptySlice);
+    given(userSessionManager.getOnlineUserIds()).willReturn(onlineUsers);
     given(pageResponseMapper.fromSlice(any(), any()))
         .willReturn(new PageResponse<>(List.of(), null, 0, false, null));
 
@@ -212,9 +227,13 @@ class BasicMessageServiceTest {
     User author = mock(User.class);
     Message message = Message.create("Old Content", channel, author, null);
     MessageUpdateRequest updateDto = new MessageUpdateRequest("New Content");
+    Set<UUID> onlineUsers = new HashSet<>(Set.of(UUID.randomUUID(), UUID.randomUUID()));
 
-    given(messageRepository.findById(messageId)).willReturn(Optional.of(message));
-    given(messageMapper.toDto(message)).willReturn(mock(MessageDto.class));
+    given(messageRepository.findByIdFetchAttachmentAndUser(messageId)).willReturn(
+        Optional.of(message));
+    given(userSessionManager.getOnlineUserIds()).willReturn(onlineUsers);
+    given(messageMapper.toDto(message, onlineUsers)).willReturn(
+        mock(MessageDto.class));
 
     //when
     MessageDto result = messageService.update(messageId, updateDto);
@@ -231,7 +250,7 @@ class BasicMessageServiceTest {
     UUID messageId = UUID.randomUUID();
     MessageUpdateRequest updateDto = new MessageUpdateRequest("New Content");
 
-    given(messageRepository.findById(messageId)).willReturn(Optional.empty());
+    given(messageRepository.findByIdFetchAttachmentAndUser(messageId)).willReturn(Optional.empty());
 
     //when & then
     assertThrows(MessageNotFoundException.class, () ->

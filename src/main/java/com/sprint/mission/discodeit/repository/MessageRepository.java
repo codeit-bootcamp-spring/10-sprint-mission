@@ -18,7 +18,7 @@ import org.springframework.data.repository.query.Param;
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
   @Query("select m from Message m left join fetch m.author left join fetch m.author.profile "
-      + "left join fetch m.author.userStatus where m.channel.id = :channelId "
+      + "where m.channel.id = :channelId "
       + "and (cast(:cursor as timestamp) is null or m.createdAt < :cursor)")
   Slice<Message> findAllByChannelIdFetchUserInfo(UUID channelId, Pageable pageable,
       Instant cursor);//널비교때는 타입 추론 이 안되기 때문에 캐스팅 필요
@@ -29,6 +29,9 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
   @Query(value = "SELECT * FROM messages WHERE channel_id = :channelId ORDER BY created_at DESC LIMIT 1",
       nativeQuery = true)
   Optional<Message> findLastMessageByChannelId(@Param("channelId") UUID channelId);
+
+  @Query("select m from Message m join fetch m.author u left join fetch u.profile left join fetch m.attachments where m.id = :id")
+  Optional<Message> findByIdFetchAttachmentAndUser(UUID id);
 
   //채널아이디목록에 대한 모든 마지막 메세지를 조회 -> 인터페이스를 정의해서 반환 자동 매핑
   //별칭 지정 안하면 인터페이스 함수랑 get 뒤에 이름이 같아야함

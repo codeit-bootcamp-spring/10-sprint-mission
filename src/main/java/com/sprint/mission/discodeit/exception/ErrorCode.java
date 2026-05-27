@@ -8,6 +8,9 @@ import lombok.Getter;
 public enum ErrorCode {
   //AUTH
   INVALID_CREDENTIALS(401, "AU001", "잘못된 아이디 또는 비밀번호"),
+  UNAUTHORIZED(401, "AU002", "인증되지 않은 사용자"),
+  AUTHENTICATION_FAILED(401, "AU003", "인증 실패"),
+  ACCESS_DENIED(403, "AU004", "권한 없음"),
   //USER
   USER_NOT_FOUND(404, "U001", "존재하지 않는 사용자"),
   EMAIL_ALREADY_EXIST(409, "U101", "이미 존재하는 이메일"),

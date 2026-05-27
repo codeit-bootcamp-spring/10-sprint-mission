@@ -11,7 +11,6 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.InvalidMessageException;
-import com.sprint.mission.discodeit.exception.message.MessageAuthorOnlyException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -22,11 +21,14 @@ import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.util.UserSessionManager;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -48,6 +50,7 @@ public class BasicMessageService implements MessageService {
   private final ReadStatusRepository readStatusRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final PageResponseMapper pageResponseMapper;
+  private final UserSessionManager userSessionManager;
 
   @Override
   public MessageDto create(MessageCreateRequest dto,
@@ -77,14 +80,14 @@ public class BasicMessageService implements MessageService {
     }
     log.info("메세지 생성 성공: channelId={}, authorId={}, messageId={}", channel.getId(), user.getId(),
         message.getId());
-    return messageMapper.toDto(message);
+    return messageMapper.toDto(message, getOnlineUserIds());
   }
 
   @Override
   @Transactional(readOnly = true)
   public MessageDto find(UUID messageId) {
     Message message = get(messageId);
-    return messageMapper.toDto(message);
+    return messageMapper.toDto(message, getOnlineUserIds());
   }
 
   @Override
@@ -96,8 +99,9 @@ public class BasicMessageService implements MessageService {
 //        .map(messageMapper::toDto).toList();
     Slice<Message> slice = messageRepository.findAllByChannelIdFetchUserInfo(channelId, pageable,
         cursor);
+    Set<UUID> onlineUserIds = getOnlineUserIds();
     Slice<MessageDto> sliceDto = slice.map(
-        s -> messageMapper.toDto(s, s.getAttachments()));
+        s -> messageMapper.toDto(s, s.getAttachments(), onlineUserIds));
     Instant nextCursor = null;
     if (slice.hasNext() && slice.hasContent()) {
       nextCursor = slice.getContent().get(slice.getContent().size() - 1).getCreatedAt();
@@ -107,28 +111,21 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @PostAuthorize("returnObject.author().id() == principal.userDto.id")
   public MessageDto update(UUID id, MessageUpdateRequest dto) {
     log.debug("메세지 수정 시도: messageId={}", id);
-    Message message = get(id);
-    //인증인가 구현후 아래 유효성 검증 도입
-    //checkMember(message.getChannelId(), userId);
-    //checkAuthor(message.getAuthorId(), userId);
+    Message message = messageRepository.findByIdFetchAttachmentAndUser(id)
+        .orElseThrow(() -> new MessageNotFoundException().addDetail("messageId", id));
     message.update(dto.newContent(), null);//첨부파일 변경을 하려면 별도로 메서드 필요
     log.info("메세지 수정 성공:  messageId={}", message.getId());
-    return messageMapper.toDto(message);
+    return messageMapper.toDto(message, getOnlineUserIds());
   }
 
   @Override
+  @PreAuthorize("hasPermission(#messageId, 'MESSAGE', 'DELETE')")
   public void delete(UUID messageId) {
     log.debug("메세지 삭제 시도: messageId={}", messageId);
     Message message = get(messageId);
-    // 아래 유효성 검증은 인증/인가 추가후
-    //checkMember(message.getChannelId(), userId);
-    //checkAuthor(message.getAuthorId(), userId);
-//    if (message.getAttachments() != null && !message.getAttachments().isEmpty()) {
-//      message.getAttachments()
-//          .forEach(b -> binaryContentRepository.deleteById(b.getId()));//첨부파일 있는경우만 지우기
-//    }
     messageRepository.deleteById(messageId);
     log.info("메세지 삭제 성공: messageId={}", messageId);
   }
@@ -155,10 +152,7 @@ public class BasicMessageService implements MessageService {
         .orElseThrow(() -> new MessageNotFoundException().addDetail("messageId", messageId));
   }
 
-  private void checkAuthor(UUID authorId, UUID userId) {
-    if (!authorId.equals(userId)) {
-      throw new MessageAuthorOnlyException().addDetail("authorId", authorId)
-          .addDetail("userId", userId);
-    }
+  private Set<UUID> getOnlineUserIds() {
+    return userSessionManager.getOnlineUserIds();
   }
 }

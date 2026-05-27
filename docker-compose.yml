@@ -17,6 +17,12 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     env_file:
       - .env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      interval: 3s   # 3초마다 체크
+      timeout: 3s    # 3초 넘어가면 실패로 간주
+      retries: 10    # 10번까지 재시도
+      start_period: 5s # 컨테이너 켜지고 5초 동안은 실패해도 봐줌
 
   
   # spring boot application
@@ -48,7 +54,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres-db
+      postgres-db:
+        condition: service_healthy
 
 # 네트워크 설정(기본으로 같은 네트워크에 생성되기 때문에 생략가능)
 networks:

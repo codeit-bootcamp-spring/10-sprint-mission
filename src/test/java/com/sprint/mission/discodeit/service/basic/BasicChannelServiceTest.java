@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -28,12 +29,15 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.util.UserSessionManager;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -44,6 +48,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
+@Tag("unit")
 class BasicChannelServiceTest {
 
   @Mock
@@ -58,6 +63,8 @@ class BasicChannelServiceTest {
   private ChannelMapper channelMapper;
   @Mock
   private BinaryContentRepository binaryContentRepository;
+  @Mock
+  private UserSessionManager userSessionManager;
 
   @InjectMocks
   private BasicChannelService channelService;
@@ -72,10 +79,12 @@ class BasicChannelServiceTest {
     ChannelDto channelDto = new ChannelDto(channel.getId(), ChannelType.PUBLIC, dto.name()
         , dto.description(), Instant.now(), Instant.now(), Instant.now(),
         List.of(mock(UserDto.class), mock(UserDto.class), mock(UserDto.class)));
-
+    Set<UUID> onlineUsers = new HashSet<>(Set.of(UUID.randomUUID(), UUID.randomUUID()));
     given(channelMapper.toEntity(dto)).willReturn(channel);
     given(userRepository.findAllFetchUserInfo()).willReturn(users);
-    given(channelMapper.toDto(channel)).willReturn(channelDto);
+    given(userSessionManager.getOnlineUserIds()).willReturn(onlineUsers);
+    given(channelMapper.toDto(eq(channel), eq(users), any(),
+        eq(onlineUsers))).willReturn(channelDto);
 
     //when
     ChannelDto result = channelService.create(dto);
@@ -110,10 +119,13 @@ class BasicChannelServiceTest {
     ChannelDto channelDto = new ChannelDto(channel.getId(), ChannelType.PRIVATE, null, null,
         Instant.now(), Instant.now(), Instant.now(),
         List.of(mock(UserDto.class), mock(UserDto.class)));
+    Set<UUID> onlineUsers = new HashSet<>(Set.of(UUID.randomUUID(), UUID.randomUUID()));
 
     given(channelMapper.toEntity(dto)).willReturn(channel);
     given(userRepository.findAllByIdFetchUserInfo(dto.memberIds())).willReturn(users);
-    given(channelMapper.toDto(channel)).willReturn(channelDto);
+    given(userSessionManager.getOnlineUserIds()).willReturn(onlineUsers);
+    given(channelMapper.toDto(eq(channel), eq(users), any(),
+        eq(onlineUsers))).willReturn(channelDto);
 
     //when
     ChannelDto result = channelService.create(dto);
@@ -177,8 +189,12 @@ class BasicChannelServiceTest {
     ChannelDto channelDto = new ChannelDto(channelId, ChannelType.PUBLIC, dto.name(),
         dto.description(), Instant.now(), Instant.now(), Instant.now(),
         List.of(mock(UserDto.class), mock(UserDto.class)));
+    Set<UUID> onlineUsers = new HashSet<>(Set.of(UUID.randomUUID(), UUID.randomUUID()));
+
     given(channelRepository.findById(channelId)).willReturn(Optional.of(exsitedChannel));
-    given(channelMapper.toDto(exsitedChannel)).willReturn(channelDto);
+    given(userSessionManager.getOnlineUserIds()).willReturn(onlineUsers);
+    given(channelMapper.toDto(eq(exsitedChannel), anyList(),
+        any(), eq(onlineUsers))).willReturn(channelDto);
 
     //when
     ChannelDto result = channelService.update(channelId, dto);
@@ -228,17 +244,22 @@ class BasicChannelServiceTest {
     ReflectionTestUtils.setField(c1, "id", c1Id);
     ReflectionTestUtils.setField(c2, "id", c2Id);
 
+    Set<UUID> onlineUsers = new HashSet<>(Set.of(UUID.randomUUID(), UUID.randomUUID()));
+
     given(userRepository.existsById(userId)).willReturn(true);
     given(readStatusRepository.findAllByUserIdFetchChannel(userId)).willReturn(readStatusesByUser);
     given(readStatusRepository.findAllByChannelIdInFetchUser(channelKeySet)).willReturn(
         readStatusesByChannel);
     given(messageRepository.findAllLastMessagesByChannelId(channelKeySet)).willReturn(
         lastMessageTimeDtos);
-    given(channelMapper.toDto(eq(c1), any(), any())).willReturn(
+    given(userSessionManager.getOnlineUserIds()).willReturn(onlineUsers);
+    given(channelMapper.toDto(eq(c1), any(), any(),
+        eq(onlineUsers))).willReturn(
         new ChannelDto(c1.getId(), c2.getType(), c1.getName(), c1.getDescription(),
             Instant.now().minusSeconds(10), null,
             null, List.of(mock(UserDto.class), mock(UserDto.class), mock(UserDto.class))));
-    given(channelMapper.toDto(eq(c2), any(), any())).willReturn(
+    given(channelMapper.toDto(eq(c2), any(), any(),
+        eq(onlineUsers))).willReturn(
         new ChannelDto(c2.getId(), c2.getType(), c2.getName(), c2.getDescription(), Instant.now(),
             null, null,
             List.of(mock(UserDto.class), mock(UserDto.class))));

@@ -7,19 +7,23 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.EmailAlreadyExistException;
 import com.sprint.mission.discodeit.exception.user.UserNameAlreadyExistException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.util.UserSessionManager;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.RememberMeAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -32,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
+  //private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
   //모든 멤버를 공개채널에 추가하기 위해..
   private final ReadStatusRepository readStatusRepository;
@@ -40,6 +44,8 @@ public class BasicUserService implements UserService {
   private final UserMapper userMapper;
   private final BinaryContentMapper binaryContentMapper;
   private final BinaryContentStorage binaryContentStorage;
+  private final PasswordEncoder passwordEncoder;
+  private final UserSessionManager userSessionManager;
 
   @Override
   public UserDto create(UserCreateRequest dto,
@@ -48,13 +54,13 @@ public class BasicUserService implements UserService {
     validateEmail(dto.email());
     validateUsername(dto.username());
     //프로필 사진
-    log.debug("사용자 생성 중: 프로필 사진 생성");
     BinaryContent profile = null;
     if (binaryContentCreateDto.isPresent()) {
+      log.debug("사용자 생성 중: 프로필 사진 생성");
       profile = binaryContentMapper.toEntity(binaryContentCreateDto.get());
     }
-    User user = userMapper.toEntity(dto, profile);
-    UserStatus userStatus = UserStatus.create(user, Instant.now());
+    User user = userMapper.toEntity(dto, passwordEncoder.encode(dto.password()), profile);
+    //UserStatus userStatus = UserStatus.create(user, Instant.now());
     //모든 공개채널에 대한 읽기 상태 저장
     log.debug("사용자 생성 중: 사용자 저장 시도");
     userRepository.save(user);
@@ -67,21 +73,18 @@ public class BasicUserService implements UserService {
       binaryContentStorage.put(profile.getId(), binaryContentCreateDto.get().bytes());
       log.debug("프로필 이미지 생성: userId={}, profileId={}", user.getId(), profile.getId());
     }
-    log.info("사용자 생성 성공: userId={} createdFields=[username={}, email={}, profile={}, password={}]",
+    log.info("사용자 생성 성공: userId={}  hasProfile={}",
         user.getId(),
-        user.getUsername(),
-        user.getEmail(),
-        user.getProfile() != null,
-        user.getPassword() != null
+        user.getProfile() != null
     );
-    return userMapper.toDto(user);
+    return userMapper.toDto(user, userSessionManager.isOnline(user));
   }
 
   @Transactional(readOnly = true)
   @Override
   public UserDto find(UUID userId) {
     User user = get(userId);
-    return userMapper.toDto(user);
+    return userMapper.toDto(user, userSessionManager.isOnline(user));
   }
 
   @Transactional(readOnly = true)
@@ -89,7 +92,8 @@ public class BasicUserService implements UserService {
   public List<UserDto> findAll() {
     List<User> users = userRepository.findAllFetchUserInfo();
     List<UserDto> response = new ArrayList<>();
-    users.forEach(u -> response.add(userMapper.toDto(u)));
+    Set<UUID> onlineUserIds = userSessionManager.getOnlineUserIds();
+    users.forEach(u -> response.add(userMapper.toDto(u, onlineUserIds.contains(u.getId()))));
     return response;
   }
 
@@ -99,6 +103,15 @@ public class BasicUserService implements UserService {
     log.debug("사용자 수정 시도: userId={}", userId);
     User user = userRepository.findByIdFetchUserInfo(userId)
         .orElseThrow(() -> new UserNotFoundException().addDetail("userId", userId));
+    if (dto.password() != null && !dto.password().isEmpty()) {
+
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      if (authentication instanceof RememberMeAuthenticationToken) {
+        // Remember-Me 인증으로 접근 시 재로그인 요구
+        throw new AccessDeniedException("비밀번호를 변경하려면 다시 로그인해 주세요.");
+      }
+    }
+
     if (dto.email() != null && !user.getEmail().equals(dto.email())) { //변경하는 경우만 검증
       validateEmail(dto.email());
     }
@@ -111,19 +124,17 @@ public class BasicUserService implements UserService {
       profile = binaryContentMapper.toEntity(binaryContentCreateDto.get());
       binaryContentRepository.save(profile);//profile id가 필요하기 때문에
     }
-    user.update(dto.username(), dto.email(), dto.password(), profile);
+    user.update(dto.username(), dto.email(),
+        (dto.password() != null ? passwordEncoder.encode(dto.password()) : null), profile);
     if (binaryContentCreateDto.isPresent()) {//위에서 생성하면 업데이트 실패시 스토리지 저장을 되돌릴수 없기 때문
       binaryContentStorage.put(profile.getId(), binaryContentCreateDto.get().bytes());
       log.debug("새로운 프로필 이미지 생성: userId={}, profileId={}", user.getId(), profile.getId());
     }
-    log.info("사용자 수정 성공: userId={}, updatedFields=[username={}, email={}, profile={}, password={}]",
+    log.info("사용자 수정 성공: userId={}, changeProfile={}]",
         userId,
-        dto.username(),
-        dto.email(),
-        profile != null,
-        dto.password() != null
+        profile != null
     );
-    return userMapper.toDto(user);
+    return userMapper.toDto(user, userSessionManager.isOnline(user));
   }
 
   @Override
@@ -135,6 +146,7 @@ public class BasicUserService implements UserService {
     userRepository.deleteById(userId);
     log.info("사용자 삭제 성공: userId={}", userId);
   }
+
 
   private void validateEmail(String email) {
     log.debug("이메일 유효성 검사: email={}", email);
@@ -156,4 +168,5 @@ public class BasicUserService implements UserService {
           return new UserNotFoundException().addDetail("userId", userId);
         });
   }
+
 }

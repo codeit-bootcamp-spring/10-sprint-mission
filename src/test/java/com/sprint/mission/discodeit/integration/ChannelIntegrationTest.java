@@ -2,11 +2,7 @@ package com.sprint.mission.discodeit.integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.BDDMockito.willThrow;
-import static org.mockito.Mockito.times;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -16,7 +12,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
-import com.sprint.mission.discodeit.dto.channel.ChannelDto;
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.auth.enums.Role;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
@@ -27,7 +24,6 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.NotAllowedInPrivateChannelException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -36,7 +32,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.List;
@@ -48,6 +43,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -66,8 +65,6 @@ public class ChannelIntegrationTest {
   @Autowired
   private ChannelRepository channelRepository;
   @Autowired
-  private UserStatusRepository userStatusRepository;
-  @Autowired
   private BinaryContentRepository binaryContentRepository;
   @Autowired
   private MessageRepository messageRepository;
@@ -85,25 +82,27 @@ public class ChannelIntegrationTest {
   private UUID c2Id;
   private UUID m1Id;
   private UUID m2Id;
+  private User user1;
+  private User user2;
+  private User user3;
 
   @BeforeEach
   public void setup() {
     binaryContentRepository.deleteAll();
     messageRepository.deleteAll();
     readStatusRepository.deleteAll();
-    userStatusRepository.deleteAll();
     userRepository.deleteAll();
     channelRepository.deleteAll();
 
     BinaryContent profile1 = BinaryContent.create("profile1", "jpg", 50L);
-    User user1 = User.create("test1", "test1@test.com", "test123", profile1);
-    UserStatus.create(user1, Instant.parse("2020-01-01T00:00:00.00Z"));
+    user1 = User.create("test1", "test1@test.com", "test123", profile1);
+
     BinaryContent profile2 = BinaryContent.create("profile2", "jpg", 50L);
-    User user2 = User.create("test2", "test2@test.com", "test123", profile2);
-    UserStatus.create(user2, Instant.parse("2020-01-01T00:00:00.00Z"));
+    user2 = User.create("test2", "test2@test.com", "test123", profile2);
+
     BinaryContent profile3 = BinaryContent.create("profile3", "jpg", 50L);
-    User user3 = User.create("tes3", "test3@test.com", "test123", profile3);
-    UserStatus.create(user3, Instant.parse("2020-01-01T00:00:00.00Z"));
+    user3 = User.create("tes3", "test3@test.com", "test123", profile3);
+
     userRepository.saveAll(List.of(user1, user2, user3));
 
     u1Id = user1.getId();
@@ -151,6 +150,22 @@ public class ChannelIntegrationTest {
     em.clear();
   }
 
+  private void setupSecurityContext(User user, Role role) {
+    UserDetails customUserDetails = new DiscodeitUserDetails(
+        new UserDto(user.getId(), user.getUsername(), user.getEmail(), role, null, true,
+            user.getCreatedAt(), user.getUpdatedAt()),
+        user.getPassword()
+    );
+
+    Authentication authentication = new UsernamePasswordAuthenticationToken(
+        customUserDetails,
+        null,
+        customUserDetails.getAuthorities()
+    );
+
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+  }
+
   @Test
   @DisplayName("성공: 공개 채널 생성 성공(201 created)")
   void createPublicChannelSuccess() throws Exception {
@@ -159,8 +174,10 @@ public class ChannelIntegrationTest {
     PublicChannelCreateRequest dto = new PublicChannelCreateRequest("channelName",
         "channelDescription");
 
+    setupSecurityContext(user1, Role.CHANNEL_MANAGER);
     //when
     MvcResult result = mockMvc.perform(post("/api/channels/public")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(dto)))
         .andExpect(status().isCreated())
@@ -190,8 +207,11 @@ public class ChannelIntegrationTest {
     //given
     PrivateChannelCreateRequest dto = new PrivateChannelCreateRequest(List.of(u1Id, u2Id));
 
+    setupSecurityContext(user1, Role.USER);
+
     //when
     MvcResult result = mockMvc.perform(post("/api/channels/private")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(dto)))
         .andExpect(status().isCreated())
@@ -220,8 +240,11 @@ public class ChannelIntegrationTest {
     UUID wrongId = UUID.randomUUID();
     PrivateChannelCreateRequest dto = new PrivateChannelCreateRequest(List.of(u1Id, u2Id, wrongId));
 
+    setupSecurityContext(user1, Role.USER);
+
     //when & then
     mockMvc.perform(post("/api/channels/private")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(dto)))
@@ -236,8 +259,11 @@ public class ChannelIntegrationTest {
     PublicChannelUpdateRequest dto = new PublicChannelUpdateRequest("newChannelName",
         "newChannelDescription");
 
+    setupSecurityContext(user1, Role.CHANNEL_MANAGER);
+
     //when
     mockMvc.perform(patch("/api/channels/{channelId}", c1Id)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(dto)))
@@ -263,8 +289,11 @@ public class ChannelIntegrationTest {
     PublicChannelUpdateRequest dto = new PublicChannelUpdateRequest("newChannelName",
         "newChannelDescription");
 
+    setupSecurityContext(user1, Role.CHANNEL_MANAGER);
+
     //when & then
     mockMvc.perform(patch("/api/channels/{channelId}", c2Id)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(dto)))
@@ -276,8 +305,12 @@ public class ChannelIntegrationTest {
   @Test
   @DisplayName("성공: 채널 삭제 성공(204 No content)")
   void deleteChannelSuccess() throws Exception {
+    //given
+    setupSecurityContext(user1, Role.CHANNEL_MANAGER);
+
     //when
     mockMvc.perform(delete("/api/channels/{channelId}", c1Id)
+            .with(csrf())
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
 
@@ -296,8 +329,11 @@ public class ChannelIntegrationTest {
     //given
     UUID wrongChannelId = UUID.randomUUID();
 
+    setupSecurityContext(user1, Role.CHANNEL_MANAGER);
+
     //when & then
     mockMvc.perform(delete("/api/channels/{channelId}", wrongChannelId)
+            .with(csrf())
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound())
         .andExpect(
@@ -309,6 +345,8 @@ public class ChannelIntegrationTest {
   @Test
   @DisplayName("성공: 사용자 아이디로 참여 채널 목록 조회 성공(200 Ok)")
   void findChannelsByUserSuccess() throws Exception {
+    //given
+    setupSecurityContext(user1, Role.USER);
     //when & then
     mockMvc.perform(get("/api/channels")
             .param("userId", String.valueOf(u2Id))
@@ -322,6 +360,7 @@ public class ChannelIntegrationTest {
   void findChannelsByWrongUserFailure() throws Exception {
     //given
     UUID wrongUserId = UUID.randomUUID();
+    setupSecurityContext(user1, Role.USER);
 
     //when & then
     mockMvc.perform(get("/api/channels")
