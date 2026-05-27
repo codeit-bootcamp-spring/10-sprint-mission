@@ -1,70 +1,41 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
-
-import static com.sprint.mission.discodeit.entity.ChannelType.PRIVATE;
-
 @Entity
 @Table(name = "channels")
-@NoArgsConstructor
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Channel extends BaseUpdatableEntity {
-    //
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
-    private ChannelType type;
 
-    @Size(max = 100)
-    @Column(length = 100)
-    private String name = null;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private ChannelType type;
+  @Column(length = 100)
+  private String name;
+  @Column(length = 500)
+  private String description;
 
-    @Size(max = 500)
-    @Column(length = 500)
-    private String description = null;
+  public Channel(ChannelType type, String name, String description) {
+    this.type = type;
+    this.name = name;
+    this.description = description;
+  }
 
-    public Channel(ChannelType type, String name, String description) {
-        super();
-        //
-        this.type = type;
-
-        if(type == PRIVATE){
-            //participantIds = new ArrayList<>();
-        }
-        else{
-            this.name = name;
-            this.description = description;
-        }
-
+  public void update(String newName, String newDescription) {
+    if (newName != null && !newName.equals(this.name)) {
+      this.name = newName;
     }
-
-    public void update(String newName, String newDescription) {
-        boolean anyValueUpdated = false;
-        if(type==PRIVATE) throw new IllegalStateException("Private Channel cannot be updated");
-
-        if (newName != null && !newName.equals(this.name)) {
-            this.name = newName;
-            anyValueUpdated = true;
-        }
-        if (newDescription != null && !newDescription.equals(this.description)) {
-            this.description = newDescription;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
+    if (newDescription != null && !newDescription.equals(this.description)) {
+      this.description = newDescription;
     }
-/*
-    public void join(UUID userId){
-        participantIds.add(userId);
-    }
-    */
+  }
 }

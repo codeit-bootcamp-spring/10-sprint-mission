@@ -1,0 +1,13 @@
+.logs
+.git
+build
+.gitignore
+.gradle
+build/
+node_modules
+.idea
+.vscode
+*.iml
+*.log
+.DS_Store
+db

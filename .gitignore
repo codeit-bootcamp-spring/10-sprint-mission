@@ -37,3 +37,10 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Discodeit ###
+.discodeit
+
+### 숨김 파일 ###
+.*
+!.gitignore

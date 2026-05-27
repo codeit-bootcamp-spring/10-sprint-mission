@@ -1,145 +1,196 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
-import com.sprint.mission.discodeit.dto.user.UserResponseDto;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequestDto;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
-import com.sprint.mission.discodeit.mapper.user.UserResponseMapper;
+import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.security.CustomSessionRegistry;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-
-@Service
+@Slf4j
 @RequiredArgsConstructor
+@Service
 public class BasicUserService implements UserService {
-    private final UserRepository userRepository;
-    private final BinaryContentRepository binaryContentRepository;
-    private final UserStatusRepository userStatusRepository;
-    private final UserResponseMapper userResponseMapper;
-    private final BinaryContentStorage binaryContentStorage;
 
-    @Override
-    @Transactional
-    public UserResponseDto create(UserCreateRequestDto userCreateRequestDto, MultipartFile profileImageFile) throws IOException {
-        //중복여부 검사 로직
-        if (userRepository.existsByEmail(userCreateRequestDto.email())
-                || userRepository.existsByUsername(userCreateRequestDto.username()))
-            throw new IllegalArgumentException("Username and Email already exists");
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
+  private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
+  private final PasswordEncoder passwordEncoder;
+  private final CustomSessionRegistry sessionRegistry;
 
-        User user;
+  @Transactional
+  @Override
+  public UserDto create(UserCreateRequest userCreateRequest,
+      Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+    log.debug("사용자 생성 시작: {}", userCreateRequest);
+    
+    String username = userCreateRequest.username();
+    String email = userCreateRequest.email();
 
-        //이미지 존재여부 분기
-        if(profileImageFile != null){
-            if(profileImageFile.getContentType() == null || !profileImageFile.getContentType().startsWith("image/"))
-                throw new IllegalArgumentException("Invalid image file");
-
-            BinaryContent profileImage = new BinaryContent(profileImageFile.getContentType(), profileImageFile.getOriginalFilename(), profileImageFile.getSize());
-            binaryContentRepository.save(profileImage);
-            binaryContentStorage.put(profileImage.getId(), profileImageFile.getBytes());
-
-            user = new User(userCreateRequestDto.username(),
-                    userCreateRequestDto.email(),
-                    userCreateRequestDto.password(),
-                    profileImage);
-        }
-        else user = new User(userCreateRequestDto.username(),
-                userCreateRequestDto.email(),
-                userCreateRequestDto.password(),
-                null);
-        UserStatus userStatus = new UserStatus();
-        user.setUserStatus(userStatus);
-
-        //최종 저장
-        userRepository.save(user);
-
-        //저장된 데이터 리턴
-        return userResponseMapper.toDto(user);
+    if (userRepository.existsByEmail(email)) {
+      throw UserAlreadyExistsException.withEmail(email);
+    }
+    if (userRepository.existsByUsername(username)) {
+      throw UserAlreadyExistsException.withUsername(username);
     }
 
-    @Transactional
-    @Override
-    public UserResponseDto find(UUID userId) {
-        User targetUser = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+    BinaryContent nullableProfile = optionalProfileCreateRequest
+        .map(profileRequest -> {
+          String fileName = profileRequest.fileName();
+          String contentType = profileRequest.contentType();
+          byte[] bytes = profileRequest.bytes();
+          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+              contentType);
+          binaryContentRepository.save(binaryContent);
+          binaryContentStorage.put(binaryContent.getId(), bytes, binaryContent.getFileName(), binaryContent.getContentType());
+          return binaryContent;
+        })
+        .orElse(null);
+    String password = passwordEncoder.encode(userCreateRequest.password());
 
-        return userResponseMapper.toDto(targetUser);
+    User user = new User(username, email, password, nullableProfile);
+
+    userRepository.save(user);
+    log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
+    return userMapper.toDto(user);
+  }
+
+  @Override
+  public UserDto find(UUID userId) {
+    log.debug("사용자 조회 시작: id={}", userId);
+    UserDto userDto = userRepository.findById(userId)
+        .map(userMapper::toDto)
+        .orElseThrow(() -> UserNotFoundException.withId(userId));
+    log.info("사용자 조회 완료: id={}", userId);
+    return userDto;
+  }
+
+  @Override
+  public List<UserDto> findAll() {
+    log.debug("모든 사용자 조회 시작");
+    List<UserDto> userDtos = userRepository.findAllWithProfileAndStatus()
+        .stream()
+        .map(userMapper::toDto)
+        .toList();
+    log.info("모든 사용자 조회 완료: 총 {}명", userDtos.size());
+    return userDtos;
+  }
+
+  @Transactional
+  @Override
+  @PreAuthorize("hasRole('ADMIN') or #userId == principal.id")
+  public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
+      Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+    log.debug("사용자 수정 시작: id={}, request={}", userId, userUpdateRequest);
+    
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> {
+          UserNotFoundException exception = UserNotFoundException.withId(userId);
+          return exception;
+        });
+
+    String newUsername = userUpdateRequest.newUsername();
+    String newEmail = userUpdateRequest.newEmail();
+    
+    if (userRepository.existsByEmail(newEmail)) {
+      throw UserAlreadyExistsException.withEmail(newEmail);
+    }
+    
+    if (userRepository.existsByUsername(newUsername)) {
+      throw UserAlreadyExistsException.withUsername(newUsername);
     }
 
-    @Transactional
-    @Override
-    public List<UserResponseDto> findAll() {
-        List<User> targetUsers = userRepository.findAll();
+    BinaryContent nullableProfile = optionalProfileCreateRequest
+        .map(profileRequest -> {
 
-        return targetUsers.stream()
-                .map(userResponseMapper::toDto)
-                .toList();
+          String fileName = profileRequest.fileName();
+          String contentType = profileRequest.contentType();
+          byte[] bytes = profileRequest.bytes();
+          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+              contentType);
+          binaryContentRepository.save(binaryContent);
+          binaryContentStorage.put(binaryContent.getId(), bytes, binaryContent.getFileName(), binaryContent.getContentType());
+          return binaryContent;
+        })
+        .orElse(null);
+
+    String newPassword = passwordEncoder.encode(userUpdateRequest.newPassword());
+    user.update(newUsername, newEmail, newPassword, nullableProfile);
+
+    log.info("사용자 수정 완료: id={}", userId);
+    return userMapper.toDto(user);
+  }
+
+  @Transactional
+  @Override
+  @PreAuthorize("hasRole('ADMIN') or #userId == principal.id")
+  public void delete(UUID userId) {
+    log.debug("사용자 삭제 시작: id={}", userId);
+    
+    if (!userRepository.existsById(userId)) {
+      throw UserNotFoundException.withId(userId);
     }
 
-    @Transactional
-    @Override
-    public UserResponseDto update(UUID userId, UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImageFile) throws IOException {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+    userRepository.deleteById(userId);
+    log.info("사용자 삭제 완료: id={}", userId);
+  }
 
-        UserStatus userStatus = user.getUserStatus();
+  @Override
+  @PreAuthorize("hasRole('ADMIN')")
+  @Transactional
+  public UserDto updateRole(UserRoleUpdateRequest request){
+    User user = userRepository.findById(request.userId())
+        .orElseThrow(() -> UserNotFoundException.withId(request.userId()));
 
-        BinaryContent newProfileImage;
+    user.updateRole(request.newRole());
 
-        boolean anyValueUpdated = false;
-        if (userUpdateRequestDto.newUsername() != null && !userUpdateRequestDto.newUsername().equals(user.getUsername())) {
-            user.setUsername(userUpdateRequestDto.newUsername());
-            anyValueUpdated = true;
-        }
-        if (userUpdateRequestDto.newEmail() != null && !userUpdateRequestDto.newEmail().equals(user.getEmail())) {
-            user.setEmail(userUpdateRequestDto.newEmail());
-            anyValueUpdated = true;
-        }
-        if (userUpdateRequestDto.newPassword() != null && !userUpdateRequestDto.newPassword().equals(user.getPassword())) {
-            user.setPassword(userUpdateRequestDto.newPassword());
-            anyValueUpdated = true;
-        }
-        if(profileImageFile != null && !profileImageFile.isEmpty()){
-            if(user.getProfile() != null){
-                binaryContentRepository.deleteById(user.getProfile().getId());
-            }
-            newProfileImage = new BinaryContent(profileImageFile.getContentType(), profileImageFile.getOriginalFilename(), profileImageFile.getSize());
-            binaryContentRepository.save(newProfileImage);
-            binaryContentStorage.put(newProfileImage.getId(), profileImageFile.getBytes());
-            user.setProfile(newProfileImage);
+    userRepository.save(user);
 
-        }
-        if (anyValueUpdated) {
-            user.isUpdated();
-        }
+    expireUserSessions(user.getId());
 
-        userRepository.save(user);
+    return userMapper.toDto(user);
+  }
 
-        return userResponseMapper.toDto(user);
+  private void expireUserSessions(UUID userId) {
+
+    for (Object principal : sessionRegistry.getAllPrincipals()) {
+
+      if (!(principal instanceof DiscodeitUserDetails userDetails)) {
+        continue;
+      }
+
+      if (!userDetails.getId().equals(userId)) {
+        continue;
+      }
+
+      List<SessionInformation> sessions =
+          sessionRegistry.getAllSessions(principal, false);
+
+      for (SessionInformation session : sessions) {
+        session.expireNow();
+      }
     }
-
-    @Transactional
-    @Override
-    public void delete(UUID userId) {
-        //유저가 검색되지 않는 경우
-        if (!userRepository.existsById(userId)) {
-            throw new UserNotFoundException(userId);
-        }
-
-        userRepository.deleteById(userId);//유저레포지토리에서 삭제
-    }
+  }
 }

@@ -1,149 +1,110 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
-import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
-import com.sprint.mission.discodeit.dto.user.UserResponseDto;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequestDto;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequestDto;
+import com.sprint.mission.discodeit.controller.api.UserApi;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.data.UserStatusDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import lombok.extern.slf4j.Slf4j;
 
-@AllArgsConstructor
+@Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users")
-@Tag(name = "User", description = "유저 관련 API")
-public class UserController {
-    private final UserService userService;
-    private final UserStatusService userStatusService;
+public class UserController implements UserApi {
 
-    //사용자 등록
-    @Operation(summary = "유저 생성")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "유저 생성 성공",
-                    content = @Content(
-                            mediaType = "image/*",
-                            schema = @Schema(implementation = UserResponseDto.class)
-                    )
-            )
-    })
-    @RequestMapping(method = RequestMethod.POST, consumes = "multipart/form-data")
-    public ResponseEntity<UserResponseDto> create(
-            @RequestPart("userCreateRequest") UserCreateRequestDto dto,
-            @RequestPart(value = "profile", required = false) MultipartFile profileImage
-    ) throws IOException {
-        return ResponseEntity.status(201).body(userService.create(dto, profileImage));
-    }
+  private final UserService userService;
 
-    //사용자 정보 수정
-    @Operation(summary = "유저 정보 수정")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "유저 정보 수정 성공",
-                    content = @Content(
-                            mediaType = "image/*",
-                            schema = @Schema(implementation = UserResponseDto.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "유저를 찾을 수 없음",
-                    content = @Content(
-                            mediaType = "image/*",
-                            examples = @ExampleObject(
-                                    value = "User with username {username} not found"
-                            )
-                    )
-            )
-    })
-    @RequestMapping(value = "/{userId}", method = RequestMethod.PATCH, consumes = "multipart/form-data")
-    public UserResponseDto update(
-            @PathVariable UUID userId,
-            @RequestPart("userUpdateRequest") UserUpdateRequestDto userUpdateRequest,
-            @RequestPart(value = "profile", required = false) MultipartFile profileImage
-    ) throws IOException {
-        return userService.update(userId, userUpdateRequest, profileImage);
-    }
+  @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+  @Override
+  public ResponseEntity<UserDto> create(
+      @RequestPart("userCreateRequest") @Valid UserCreateRequest userCreateRequest,
+      @RequestPart(value = "profile", required = false) MultipartFile profile
+  ) {
+    log.info("사용자 생성 요청: {}", userCreateRequest);
+    Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
+        .flatMap(this::resolveProfileRequest);
+    UserDto createdUser = userService.create(userCreateRequest, profileRequest);
+    log.debug("사용자 생성 응답: {}", createdUser);
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(createdUser);
+  }
 
-    @Operation(summary = "유저 삭제")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "204",
-                    description = "유저 삭제 성공"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "대상 유저를 찾을 수 없음",
-                    content = @Content(
-                            mediaType = "image/*",
-                            examples = @ExampleObject(
-                                    value = "User with username {username} not found"
-                            )
-                    )
-            )
-    })
-    @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
-    public void delete(@PathVariable UUID userId) {
-        userService.delete(userId);
-    }
+  @PatchMapping(
+      path = "{userId}",
+      consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
+  )
+  @Override
+  public ResponseEntity<UserDto> update(
+      @PathVariable("userId") UUID userId,
+      @RequestPart("userUpdateRequest") @Valid UserUpdateRequest userUpdateRequest,
+      @RequestPart(value = "profile", required = false) MultipartFile profile
+  ) {
+    log.info("사용자 수정 요청: id={}, request={}", userId, userUpdateRequest);
+    Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
+        .flatMap(this::resolveProfileRequest);
+    UserDto updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+    log.debug("사용자 수정 응답: {}", updatedUser);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(updatedUser);
+  }
 
-    @Operation(summary = "가입한 모든 유저 반환")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "모든 유저 반환",
-                    content = @Content(
-                            mediaType = "image/*",
-                            array = @ArraySchema(schema = @Schema(implementation = UserResponseDto.class))
-                    )
-            )
-    })
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<UserResponseDto>> findAll(){
-        return ResponseEntity.ok(userService.findAll());
-    }
+  @DeleteMapping(path = "{userId}")
+  @Override
+  public ResponseEntity<Void> delete(@PathVariable("userId") UUID userId) {
+    userService.delete(userId);
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
+  }
 
-    @Operation(summary = "유저 접속 상태 업데이트")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "204",
-                    description = "유저 접속 상태 업데이트 성공"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "대상 유저를 찾을 수 없음",
-                    content = @Content(
-                            mediaType = "image/*",
-                            examples = @ExampleObject(
-                                    value = "User with username {username} not found"
-                            )
-                    )
-            )
-    })
-    @RequestMapping(value = "/{userId}/userStatus", method = RequestMethod.PATCH)
-    public ResponseEntity<Void> updateUserStatusByUserId(
-            @PathVariable UUID userId,
-            @RequestBody UserStatusUpdateRequestDto dto
-    ){
-        userStatusService.updateByUserId(userId, dto);
-        return ResponseEntity.noContent().build();
+  @GetMapping
+  @Override
+  public ResponseEntity<List<UserDto>> findAll() {
+    List<UserDto> users = userService.findAll();
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(users);
+  }
+
+  private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
+    if (profileFile.isEmpty()) {
+      return Optional.empty();
+    } else {
+      try {
+        BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
+            profileFile.getOriginalFilename(),
+            profileFile.getContentType(),
+            profileFile.getBytes()
+        );
+        return Optional.of(binaryContentCreateRequest);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
+  }
 }

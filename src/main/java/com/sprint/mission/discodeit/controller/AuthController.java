@@ -1,64 +1,50 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.user.LoginRequestDto;
-import com.sprint.mission.discodeit.dto.user.UserResponseDto;
-import com.sprint.mission.discodeit.service.AuthService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
+import com.sprint.mission.discodeit.controller.api.AuthApi;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
+@RequiredArgsConstructor
 @RestController
-@AllArgsConstructor
-@RequestMapping("/api/auth/login")
-@Tag(name = "Auth", description = "로그인을 위한 API")
-public class AuthController {
-    private final AuthService authService;
-    @Operation(
-            summary ="로그인",
-            operationId = "login"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "로그인 성공",
-                    content = @Content(
-                            mediaType = "*/*",
-                            schema = @Schema(implementation = UserResponseDto.class)
-                    )
-            ),
+@RequestMapping("/api/auth")
+public class AuthController implements AuthApi {
 
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "사용자를 찾을 수 없음",
-                    content = @Content(
-                            mediaType = "*/*",
-                            examples = @ExampleObject(
-                                    value = "User with username {username} not found"
-                            )
-                    )
-            ),
+  private final UserService userService;
 
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "비밀번호가 일치하지 않음",
-                    content = @Content(
-                            mediaType = "*/*",
-                            examples = @ExampleObject(
-                                    value = "Wrong password"
-                            )
-                    )
-            )
-    })
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto dto){
-        return ResponseEntity.ok(authService.login(dto));
-    }
+  @Override
+  @GetMapping("/csrf-token")
+  public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
+    String tokenValue = csrfToken.getToken();
+    log.debug("CSRF 토큰 요청: {}", tokenValue);
+    return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION)
+        .build();
+  }
 
+  @Override
+  @PutMapping("/role")
+  public ResponseEntity<UserDto> updateUserRole(@RequestBody UserRoleUpdateRequest request) {
+    return ResponseEntity.ok(userService.updateRole(request));
+  }
+
+  @Override
+  @GetMapping("/me")
+  public ResponseEntity<UserDto> getUserWithSessionId(
+      @AuthenticationPrincipal DiscodeitUserDetails details) {
+    return ResponseEntity.ok(details.getUserDto());
+  }
 }
