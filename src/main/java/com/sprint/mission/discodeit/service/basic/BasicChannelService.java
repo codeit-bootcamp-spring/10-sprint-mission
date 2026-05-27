@@ -13,9 +13,7 @@ import com.sprint.mission.discodeit.exception.channel.PrivateChannelNotEditableE
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -28,6 +26,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -40,9 +39,7 @@ public class BasicChannelService implements ChannelService {
 
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
-  private final MessageRepository messageRepository;
   private final UserRepository userRepository;
-  private final BinaryContentRepository binaryContentRepository;
   private final ChannelMapper channelMapper;
   private final UserMapper userMapper;
 
@@ -73,6 +70,7 @@ public class BasicChannelService implements ChannelService {
     return toResponse(privateChannel);
   }
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override
   public ChannelDto createChannel(ChannelDto.PublicChannelCreateRequest channelPublicReq) {
@@ -110,6 +108,7 @@ public class BasicChannelService implements ChannelService {
     return channelMapper.toDto(channels, participants);
   }
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override
   public ChannelDto updateChannel(UUID uuid, ChannelDto.PublicChannelUpdateRequest channelReq) {
@@ -140,6 +139,7 @@ public class BasicChannelService implements ChannelService {
     return toResponse(channel);
   }
 
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override
   public void deleteChannel(UUID uuid) {

@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import java.util.List;
 import java.util.Optional;
@@ -32,11 +31,8 @@ class UserRepositoryTest {
     userRepository.deleteAll();
 
     User user1 = new User("A", "AA", "A@gmail.com");
-    user1.updateStatus(new UserStatus());
     User user2 = new User("B", "BB", "B@naver.com");
-    user2.updateStatus(new UserStatus());
     User user3 = new User("C", "CC", "C@apple.com");
-    user3.updateStatus(new UserStatus());
     userRepository.saveAll(List.of(user1, user2, user3));
   }
 
@@ -100,7 +96,6 @@ class UserRepositoryTest {
     void should_return_users_even_if_profile_is_missing() {
       // given - setUp에 유저 3명 등록됨(전부 프로필 이미지 X)
       User profileUser = new User("D", "DD", "D@meta.com");
-      profileUser.updateStatus(new UserStatus());
       profileUser.updateProfile(new BinaryContent("fileName", 10, "image/png"));
       userRepository.save(profileUser);
 

@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateUsernameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -19,6 +18,9 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -34,6 +36,8 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final UserMapper mapper;
+  private final PasswordEncoder passwordEncoder;
+  private final SessionRegistry sessionRegistry;
 
   @Transactional
   @Override
@@ -43,12 +47,8 @@ public class BasicUserService implements UserService {
     validateDuplicateUsername(userReq.username());
     validateDuplicateEmail(userReq.email());
 
-    User user = new User(userReq.username(), userReq.password(), userReq.email());
-
-    // userStatus 관련
-    UserStatus status = new UserStatus();
-    user.updateStatus(status);
-    log.debug("[Service] UserStatus 저장 완료: id={}, userId={}", status.getId(), user.getId());
+    String encryptedPassword = passwordEncoder.encode(userReq.password());
+    User user = new User(userReq.username(), encryptedPassword, userReq.email());
 
     // profile 이미지를 같이 추가하면
     processUpdateProfile(user, profileImage);
@@ -65,6 +65,7 @@ public class BasicUserService implements UserService {
         .map(this::toDto).toList();
   }
 
+  @PreAuthorize("#uuid == authentication.principal.userDto.id")
   @Transactional
   @Override
   public UserDto updateUser(UUID uuid, UserDto.UserUpdateRequest userReq,
@@ -88,7 +89,7 @@ public class BasicUserService implements UserService {
         .ifPresent(user::updateUserName);
     Optional.ofNullable(userReq.newPassword())
         .filter(StringUtils::hasText)
-        .ifPresent(user::updatePassword);
+        .ifPresent(password -> user.updatePassword(passwordEncoder.encode(password)));
     Optional.ofNullable(userReq.newEmail())
         .filter(StringUtils::hasText)
         .ifPresent(user::updateEmail);
@@ -102,6 +103,7 @@ public class BasicUserService implements UserService {
     return toDto(user);
   }
 
+  @PreAuthorize("#uuid == authentication.principal.userDto.id")
   @Transactional
   @Override
   public void deleteUser(UUID uuid) {

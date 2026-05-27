@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -93,6 +94,7 @@ public class BasicMessageService implements MessageService {
     return pageMapper.fromData(messagesDto, nextCursor, hasNext);
   }
 
+  @PreAuthorize("@messageRepository.findById(#uuid).get().author.id == authentication.principal.userDto.id")
   @Transactional
   @Override
   public MessageDto updateMessage(UUID uuid, MessageDto.MessageUpdateRequest messageReq) {
@@ -107,6 +109,7 @@ public class BasicMessageService implements MessageService {
     return toResponse(msg);
   }
 
+  @PreAuthorize("@messageRepository.findById(#uuid).get().author.id == authentication.principal.userDto.id")
   @Transactional
   @Override
   public void deleteMessage(UUID uuid) throws IOException {

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.BindingResult;
 
 @Getter
@@ -62,6 +63,13 @@ public class ErrorResponse {
   public static ErrorResponse of(int status, Exception exception) {
     return new ErrorResponse(Instant.now(), "INTERNAL_ERROR", "예기치 못한 오류가 발생했습니다",
         null, "Exception", status);
+  }
+
+  public static ErrorResponse of(int status, AuthorizationDeniedException exception) {
+    return new ErrorResponse(
+        Instant.now(), "AUTHORIZED_DENIED", "권한이 없습니다", null,
+        exception.getClass().getSimpleName(), status
+    );
   }
 
   public static ErrorResponse of(int status, DiscodeitException exception) {

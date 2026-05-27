@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler
+  @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleException(Exception e) {
     log.error("{}", e.getMessage(), e);
 
@@ -21,7 +22,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
   }
 
-  @ExceptionHandler
+  @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
       MethodArgumentNotValidException e) {
     String message = e.getFieldErrors().stream()
@@ -35,7 +36,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
   }
 
-  @ExceptionHandler
+  @ExceptionHandler(ConstraintViolationException.class)
   public ResponseEntity<ErrorResponse> handleConstraintViolationException(
       ConstraintViolationException e) {
     String message = e.getConstraintViolations().stream()
@@ -49,7 +50,17 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
   }
 
-  @ExceptionHandler
+  @ExceptionHandler(AuthorizationDeniedException.class)
+  public ResponseEntity<ErrorResponse> handleAuthorizedDeniedException(
+      AuthorizationDeniedException e) {
+    int status = 403;
+    log.warn("{}", "권한이 없습니다", e);
+
+    ErrorResponse errorResponse = ErrorResponse.of(status, e);
+    return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+  }
+
+  @ExceptionHandler(DiscodeitException.class)
   public ResponseEntity<ErrorResponse> handleBusinessLogicException(DiscodeitException e) {
     int status = switch (e.getClass().getSimpleName()) {
       case "UserNotFoundException", "UserStatusNotFoundException", "ChannelNotFoundException",

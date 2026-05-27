@@ -1,10 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.UserDto;
-import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,7 +24,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,7 +37,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
   private final UserService userService;
-  private final UserStatusService userStatusService;
 
   // 사용자 등록
   @Operation(summary = "User 등록")
@@ -94,26 +90,6 @@ public class UserController {
 
     UserDto dto = userService.updateUser(userId, userReq, profileImage);
     log.debug("[Controller] 유저 수정 응답 준비: id={}", dto.id());
-
-    return ResponseEntity.status(HttpStatus.OK).body(dto);
-  }
-
-  // 사용자 온라인 상태 업데이트
-  @Operation(summary = "User 온라인 상태 업데이트")
-  @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "User 온라인 상태가 성공적으로 업데이트됨"),
-      @ApiResponse(responseCode = "404", description = "해당 User의 UserStatus를 찾을 수 없음",
-          content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-  })
-  @PatchMapping("/{user-id}/userStatus")
-  public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
-      @PathVariable("user-id") UUID userId,
-      @Valid @RequestBody UserStatusDto.UserStatusUpdateRequest updateReq) {
-    log.info("[Controller] UserStatus 수정 요청: id={}, newLastActiveAt={}",
-        userId, updateReq.newLastActiveAt());
-
-    UserStatusDto dto = userStatusService.updateUserStatusByUserId(userId, updateReq);
-    log.debug("[Controller] UserStatus 수정 응답 준비: id={}", userId);
 
     return ResponseEntity.status(HttpStatus.OK).body(dto);
   }

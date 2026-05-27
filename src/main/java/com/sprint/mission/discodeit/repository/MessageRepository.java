@@ -13,13 +13,11 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
   @Query("SELECT m FROM Message m " +
       "LEFT JOIN FETCH m.author a " +
-      "LEFT JOIN FETCH a.status " +
       "WHERE m.channel.id = :channelId ")
   List<Message> findByChannelIdOrderByCreatedAtDesc(UUID channelId, Pageable pageable);
 
   @Query("SELECT m FROM Message m " +
       "LEFT JOIN FETCH m.author a " +
-      "LEFT JOIN FETCH a.status " +
       "WHERE m.channel.id = :channelId AND m.createdAt < :cursor ")
   List<Message> findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(UUID channelId,
       Instant cursor, Pageable pageable);

@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '1.2-M8'
+version = '2.0-M9'
 description = 'project for Spring Boot'
 
 java {
@@ -31,6 +31,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'            // Actuator
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'            // JPA
+    implementation 'org.springframework.boot:spring-boot-starter-security'            // Security
     implementation 'org.postgresql:postgresql:42.7.3'                                 // Postgre SQL
     runtimeOnly 'com.h2database:h2'                                                   // h2
 
