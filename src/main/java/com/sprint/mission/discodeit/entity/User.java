@@ -2,9 +2,12 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 
+import com.sprint.mission.discodeit.security.Role;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -23,78 +26,77 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class User extends BaseUpdatableEntity {
 
-  @Column(nullable = false, unique = true)
-  private String username;
+    @Column(nullable = false, unique = true)
+    private String username;
 
-  @Column(nullable = false, unique = true)
-  private String email;
+    @Column(nullable = false, unique = true)
+    private String email;
 
-  @Column(nullable = false)
-  private String password;
+    @Column(nullable = false)
+    private String password;
 
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "profile_id")
-  private BinaryContent profile;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id")
+    private BinaryContent profile;
 
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-  private UserStatus status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role;
 
-  public User(String username, String email, String password, BinaryContent profile) {
-    this.username = username;
-    this.email = email;
-    this.password = password;
-    this.profile = profile;
-  }
-
-  public void setUserStatus(UserStatus status) {
-    this.status = status;
-    if (status.getUser() != this) {
-      status.setUser(this);
-    }
-  }
-
-  public void setProfile(BinaryContent profile) {
-    this.profile = profile;
-  }
-
-  public User update(String newUserName, BinaryContent newProfile, String newEmail,
-      String newPassword) {
-    boolean anyValueUpdated = false;
-    if (newUserName != null && !newUserName.equals(this.username)) {
-      this.username = newUserName;
-      anyValueUpdated = true;
+    public User(String username, String email, String password, BinaryContent profile, Role role) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.profile = profile;
+        this.role = role;
     }
 
-    if (newProfile != null) {
-      UUID currentProfileId = (this.profile != null) ? this.profile.getId() : null;
-      UUID newProfileId = newProfile.getId(); // 여기서 null이 나올 수 있음
-
-      if (!Objects.equals(newProfileId, currentProfileId)) {
-        this.profile = newProfile;
-        anyValueUpdated = true;
-      }
+    public void setProfile(BinaryContent profile) {
+        this.profile = profile;
     }
 
-    if (newEmail != null && !newEmail.equals(this.email)) {
-      this.email = newEmail;
-      anyValueUpdated = true;
+    public void setRole(Role role) {
+        this.role = role;
     }
 
-    if (newPassword != null && !newPassword.equals(this.password)) {
-      this.password = newPassword;
-      anyValueUpdated = true;
+    public User update(String newUserName, BinaryContent newProfile, String newEmail,
+            String newPassword) {
+        boolean anyValueUpdated = false;
+        if (newUserName != null && !newUserName.equals(this.username)) {
+            this.username = newUserName;
+            anyValueUpdated = true;
+        }
+
+        if (newProfile != null) {
+            UUID currentProfileId = (this.profile != null) ? this.profile.getId() : null;
+            UUID newProfileId = newProfile.getId(); // 여기서 null이 나올 수 있음
+
+            if (!Objects.equals(newProfileId, currentProfileId)) {
+                this.profile = newProfile;
+                anyValueUpdated = true;
+            }
+        }
+
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
+
+        return this;
     }
 
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
+    @Override
+    public String toString() {
+        return "유저명 : " + username;
     }
-
-    return this;
-  }
-
-  @Override
-  public String toString() {
-    return "유저명 : " + username;
-  }
 
 }

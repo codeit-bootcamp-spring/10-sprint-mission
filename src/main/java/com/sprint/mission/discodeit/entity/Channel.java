@@ -21,35 +21,34 @@ import org.hibernate.type.SqlTypes;
 @NoArgsConstructor
 public class Channel extends BaseUpdatableEntity {
 
-  @Column
-  private String name;
+    @Column
+    private String name;
 
-  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, columnDefinition = "channel_type")
-  private IsPrivate type;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "channel_type")
+    private IsPrivate type;
 
-  @Column
-  private String description; // 채널 소개
+    @Column
+    private String description; // 채널 소개
 
 
-  public Channel(String name, IsPrivate type, String description) {
-    this.name = name;
-    this.type = type;
-    this.description = description;
-  }
+    public Channel(String name, IsPrivate type, String description) {
+        this.name = name;
+        this.type = type;
+        this.description = description;
+    }
 
-  public void updateName(String name) {
-    this.name = name;
-  }
+    public void updateName(String name) {
+        this.name = name;
+    }
 
-  public void updateDescription(String description) {
-    this.description = description;
-  }
+    public void updateDescription(String description) {
+        this.description = description;
+    }
 
-  @Override
-  public String toString() {
-    return "채널명 : " + name + ", 공개여부 : " + type;
-  }
+    @Override
+    public String toString() {
+        return "채널명 : " + name + ", 공개여부 : " + type;
+    }
 
 }

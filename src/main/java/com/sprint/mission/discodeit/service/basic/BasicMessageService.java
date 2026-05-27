@@ -34,115 +34,115 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class BasicMessageService implements MessageService {
 
-  private final MessageRepository messageRepository;
-  private final ChannelRepository channelRepository;
-  private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
-  private final MessageMapper messageMapper;
-  private final BinaryContentRepository binaryContentRepository;
-  private final ReadStatusRepository readStatusRepository;
-  private final BinaryContentStorage binaryContentStorage;
-  private final PageResponseMapper pageResponseMapper;
+    private final MessageRepository messageRepository;
+    private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
+    private final MessageMapper messageMapper;
+    private final BinaryContentRepository binaryContentRepository;
+    private final ReadStatusRepository readStatusRepository;
+    private final BinaryContentStorage binaryContentStorage;
+    private final PageResponseMapper pageResponseMapper;
 
-  @Override
-  @Transactional
-  public MessageDto create(MessageCreateRequest messageCreateRequest,
-      List<MultipartFile> attachments)
-      throws IOException {
+    @Override
+    @Transactional
+    public MessageDto create(MessageCreateRequest messageCreateRequest,
+            List<MultipartFile> attachments)
+            throws IOException {
 
-    log.info("메시지 생성 시작: authorId={}, channelId={}", messageCreateRequest.authorId(),
-        messageCreateRequest.channelId());
+        log.info("메시지 생성 시작: authorId={}, channelId={}", messageCreateRequest.authorId(),
+                messageCreateRequest.channelId());
 
-    User author = userRepository.findById(messageCreateRequest.authorId())
-        .orElseThrow(() -> {
-          log.warn("메시지 생성 실패 - 존재하지 않는 사용자: authorId={}", messageCreateRequest.authorId());
-          return new UserNotFoundException(messageCreateRequest.authorId());
-        });
-    Channel channel = channelRepository.findById(messageCreateRequest.channelId())
-        .orElseThrow(() -> {
-          log.warn("메시지 생성 실패 - 존재하지 않는 채널: channelId={}", messageCreateRequest.channelId());
-          return new ChannelNotFoundException(messageCreateRequest.channelId());
-        });
+        User author = userRepository.findById(messageCreateRequest.authorId())
+                .orElseThrow(() -> {
+                    log.warn("메시지 생성 실패 - 존재하지 않는 사용자: authorId={}",
+                            messageCreateRequest.authorId());
+                    return new UserNotFoundException(messageCreateRequest.authorId());
+                });
+        Channel channel = channelRepository.findById(messageCreateRequest.channelId())
+                .orElseThrow(() -> {
+                    log.warn("메시지 생성 실패 - 존재하지 않는 채널: channelId={}",
+                            messageCreateRequest.channelId());
+                    return new ChannelNotFoundException(messageCreateRequest.channelId());
+                });
 
-    List<BinaryContent> savedContents = new ArrayList<>();
-    if (attachments != null) {
-      for (MultipartFile file : attachments) {
-        BinaryContent content = new BinaryContent(file.getContentType(), file.getSize(),
-            file.getOriginalFilename());
+        List<BinaryContent> savedContents = new ArrayList<>();
+        if (attachments != null) {
+            for (MultipartFile file : attachments) {
+                BinaryContent content = new BinaryContent(file.getContentType(), file.getSize(),
+                        file.getOriginalFilename());
 
-        binaryContentRepository.saveAndFlush(content);
+                binaryContentRepository.saveAndFlush(content);
 
-        binaryContentStorage.put(content.getId(), file.getBytes());
-        savedContents.add(content);
-        log.debug("첨부파일 저장 완료: fileName={}", content.getFileName());
-      }
+                binaryContentStorage.put(content.getId(), file.getBytes());
+                savedContents.add(content);
+                log.debug("첨부파일 저장 완료: fileName={}", content.getFileName());
+            }
+        }
+
+        Instant now = Instant.now();
+        Message message = new Message(author, channel,
+                messageCreateRequest.content(), savedContents);
+        messageRepository.save(message);
+
+        readStatusRepository.findByUserIdAndChannelId(messageCreateRequest.authorId(),
+                        channel.getId())
+                .ifPresent(rs -> rs.updateLastReadAt(now.plusMillis(10))); // 찰나의 차이로 본인 메시지 안 읽음 방지
+
+        log.info("메시지 생성 완료: id={}, authorId={}, channelId={}", message.getId(), author.getId(),
+                channel.getId());
+
+        return messageMapper.toMessageDto(message);
     }
 
-    Instant now = Instant.now();
-    Message message = new Message(author, channel,
-        messageCreateRequest.content(), savedContents);
-    messageRepository.save(message);
+    @Override
+    @Transactional(readOnly = true)
+    public MessageDto findById(UUID id) {
+        Message message = messageRepository.findById(id)
+                .orElseThrow(() -> new MessageNotFoundException(id));
 
-    // 사용자 활동 시간 갱신
-    userStatusRepository.findByUserId(messageCreateRequest.authorId())
-        .ifPresent(us -> us.update(now));
-    readStatusRepository.findByUserIdAndChannelId(messageCreateRequest.authorId(),
-            channel.getId())
-        .ifPresent(rs -> rs.updateLastReadAt(now.plusMillis(10))); // 찰나의 차이로 본인 메시지 안 읽음 방지
+        return messageMapper.toMessageDto(message);
+    }
 
-    log.info("메시지 생성 완료: id={}, authorId={}, channelId={}", message.getId(), author.getId(),
-        channel.getId());
+    @Override
+    @Transactional
+    public PageResponse<MessageDto> findAllByChannelId(UUID userId, UUID channelId, UUID cursor,
+            Pageable pageable) {
 
-    return messageMapper.toMessageDto(message);
-  }
+        readStatusRepository.findByUserIdAndChannelId(userId, channelId)
+                .ifPresentOrElse(
+                        rs -> rs.updateLastReadAt(Instant.now()),
+                        () -> {
+                            // 없으면(Public 채널 첫 방문 등) 새로 생성
+                            User user = userRepository.findById(userId)
+                                    .orElseThrow(
+                                            () -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+                            Channel channel = channelRepository.findById(channelId)
+                                    .orElseThrow(
+                                            () -> new IllegalArgumentException("존재하지 않는 채널입니다."));
+                            readStatusRepository.save(new ReadStatus(user, channel, Instant.now()));
+                        }
+                );
 
-  @Override
-  @Transactional(readOnly = true)
-  public MessageDto findById(UUID id) {
-    Message message = messageRepository.findById(id)
-        .orElseThrow(() -> new MessageNotFoundException(id));
+        Slice<Message> messageSlice = messageRepository.findAllByChannelId(channelId, pageable);
+        return pageResponseMapper.fromSlice(messageSlice.map(messageMapper::toMessageDto));
+    }
 
-    return messageMapper.toMessageDto(message);
-  }
+    @Override
+    @Transactional
+    public MessageDto update(UUID id, MessageUpdateRequest messageUpdateRequest) {
+        log.info("메시지 수정 시작: id={}", id);
 
-  @Override
-  @Transactional
-  public PageResponse<MessageDto> findAllByChannelId(UUID userId, UUID channelId, UUID cursor,
-      Pageable pageable) {
+        Message message = messageRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("메시지 수정 실패 - 존재하지 않는 메시지: id={}", id);
+                    return new MessageNotFoundException(id);
+                });
 
-    readStatusRepository.findByUserIdAndChannelId(userId, channelId)
-        .ifPresentOrElse(
-            rs -> rs.updateLastReadAt(Instant.now()),
-            () -> {
-              // 없으면(Public 채널 첫 방문 등) 새로 생성
-              User user = userRepository.findById(userId)
-                  .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
-              Channel channel = channelRepository.findById(channelId)
-                  .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
-              readStatusRepository.save(new ReadStatus(user, channel, Instant.now()));
-            }
-        );
+        message.updateContent(messageUpdateRequest.newContent());
 
-    Slice<Message> messageSlice = messageRepository.findAllByChannelId(channelId, pageable);
-    return pageResponseMapper.fromSlice(messageSlice.map(messageMapper::toMessageDto));
-  }
-
-  @Override
-  @Transactional
-  public MessageDto update(UUID id, MessageUpdateRequest messageUpdateRequest) {
-    log.info("메시지 수정 시작: id={}", id);
-
-    Message message = messageRepository.findById(id)
-        .orElseThrow(() -> {
-          log.warn("메시지 수정 실패 - 존재하지 않는 메시지: id={}", id);
-          return new MessageNotFoundException(id);
-        });
-
-    message.updateContent(messageUpdateRequest.newContent());
-
-    log.info("메시지 수정 완료: id={}", id);
-    return messageMapper.toMessageDto(message);
-  }
+        log.info("메시지 수정 완료: id={}", id);
+        return messageMapper.toMessageDto(message);
+    }
 
 //  @Override
 //  @Transactional
@@ -163,46 +163,46 @@ public class BasicMessageService implements MessageService {
 //    return pageResponseMapper.fromSlice(messageSlice.map(messageMapper::toMessageDto));
 //  }
 
-  @Override
-  @Transactional(readOnly = true)
-  public PageResponse<MessageDto> getMessages(UUID channelId, Instant cursor, Pageable pageable) {
-    if (!channelRepository.existsById(channelId)) {
-      throw new ChannelNotFoundException(channelId);
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<MessageDto> getMessages(UUID channelId, Instant cursor, Pageable pageable) {
+        if (!channelRepository.existsById(channelId)) {
+            throw new ChannelNotFoundException(channelId);
+        }
+        Slice<Message> messageSlice = (cursor == null)
+                ? messageRepository.findAllByChannelId(channelId, pageable)
+                : messageRepository.findAllByChannelIdBeforeCursor(channelId, cursor, pageable);
+
+        List<MessageDto> content = messageSlice.getContent().stream()
+                .filter(m -> cursor == null || m.getCreatedAt().isBefore(cursor))
+                .map(messageMapper::toMessageDto)
+                .toList();
+
+        Instant nextCursor = messageSlice.hasNext() && !content.isEmpty()
+                ? content.get(content.size() - 1).createdAt()
+                : null;
+
+        return new PageResponse<>(
+                content,
+                nextCursor,
+                messageSlice.getSize(),
+                messageSlice.hasNext(),
+                null
+        );
     }
-    Slice<Message> messageSlice = (cursor == null)
-        ? messageRepository.findAllByChannelId(channelId, pageable)
-        : messageRepository.findAllByChannelIdBeforeCursor(channelId, cursor, pageable);
 
-    List<MessageDto> content = messageSlice.getContent().stream()
-        .filter(m -> cursor == null || m.getCreatedAt().isBefore(cursor))
-        .map(messageMapper::toMessageDto)
-        .toList();
+    @Override
+    @Transactional
+    public void delete(UUID id) {
+        log.info("메시지 삭제 시작: id={}", id);
+        Message message = messageRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("메시지 삭제 실패 - 존재하지 않는 메시지: id={}", id);
+                    return new MessageNotFoundException(id);
+                });
 
-    Instant nextCursor = messageSlice.hasNext() && !content.isEmpty()
-        ? content.get(content.size() - 1).createdAt()
-        : null;
-
-    return new PageResponse<>(
-        content,
-        nextCursor,
-        messageSlice.getSize(),
-        messageSlice.hasNext(),
-        null
-    );
-  }
-
-  @Override
-  @Transactional
-  public void delete(UUID id) {
-    log.info("메시지 삭제 시작: id={}", id);
-    Message message = messageRepository.findById(id)
-        .orElseThrow(() -> {
-          log.warn("메시지 삭제 실패 - 존재하지 않는 메시지: id={}", id);
-          return new MessageNotFoundException(id);
-        });
-
-    log.info("메시지 삭제 완료: id={}", id);
-    // 메시지 자체 삭제
-    messageRepository.deleteById(id);
-  }
+        log.info("메시지 삭제 완료: id={}", id);
+        // 메시지 자체 삭제
+        messageRepository.deleteById(id);
+    }
 }

@@ -11,7 +11,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.dto.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.exception.user.UserStatusNotFoundException;
+import com.sprint.mission.discodeit.security.Role;
 import java.time.Instant;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -25,7 +27,6 @@ import com.sprint.mission.discodeit.exception.user.UserNameAlreadyExistsExceptio
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,262 +37,222 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.multipart.MultipartFile;
 
 @WebMvcTest(controllers = UserController.class)
 @Import(GlobalExceptionHandler.class)
+@AutoConfigureMockMvc(addFilters = false)
 class UserControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
-  @Autowired
-  private ObjectMapper objectMapper;
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-  @MockitoBean
-  private UserService userService;
-  @MockitoBean
-  private UserStatusService userStatusService;
-  @MockitoBean
-  private BinaryContentService binaryContentService;
+    @MockitoBean
+    private UserService userService;
+    @MockitoBean
+    private BinaryContentService binaryContentService;
 
-  private UUID userId;
-  private UserDto userDto;
+    private UUID userId;
+    private UserDto userDto;
 
-  @BeforeEach
-  void setUp() {
-    userId = UUID.randomUUID();
-    userDto = new UserDto(userId, "달선", "dalsun@naver.com", null, true);
-  }
+    @BeforeEach
+    void setUp() {
+        userId = UUID.randomUUID();
+        userDto = new UserDto(userId, "달선", "dalsun@naver.com", null, true, Role.USER);
+    }
 
-  @Test
-  @DisplayName("사용자 등록 성공")
-  void join_success() throws Exception {
-    // given
-    UserCreateRequest request = new UserCreateRequest("달선", "dalsun@naver.com", "ekftjs123");
+    @Test
+    @DisplayName("사용자 등록 성공")
+    void join_success() throws Exception {
+        // given
+        UserCreateRequest request = new UserCreateRequest("달선", "dalsun@naver.com", "ekftjs123");
 
-    MockMultipartFile requestPart = new MockMultipartFile(
-        "userCreateRequest",
-        "",
-        MediaType.APPLICATION_JSON_VALUE,
-        objectMapper.writeValueAsBytes(request)
-    );
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "userCreateRequest",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
 
-    when(userService.create(any(UserCreateRequest.class), any())).thenReturn(
-        userDto);
+        when(userService.create(any(UserCreateRequest.class), any())).thenReturn(
+                userDto);
 
-    // when
-    ResultActions actions = mockMvc.perform(multipart("/api/users")
-        .file(requestPart)
-        .contentType(MediaType.MULTIPART_FORM_DATA)
-        .accept(MediaType.APPLICATION_JSON));
+        // when
+        ResultActions actions = mockMvc.perform(multipart("/api/users")
+                .file(requestPart)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .accept(MediaType.APPLICATION_JSON));
 
-    // then
-    actions.andExpect(status().isCreated())
-        .andExpect(jsonPath("$.username").value("달선"))
-        .andExpect(jsonPath("$.email").value("dalsun@naver.com"));
+        // then
+        actions.andExpect(status().isCreated())
+                .andExpect(jsonPath("$.username").value("달선"))
+                .andExpect(jsonPath("$.email").value("dalsun@naver.com"));
 
-  }
+    }
 
-  @Test
-  @DisplayName("사용자 등록 실패 - 이미 존재하는 닉네임 ")
-  void join_fail_already_exists_username() throws Exception {
-    // given
-    UserCreateRequest request = new UserCreateRequest("달선", "dalsun@naver.com", "ekftjs123");
+    @Test
+    @DisplayName("사용자 등록 실패 - 이미 존재하는 닉네임 ")
+    void join_fail_already_exists_username() throws Exception {
+        // given
+        UserCreateRequest request = new UserCreateRequest("달선", "dalsun@naver.com", "ekftjs123");
 
-    MockMultipartFile requestPart = new MockMultipartFile(
-        "userCreateRequest",
-        "",
-        MediaType.APPLICATION_JSON_VALUE,
-        objectMapper.writeValueAsBytes(request)
-    );
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "userCreateRequest",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
 
-    when(userService.create(any(UserCreateRequest.class), any()))
-        .thenThrow(new UserNameAlreadyExistsException("달선"));
+        when(userService.create(any(UserCreateRequest.class), any()))
+                .thenThrow(new UserNameAlreadyExistsException("달선"));
 
-    // when
-    ResultActions actions = mockMvc.perform(multipart("/api/users")
-        .file(requestPart)
-        .contentType(MediaType.MULTIPART_FORM_DATA)
-        .accept(MediaType.APPLICATION_JSON));
+        // when
+        ResultActions actions = mockMvc.perform(multipart("/api/users")
+                .file(requestPart)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .accept(MediaType.APPLICATION_JSON));
 
-    // then
-    actions.andExpect(status().isConflict())
-        .andExpect(jsonPath("$.code").value("USERNAME_ALREADY_EXISTS"));
-  }
+        // then
+        actions.andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("USERNAME_ALREADY_EXISTS"));
+    }
 
-  @Test
-  @DisplayName("사용자 수정 성공")
-  void update_success() throws Exception {
-    // given
-    UserUpdateRequest request = new UserUpdateRequest("new달선", "newDalsun@naver.com", "newnew123");
-    UserDto newUserDto = new UserDto(userId, "new달선", "newDalsun@naver.com", null, true);
+    @Test
+    @DisplayName("사용자 수정 성공")
+    void update_success() throws Exception {
+        // given
+        UserUpdateRequest request = new UserUpdateRequest("new달선", "newDalsun@naver.com",
+                "newnew123");
+        UserDto newUserDto = new UserDto(userId, "new달선", "newDalsun@naver.com", null, true,
+                Role.USER);
 
-    when(userService.update(any(UUID.class), any(UserUpdateRequest.class),
-        any())).thenReturn(newUserDto);
+        when(userService.update(any(UUID.class), any(UserUpdateRequest.class),
+                any())).thenReturn(newUserDto);
 
-    MockMultipartFile requestPart = new MockMultipartFile(
-        "userUpdateRequest",
-        "",
-        MediaType.APPLICATION_JSON_VALUE,
-        objectMapper.writeValueAsBytes(request)
-    );
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "userUpdateRequest",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
 
-    // when
-    ResultActions actions = mockMvc.perform(multipart("/api/users/{userId}", userId)
-        .file(requestPart)
-        .contentType(MediaType.MULTIPART_FORM_DATA)
-        .with(req -> {
-          req.setMethod("PATCH");
-          return req;
-        })
-        .accept(MediaType.APPLICATION_JSON));
+        // when
+        ResultActions actions = mockMvc.perform(multipart("/api/users/{userId}", userId)
+                .file(requestPart)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .with(req -> {
+                    req.setMethod("PATCH");
+                    return req;
+                })
+                .accept(MediaType.APPLICATION_JSON));
 
-    // then
-    actions.andExpect(status().isOk())
-        .andExpect(jsonPath("$.username").value("new달선"))
-        .andExpect(jsonPath("$.email").value("newDalsun@naver.com"));
-  }
+        // then
+        actions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("new달선"))
+                .andExpect(jsonPath("$.email").value("newDalsun@naver.com"));
+    }
 
-  @Test
-  @DisplayName("사용자 수정 실패 - 존재하지 않는 사용자")
-  void update_fail_user_not_found() throws Exception {
-    // given
-    UserUpdateRequest request = new UserUpdateRequest("new달선", "newDalsun@naver.com", "newnew123");
-    MockMultipartFile requestPart = new MockMultipartFile(
-        "userUpdateRequest"
-        , ""
-        , MediaType.APPLICATION_JSON_VALUE,
-        objectMapper.writeValueAsBytes(request));
+    @Test
+    @DisplayName("사용자 수정 실패 - 존재하지 않는 사용자")
+    void update_fail_user_not_found() throws Exception {
+        // given
+        UserUpdateRequest request = new UserUpdateRequest("new달선", "newDalsun@naver.com",
+                "newnew123");
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "userUpdateRequest"
+                , ""
+                , MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request));
 
-    when(userService.update(any(UUID.class), any(UserUpdateRequest.class), any()))
-        .thenThrow(new UserNotFoundException(userId));
+        when(userService.update(any(UUID.class), any(UserUpdateRequest.class), any()))
+                .thenThrow(new UserNotFoundException(userId));
 
-    // when
-    ResultActions actions = mockMvc.perform(multipart("/api/users/{userId}", userId)
-        .file(requestPart)
-        .contentType(MediaType.MULTIPART_FORM_DATA)
-        .accept(MediaType.APPLICATION_JSON)
-        .with(req -> {
-          req.setMethod("PATCH");
-          return req;
-        }));
+        // when
+        ResultActions actions = mockMvc.perform(multipart("/api/users/{userId}", userId)
+                .file(requestPart)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(req -> {
+                    req.setMethod("PATCH");
+                    return req;
+                }));
 
-    // then
-    actions
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.code").value("USER_NOT_FOUND"));
-  }
+        // then
+        actions
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("USER_NOT_FOUND"));
+    }
 
-  @Test
-  @DisplayName("사용자 삭제 성공")
-  void delete_success() throws Exception {
-    // given
-    doNothing().when(userService).delete(any(UUID.class));
+    @Test
+    @DisplayName("사용자 삭제 성공")
+    void delete_success() throws Exception {
+        // given
+        doNothing().when(userService).delete(any(UUID.class));
 
-    // when
-    ResultActions actions = mockMvc.perform(
-        MockMvcRequestBuilders.delete("/api/users/{userId}", userId)
-            .accept(MediaType.APPLICATION_JSON));
+        // when
+        ResultActions actions = mockMvc.perform(
+                MockMvcRequestBuilders.delete("/api/users/{userId}", userId)
+                        .accept(MediaType.APPLICATION_JSON));
 
-    // then
-    actions
-        .andExpect(status().isNoContent());
-  }
+        // then
+        actions
+                .andExpect(status().isNoContent());
+    }
 
-  @Test
-  @DisplayName("사용자 삭제 실패 - 존재하지 않는 사용자")
-  void delete_fail_user_not_found() throws Exception {
-    // given
-    doThrow(new UserNotFoundException(userId)).when(userService).delete(any(UUID.class));
+    @Test
+    @DisplayName("사용자 삭제 실패 - 존재하지 않는 사용자")
+    void delete_fail_user_not_found() throws Exception {
+        // given
+        doThrow(new UserNotFoundException(userId)).when(userService).delete(any(UUID.class));
 
-    // when
-    ResultActions actions = mockMvc.perform(
-        MockMvcRequestBuilders.delete("/api/users/{userId}", userId)
-            .accept(MediaType.APPLICATION_JSON));
+        // when
+        ResultActions actions = mockMvc.perform(
+                MockMvcRequestBuilders.delete("/api/users/{userId}", userId)
+                        .accept(MediaType.APPLICATION_JSON));
 
-    // then
-    actions
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.code").value("USER_NOT_FOUND"));
-  }
+        // then
+        actions
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("USER_NOT_FOUND"));
+    }
 
-  @Test
-  @DisplayName("전체 사용자 조회 성공")
-  void find_all_success() throws Exception {
-    // given
-    List<UserDto> users = List.of(
-        new UserDto(UUID.randomUUID(), "달선", "dalsun@naver.com", null, true),
-        new UserDto(UUID.randomUUID(), "달룡", "dalyong@naver.com", null, false)
-    );
-    when(userService.findAll()).thenReturn(users);
+    @Test
+    @DisplayName("전체 사용자 조회 성공")
+    void find_all_success() throws Exception {
+        // given
+        List<UserDto> users = List.of(
+                new UserDto(UUID.randomUUID(), "달선", "dalsun@naver.com", null, true, Role.USER),
+                new UserDto(UUID.randomUUID(), "달룡", "dalyong@naver.com", null, false, Role.USER)
+        );
+        when(userService.findAll()).thenReturn(users);
 
-    // when
-    ResultActions actions = mockMvc.perform(get("/api/users")
-        .accept(MediaType.APPLICATION_JSON));
+        // when
+        ResultActions actions = mockMvc.perform(get("/api/users")
+                .accept(MediaType.APPLICATION_JSON));
 
-    // then
-    actions
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(2))
-        .andExpect(jsonPath("$[0].username").value("달선"))
-        .andExpect(jsonPath("$[1].username").value("달룡"));
-  }
+        // then
+        actions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].username").value("달선"))
+                .andExpect(jsonPath("$[1].username").value("달룡"));
+    }
 
-  @Test
-  @DisplayName("전체 사용자 조회 성공 - 사용자 없음")
-  void find_all_success_empty() throws Exception {
-    // given
-    when(userService.findAll()).thenReturn(List.of());
+    @Test
+    @DisplayName("전체 사용자 조회 성공 - 사용자 없음")
+    void find_all_success_empty() throws Exception {
+        // given
+        when(userService.findAll()).thenReturn(List.of());
 
-    // when
-    ResultActions actions = mockMvc.perform(get("/api/users")
-        .accept(MediaType.APPLICATION_JSON));
+        // when
+        ResultActions actions = mockMvc.perform(get("/api/users")
+                .accept(MediaType.APPLICATION_JSON));
 
-    // then
-    actions
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(0));
+        // then
+        actions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
 
-  }
-
-  @Test
-  @DisplayName("사용자 온라인 상태 업데이트 성공")
-  void updateStatus_success() throws Exception {
-    // given
-    UserStatusUpdateRequest request =
-        new UserStatusUpdateRequest(Instant.now());
-
-    UserStatusDto response =
-        new UserStatusDto(UUID.randomUUID(), userId, Instant.now());
-
-    when(userStatusService.updateByUserId(eq(userId), any(UserStatusUpdateRequest.class)))
-        .thenReturn(response);
-
-    // when, then
-    ResultActions actions = mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(request)));
-
-    actions.andExpect(status().isOk())
-        .andExpect(jsonPath("$.userId").value(userId.toString()))
-        .andExpect(jsonPath("$.id").exists());
-  }
-
-  @Test
-  @DisplayName("사용자 상태 업데이트 실패 - 존재하지 않는 사용자")
-  void updateStatus_fail_user_not_found() throws Exception {
-    // given
-    UserStatusUpdateRequest request =
-        new UserStatusUpdateRequest(Instant.now());
-
-    when(userStatusService.updateByUserId(eq(userId), any(UserStatusUpdateRequest.class)))
-        .thenThrow(new UserStatusNotFoundException(userId));
-
-    // when, then
-    ResultActions actions = mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(request)));
-
-    actions.andExpect(status().isNotFound());
-  }
+    }
 }
