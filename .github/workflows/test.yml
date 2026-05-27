@@ -1,0 +1,42 @@
+name: Codecov를 이용한 테스트 커버리지 뱃지 추가 Workflow  # 워크플로우 이름 (GitHub Actions 탭에서 표시되는 이름)
+
+on:  # 워크플로우 실행 조건(트리거 이벤트) 정의
+  pull_request:  # PR 생성 이벤트 발생 시 실행
+    branches: [ "main" ]  # main branch에 PR 생성될 때만 실행
+  push:  # push 이벤트 발생 시 실행
+    branches: [ "main" ]  # main branch에 push될 때만 실행
+
+jobs:  # 실행할 작업(job)들을 정의
+  # Codecov로 테스트 커버리지 report 업로드
+  codecov:  # "codecov"라는 이름의 job
+    runs-on: ubuntu-latest  # 실행 환경 설정(codecov라는 job이 이 환경에서 실행됨)
+
+    steps:  # job 안에서 실행될 단계
+      # 1) 현재 repo의 code를 checkout(가저옴)
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # 2) JDK 설정
+      - name: JDK 17 설정
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 3) Gradle 캐시
+      # GitHub Actions가 Gradle build를 더 빠르게 하도록 Gradle 관련 캐시를 설정
+      # 매번 CI/CD 실행 시 의존성이나 Gradle 관련 상태를 처음부터 다시 받지 않도록,
+      # 이전에 내려받은 것들을 저장했다가 다음 실행에서 재사용
+      - name: 실행 권한 부여
+        run: chmod +x gradlew
+
+      # 4) test 실행하여 JaCoCo report 생성
+      - name: test 실행 및 JaCoCo report 생성
+        run: ./gradlew clean test jacocoTestReport
+
+      # 5) Codecov로 JaCoCo report 파일 업로드
+      - name: Codecov로 테스트 커버리지 report 업로드
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: build/reports/jacoco/test/jacocoTestReport.xml  # 지정한 파일만 올리기

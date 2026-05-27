@@ -4,11 +4,9 @@ import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @Table(name = "channels")
 public class Channel extends BaseUpdatableEntity {
@@ -28,5 +26,10 @@ public class Channel extends BaseUpdatableEntity {
         this.type = type;
         this.name = name;
         this.description = description;
+    }
+
+    public void update(String name, String description) {
+        if (name != null) this.name = name;
+        if (description != null) this.description = description;
     }
 }

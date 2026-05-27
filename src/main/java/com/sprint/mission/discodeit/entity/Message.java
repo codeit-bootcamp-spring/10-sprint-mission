@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
@@ -12,7 +11,6 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @Table(name = "messages")
 public class Message extends BaseUpdatableEntity {
@@ -52,5 +50,9 @@ public class Message extends BaseUpdatableEntity {
 
     public void addAttachment(BinaryContent attachment) {
         this.attachments.add(attachment);
+    }
+
+    public void update(String content) {
+        if(content != null) this.content = content;
     }
 }

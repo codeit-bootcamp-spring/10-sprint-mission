@@ -1,0 +1,151 @@
+package com.sprint.mission.discodeit.config.security;
+
+import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
+import com.sprint.mission.discodeit.security.handler.RestAccessDeniedHandler;
+import com.sprint.mission.discodeit.security.handler.RestAuthenticationEntryPoint;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
+
+@Configuration
+@Slf4j
+@RequiredArgsConstructor
+@EnableMethodSecurity(prePostEnabled = true) // Method Security 활성화
+public class SecurityConfig {
+
+    private final LoginSuccessHandler loginSuccessHandler;
+    private final LoginFailureHandler loginFailureHandler;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final RestAccessDeniedHandler restAccessDeniedHandler;
+
+    @Value("${discodeit.security.remember-me-key}")
+    private String rememberMeKey;
+
+    // SecurityFilterChain Bean 등록
+    // HttpSecurity를 통해 HTTP 요청에 대한 보안 설정 구성
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+                )
+                .formLogin(login -> login
+                        .loginProcessingUrl("/api/auth/login")
+                        .successHandler(loginSuccessHandler)
+                        .failureHandler(loginFailureHandler)
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler(
+                                new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+                )
+                .authorizeHttpRequests(auth -> auth
+                        // Auth
+                        .requestMatchers(HttpMethod.GET, "/api/auth/csrf-token").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
+                        // 회원가입
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        // 그 외 나머지 `/api/**` 요청
+                        .requestMatchers("/api/**").authenticated()
+                        // `/api/**` 가 아닌 요청 (`/swagger-ui.html`, `/actuator/**` 등)
+                        .anyRequest().permitAll()
+                )
+                .exceptionHandling(ex -> ex
+                        // 인증되지 않은 사용자가 인증이 필요한 API에 접근했을 때 실행
+                        .authenticationEntryPoint(restAuthenticationEntryPoint)
+                        // 인증이 되었지만 권한이 부족한 사용자가 접근했을 때 실행
+                        .accessDeniedHandler(restAccessDeniedHandler)
+                )
+                .sessionManagement(management -> management
+                        .sessionConcurrency(concurrency -> concurrency
+                                // 같은 계정으로 유지 가능한 최대 세션 수
+                                .maximumSessions(1)
+                                // 최대 세션 수 도달한 경우 새 로그인 차단
+                                // RememberMe 설정으로인해 true -> false
+                                .maxSessionsPreventsLogin(false)
+                                // 동시 세션 관리 기능이 사용할 SessionRegistry 저장소 지정
+                                .sessionRegistry(sessionRegistry())
+                        )
+                )
+                .rememberMe(remember -> remember
+                        .rememberMeParameter("remember-me")
+                        .rememberMeCookieName("remember-me")
+                        .key(rememberMeKey)
+                        .tokenValiditySeconds(60 * 60 * 24 * 7) // 7일
+                );
+
+        SecurityFilterChain chain = http.build();
+
+        log.debug("========== [Spring Security Filter List - START] ==========");
+        chain.getFilters().forEach(filter ->
+                log.debug("{}", filter.getClass().getSimpleName())
+        );
+        log.debug("========== [Spring Security Filter List - END] ==========");
+
+        return chain;
+    }
+
+    // 로그인한 사용자의 principal과 해당 사용자의 세션 정보를 관리하는 SessionRegistry Bean 등록
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    // 로그아웃, 세션 타임아웃 등으로 HttpSession이 만료되거나 제거될 때
+    // SessionRegistry의 세션 등록 정보도 함께 정리되도록 이벤트를 전달하는 Bean
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+
+    // Role Hierarchy (권한 계층 구조)
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        // builder 방식
+        // `withDefaultRolePrefix` 사용 시 `ROLE_` prefix를 자동으로 붙여줌
+        return RoleHierarchyImpl.withDefaultRolePrefix()
+                .role("ADMIN").implies("CHANNEL_MANAGER")
+                .role("CHANNEL_MANAGER").implies("USER")
+                .build();
+    }
+
+    // Method Security 표현식을 처리하는 핸들러 설정
+    @Bean
+    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
+        // @PreAuthorize, @PostAuthorize 같은 Method Security 표현식을 처리하는 핸들러
+        DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+
+        // Method Security에서도 RoleHierarchy가 적용되도록 설정
+        handler.setRoleHierarchy(roleHierarchy);
+
+        return handler;
+    }
+
+    // PasswordEncoder Bean 등록
+    // 비밀번호를 bcrypt 알고리즘으로 해시 처리 - 같은 비밀번호라도 다른 해시값 생성
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}

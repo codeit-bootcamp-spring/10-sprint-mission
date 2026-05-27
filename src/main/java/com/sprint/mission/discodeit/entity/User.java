@@ -4,11 +4,9 @@ import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @Table(name = "users")
 public class User extends BaseUpdatableEntity {
@@ -26,14 +24,37 @@ public class User extends BaseUpdatableEntity {
     @JoinColumn(name = "profile_id", unique = true)
     private BinaryContent profile; // 프로필 이미지
 
-    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
-    private UserStatus status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
     // 생성자
-    public User(String email, String username, String password, BinaryContent profile) {
+    public User(
+            String email,
+            String username,
+            String password,
+            BinaryContent profile
+    ) {
         this.email = email;
         this.username = username;
-        this.password = password; // 해싱?
+        this.password = password;
         this.profile = profile;
+        this.role = Role.USER; // 기본 권한
+    }
+
+    public void update(
+            String username,
+            String email,
+            String password,
+            BinaryContent profile
+    ) {
+        if (username != null) this.username = username;
+        if (email != null) this.email = email;
+        if (password != null) this.password = password;
+        if (profile != null) this.profile = profile;
+    }
+
+    public void updateRole(Role role) {
+        if (role != null) this.role = role;
     }
 }

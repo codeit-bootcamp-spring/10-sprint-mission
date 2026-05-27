@@ -1,0 +1,69 @@
+# 서비스 정의
+services:
+  app:  # 애플리케이션 서비스
+    build: .  # 현재 디렉터리의 Dockerfile을 사용해 이미지 build
+    image: discodeit:local
+    environment: # 환경변수 바인딩
+      PORT: ${PORT}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      REMEBER_ME_KEY: ${REMEMBER_ME_KEY}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH}
+      STORAGE_TYPE: ${STORAGE_TYPE}
+      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
+      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
+    ports:  # 포트 매핑(로컬:컨테이너)
+      - "8080:80"
+    volumes:  # 애플리케이션 볼륨 구성
+      # 컨테이너가 재시작되어도 `BinaryContentStorage` 데이터 유지
+      - ./.discodeit/storage:/app/${STORAGE_LOCAL_ROOT_PATH}
+      - ./.logs:/app/.logs
+    depends_on:  # 서비스간 의존성 설정
+      postgres:
+        # PostgreSQL 서비스가 정상 상태(healthy)가 된 후 app 서비스가 실행되도록 설정
+        condition: service_healthy
+    networks:
+      # backend 네트워크에 app 서비스 연결
+      - backend
+
+  postgres:  # PostgreSQL 서비스
+    image: postgres:17  # `postgres:17` 이미지 사용
+    environment:  # 환경변수 바인딩
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:  # 포트 매핑(로컬:컨테이너)
+      - "5433:5432"
+    volumes:  # PostgreSQL 볼륨 구성
+      # 컨테이너 재시작되어도 PostgreSQL 데이터가 유지되도록 설정
+#      - postgres-data:/var/lib/postgresql
+      - postgres-data:/var/lib/postgresql/data  # 17버전 이하
+      # 서비스 실행 후 `schema.sql`이 자동으로 실행되도록 구성
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:  # PostgreSQL 서비스 상태 확인을 위한 healthcheck 구성
+      # 지정한 사용자/db 기준으로 PostgreSQL 준비 상태 확인
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      # 10초마다 확인
+      interval: 10s
+      # 각 확인의 최대 대기 시간
+      timeout: 5s
+      # 3번 재시도 후 실패 처리
+      retries: 3
+    networks:
+      # backend 네트워크에 postgres 서비스 연결
+      - backend
+
+networks:  # 서비스 간 통신을 위한 네트워크 정의
+  backend:
+
+volumes:  # 데이터 영속성을 위한 볼륨 정의
+  # PostgreSQL 데이터 저장용 볼륨
+  postgres-data:

@@ -14,7 +14,7 @@ public record ReadStatusCreateRequest(
         @NotNull(message = "ID가 null입니다.")
         UUID channelId,
 
-        @NotNull(message = "lastReadAt이 null로 입력되었습니다.")
+        @NotNull(message = "lastReadAt이 null입니다.")
         Instant lastReadAt
 ) {
 }

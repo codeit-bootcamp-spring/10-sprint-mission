@@ -86,4 +86,8 @@ Main.java
 FileIOTestStorage/
 
 ../../../../../../../../../../Downloads/discodeit/discodeit/HELP.md
-storage
+/storage
+.logs
+.env
+*.env
+.discodeit

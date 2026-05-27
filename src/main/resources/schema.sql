@@ -7,11 +7,9 @@ CREATE TABLE IF NOT EXISTS binary_contents
     file_name    VARCHAR(255) NOT NULL,
     size         BIGINT       NOT NULL,
     content_type VARCHAR(100) NOT NULL
---     bytes        BYTEA        NOT NULL
-    );
+);
 
 -- binary_contents : users = 0..1 : 1
--- user_statuses : users = 1 : 1
 -- read_statuses : users = 0..N : 1
 -- messages : users = 0..N : 1
 CREATE TABLE IF NOT EXISTS users
@@ -23,19 +21,9 @@ CREATE TABLE IF NOT EXISTS users
     email      VARCHAR(100) UNIQUE NOT NULL,
     password   VARCHAR(60)         NOT NULL,
     profile_id UUID UNIQUE,
+    role       VARCHAR(20)         NOT NULL,
     FOREIGN KEY (profile_id) REFERENCES binary_contents (id) ON DELETE SET NULL
-    );
-
--- user_statuses : users = 1 : 1
-CREATE TABLE IF NOT EXISTS user_statuses
-(
-    id             UUID PRIMARY KEY,
-    created_at     timestamptz NOT NULL,
-    updated_at     timestamptz,
-    user_id        UUID UNIQUE NOT NULL,
-    last_active_at timestamptz NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-    );
+);
 
 -- read_status : channels = 0..N : 1
 -- messages : channels = 0..N : 1
@@ -47,7 +35,7 @@ CREATE TABLE IF NOT EXISTS channels
     name        VARCHAR(100),
     description VARCHAR(500),
     type        VARCHAR(10) NOT NULL CHECK (type IN ('PRIVATE', 'PUBLIC'))
-    );
+);
 
 -- channels : users = 0..M : 0..N
 CREATE TABLE IF NOT EXISTS read_statuses
@@ -61,7 +49,7 @@ CREATE TABLE IF NOT EXISTS read_statuses
     UNIQUE (user_id, channel_id),
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (channel_id) REFERENCES channels (id) ON DELETE CASCADE
-    );
+);
 
 
 -- messages : users = 0..N : 1
@@ -77,7 +65,7 @@ CREATE TABLE IF NOT EXISTS messages
     author_id  UUID,
     FOREIGN KEY (channel_id) REFERENCES channels (id) ON DELETE CASCADE,
     FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE SET NULL
-    );
+);
 
 -- binary_contents : messages = M : N
 CREATE TABLE IF NOT EXISTS message_attachments
@@ -86,5 +74,4 @@ CREATE TABLE IF NOT EXISTS message_attachments
     attachment_id UUID NOT NULL,
     FOREIGN KEY (message_id) REFERENCES messages (id) ON DELETE CASCADE,
     FOREIGN KEY (attachment_id) REFERENCES binary_contents (id) ON DELETE CASCADE
-    );
-
+);

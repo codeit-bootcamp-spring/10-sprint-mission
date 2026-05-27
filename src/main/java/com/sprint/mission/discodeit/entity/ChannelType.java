@@ -4,5 +4,6 @@ import lombok.Getter;
 
 @Getter
 public enum ChannelType {
-    PRIVATE, PUBLIC
+    PRIVATE,
+    PUBLIC
 }

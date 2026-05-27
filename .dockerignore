@@ -1,0 +1,9 @@
+.git
+.gitignore
+.gradle
+.idea
+.logs
+build
+storage
+.env
+.discodeit

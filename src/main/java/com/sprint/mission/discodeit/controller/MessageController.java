@@ -14,7 +14,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -33,7 +34,8 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/messages")
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Message", description = "Message API")
 public class MessageController {
     private final MessageService messageService;
@@ -48,9 +50,10 @@ public class MessageController {
             @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음", content = @Content(examples = @ExampleObject("Channel | Author with id {channelId | authorId} not found")))
     })
     public ResponseEntity<MessageDto> create(
-            @RequestPart @Valid MessageCreateRequest messageCreateRequest,
-            @RequestPart(required = false) @Schema(description = "Message 첨부 파일들") List<MultipartFile> attachments) {
-        MessageDto message = messageService.create(messageCreateRequest, attachments);
+            @RequestPart("messageCreateRequest") @Valid MessageCreateRequest request,
+            @RequestPart(required = false) @Schema(description = "Message 첨부 파일들") List<MultipartFile> attachments
+    ) {
+        MessageDto message = messageService.create(request, attachments);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(message);
     }
@@ -83,9 +86,9 @@ public class MessageController {
     })
     public ResponseEntity<MessageDto> update(
             @Parameter(description = "수정할 Message ID") @PathVariable UUID messageId,
-            @RequestBody @Valid MessageUpdateRequest messageUpdateRequest
+            @RequestBody @Valid MessageUpdateRequest request
     ) {
-        MessageDto message = messageService.update(messageId, messageUpdateRequest);
+        MessageDto message = messageService.update(messageId, request);
 
         return ResponseEntity.status(HttpStatus.OK).body(message);
     }

@@ -2,6 +2,9 @@ package com.sprint.mission.discodeit.storage.local;
 
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentReadFailedException;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentSaveFailedException;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentStorageInitFailedException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +38,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         try {
             Files.createDirectories(root);
         } catch (IOException e) {
-            throw new IllegalStateException("디렉토리 초기화 실패", e);
+            throw new BinaryContentStorageInitFailedException(e);
         }
     }
 
@@ -59,7 +62,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         try {
             Files.write(path, bytes);
         } catch (IOException e) {
-            throw new IllegalArgumentException("저장 실패", e);
+            throw new BinaryContentSaveFailedException(binaryContentId, e);
         }
 
         return binaryContentId;
@@ -73,7 +76,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             // 파일을 읽을 수 있는 통로를 연다.
             return Files.newInputStream(path);
         } catch(IOException e) {
-            throw new IllegalStateException("조회 실패", e);
+            throw new BinaryContentReadFailedException(binaryContentId, e);
         }
     }
 

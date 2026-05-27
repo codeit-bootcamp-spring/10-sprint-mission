@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +28,7 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/channels")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Tag(name = "Channel", description = "Channel API")
 public class ChannelController {
     private final ChannelService channelService;
@@ -88,8 +88,8 @@ public class ChannelController {
     })
     public ResponseEntity<ChannelDto> update(
             @Parameter(description = "수정할 Channel ID") @PathVariable UUID channelId,
-            @RequestBody @Valid PublicChannelUpdateRequest publicChannelUpdateRequest) {
-        ChannelDto channel = channelService.update(channelId, publicChannelUpdateRequest);
+            @RequestBody @Valid PublicChannelUpdateRequest request) {
+        ChannelDto channel = channelService.update(channelId, request);
 
         return ResponseEntity.status(HttpStatus.OK).body(channel);
     }

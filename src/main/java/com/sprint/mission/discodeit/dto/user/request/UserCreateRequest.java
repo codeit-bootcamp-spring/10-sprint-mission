@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.dto.user.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
+@Schema(description = "User 생성 정보")
 public record UserCreateRequest(
         @NotBlank(message = "email이 입력되지 않았습니다.")
         @Pattern(regexp = "^\\S+$", message = "email은 공백이 허용되지 않습니다.")

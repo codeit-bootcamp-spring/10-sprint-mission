@@ -1,0 +1,30 @@
+# 테스트 전용 설정입니다.
+spring:
+  sql:
+    init:
+      mode: never
+  # 각 테스트는 독립적인 H2 메모리 DB를 사용해 언제 실행해도 같은 결과가 나오도록 합니다.
+  datasource:
+    url: jdbc:h2:mem:test-practice-test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # 테스트가 시작될 때 테이블을 만들고, 끝나면 정리하도록 설정해 테스트 간 간섭을 막습니다.
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+discodeit:
+  security:
+    remember-me-key: test-remember-me-key
+
+logging:
+  level:
+    com.sprint.mission.discodeit: info # 애플리케이션 패키지에서 발생하는 로그
+    root: info # 전체 로그 레벨 설정

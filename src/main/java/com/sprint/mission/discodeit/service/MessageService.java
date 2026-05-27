@@ -19,19 +19,16 @@ public interface MessageService {
     // 특정 메시지 정보 읽기
     MessageDto find(UUID messageId);
 
-    // R. 모두 읽기 : 시간순으로 정렬?
+    // R. 모두 읽기
     // 메시지 전체
     List<MessageDto> findAll();
     // 특정 채널의 모든 메시지 읽어오기
     PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable);
-    // 특정 사용자가 작성한 모든 메시지
-    List<MessageDto> findUserMessagesByUserId(UUID userId);
 
     // U. 수정
     // 메시지 수정
     MessageDto update(UUID messageId, MessageUpdateRequest messageUpdateRequest);
 
     // D. 삭제
-    void deletByIdAndUserId(UUID userId, UUID messageId);
     void delete(UUID messageId);
 }
