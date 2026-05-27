@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto.user;
 
+import com.sprint.mission.discodeit.entity.UserRole;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -9,7 +10,8 @@ public record UserResponse(
     String email,
     boolean online,
     Instant lastSeenAt,
-    UUID profileImageId
+    UUID profileImageId,
+    UserRole role
 ) {
 
 }

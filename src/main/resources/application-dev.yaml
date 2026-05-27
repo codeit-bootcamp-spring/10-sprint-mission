@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB:discodeit}
+    username: ${POSTGRES_USER:discodeit}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   sql:
@@ -12,7 +12,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
     open-in-view: false
     properties:
       hibernate:
@@ -20,11 +20,8 @@ spring:
         jdbc:
           time_zone: UTC
 
-server:
-  port: 80
-
-logging:
-  level:
-    root: debug
-    org.hibernate.SQL: debug
-    org.hibernate.orm.jdbc.bind: trace
+discodeit:
+  storage:
+    type: ${STORAGE_TYPE:local}
+    local:
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}

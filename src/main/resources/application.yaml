@@ -1,24 +1,15 @@
 spring:
   profiles:
-    active: prod
+    active: dev
   config:
     import: optional:file:./.env[.properties]
 
 logging:
   level:
+    org.springframework.security.web.DefaultSecurityFilterChain: trace
     root: info
 
-discodeit:
-  storage:
-    type: ${STORAGE_TYPE:s3}
-    s3:
-      access-key: ${AWS_S3_ACCESS_KEY}
-      secret-key: ${AWS_S3_SECRET_KEY}
-      region: ${AWS_S3_REGION}
-      bucket: ${AWS_S3_BUCKET}
-      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
-    local:
-      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
+
 
 management:
   endpoints:
@@ -28,3 +19,15 @@ management:
   endpoint:
     health:
       show-details: never
+
+#discodeit:
+#  storage:
+#    type: ${STORAGE_TYPE:s3}
+#    s3:
+#      access-key: ${AWS_S3_ACCESS_KEY}
+#      secret-key: ${AWS_S3_SECRET_KEY}
+#      region: ${AWS_S3_REGION}
+#      bucket: ${AWS_S3_BUCKET}
+#      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
+#    local:
+#      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}

@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+@Disabled("AWS세팅 지운 상태라 테스트 불가")
 class S3BinaryContentStorageTest {
 
   private S3BinaryContentStorage storage;

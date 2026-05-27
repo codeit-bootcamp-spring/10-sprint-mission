@@ -9,8 +9,8 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidParameterException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.exception.userstatus.StatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -66,7 +66,7 @@ public class BasicReadStatusService implements ReadStatusService {
     requireNonNull(id, "id");
 
     ReadStatus readStatus = readStatusRepository.findById(id)
-        .orElseThrow(() -> new StatusNotFoundException(id));
+        .orElseThrow(() -> new ReadStatusNotFoundException(id));
 
     return readStatusMapper.toResponse(readStatus);
   }
@@ -89,7 +89,7 @@ public class BasicReadStatusService implements ReadStatusService {
     requireNonNull(req, "request");
 
     ReadStatus rs = readStatusRepository.findById(readStatusId)
-        .orElseThrow(() -> new StatusNotFoundException(readStatusId));
+        .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
 
     Instant newLastReadAt = (req.newLastReadAt() == null) ? Instant.now() : req.newLastReadAt();
     rs.updateLastReadAt(newLastReadAt);
@@ -104,7 +104,7 @@ public class BasicReadStatusService implements ReadStatusService {
     requireNonNull(id, "id");
 
     ReadStatus existing = readStatusRepository.findById(id)
-        .orElseThrow(() -> new StatusNotFoundException(id));
+        .orElseThrow(() -> new ReadStatusNotFoundException(id));
 
     readStatusRepository.delete(existing.getId());
   }

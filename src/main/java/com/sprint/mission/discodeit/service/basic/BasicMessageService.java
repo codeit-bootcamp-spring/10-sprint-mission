@@ -10,7 +10,6 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidParameterException;
@@ -24,6 +23,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.time.Instant;
@@ -37,6 +37,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +56,7 @@ public class BasicMessageService implements MessageService {
   private final MessageDtoMapper messageDtoMapper;
   private final BinaryContentMapper binaryContentMapper;
   private final UserMapper userMapper;
+  private final SessionRegistry sessionRegistry;
 
   @Override
   public MessageDto create(MessageCreateRequest req) {
@@ -109,8 +112,11 @@ public class BasicMessageService implements MessageService {
     if (cursor == null) {
       messageIds = messageRepository.findMessageIdsByChannelId(channelId, pageable);
     } else {
-      messageIds = messageRepository.findMessageIdsByChannelIdAndCursor(channelId, cursor,
-          pageable);
+      messageIds = messageRepository.findMessageIdsByChannelIdAndCursor(
+          channelId,
+          cursor,
+          pageable
+      );
     }
 
     boolean hasNext = messageIds.size() > fixedSize;
@@ -143,7 +149,7 @@ public class BasicMessageService implements MessageService {
 
     Map<UUID, User> userMap = new HashMap<>();
     if (!userIds.isEmpty()) {
-      List<User> users = userRepository.findAllByIdInWithProfileImageAndStatus(userIds);
+      List<User> users = userRepository.findAllByIdInWithProfileImage(userIds);
       for (User user : users) {
         userMap.put(user.getId(), user);
       }
@@ -158,6 +164,7 @@ public class BasicMessageService implements MessageService {
     return new PageResponse<>(content, nextCursor, content.size(), hasNext, totalElements);
   }
 
+  @PreAuthorize("@securityExpression.isMessageAuthor(#req.newMessageId())")
   @Override
   public MessageDto update(MessageUpdateRequest req) {
     requireNonNull(req, "request");
@@ -175,6 +182,7 @@ public class BasicMessageService implements MessageService {
     return toDto(message, Map.of(message.getUserId(), message.getAuthor()));
   }
 
+  @PreAuthorize("@securityExpression.isMessageAuthor(#messageId)")
   @Override
   public void delete(UUID messageId) {
     requireNonNull(messageId, "messageId");
@@ -199,14 +207,16 @@ public class BasicMessageService implements MessageService {
 
     if (message.getUserId() != null) {
       User user = userMap.get(message.getUserId());
+
       if (user != null) {
         BinaryContentDto profile = null;
+
         if (user.getProfileImage() != null) {
           profile = binaryContentMapper.toDto(user.getProfileImage());
         }
 
-        UserStatus status = user.getStatus();
-        author = userMapper.toDto(user, status, profile);
+        boolean online = isOnline(user.getId());
+        author = userMapper.toDto(user, online, profile);
       }
     }
 
@@ -217,6 +227,13 @@ public class BasicMessageService implements MessageService {
             .toList();
 
     return messageDtoMapper.toDto(message, author, attachments);
+  }
+
+  private boolean isOnline(UUID userId) {
+    return sessionRegistry.getAllPrincipals().stream()
+        .filter(DiscodeitUserDetails.class::isInstance)
+        .map(DiscodeitUserDetails.class::cast)
+        .anyMatch(principal -> principal.getUserDto().id().equals(userId));
   }
 
   private void findChannelOrThrow(UUID channelId) {

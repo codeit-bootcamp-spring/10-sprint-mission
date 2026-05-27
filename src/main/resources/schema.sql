@@ -1,6 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- ❌ enum 제거 (이게 문제 원인이었음)
 -- DROP TYPE IF EXISTS channel_type CASCADE;
 -- CREATE TYPE channel_type AS ENUM ('PUBLIC', 'PRIVATE');
 
@@ -23,6 +22,7 @@ CREATE TABLE IF NOT EXISTS users
     username   VARCHAR(50)  NOT NULL,
     email      VARCHAR(100) NOT NULL,
     password   VARCHAR(60)  NOT NULL,
+    role       VARCHAR(20)  NOT NULL DEFAULT 'USER',
     profile_id UUID,
 
     CONSTRAINT uk_users_username UNIQUE (username),
@@ -34,22 +34,6 @@ CREATE TABLE IF NOT EXISTS users
             ON DELETE SET NULL
 );
 
--- user_statuses
-CREATE TABLE IF NOT EXISTS user_statuses
-(
-    id             UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
-    created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at     TIMESTAMPTZ,
-    user_id        UUID        NOT NULL,
-    last_active_at TIMESTAMPTZ NOT NULL,
-
-    CONSTRAINT uk_user_statuses_user UNIQUE (user_id),
-    CONSTRAINT fk_user_statuses_user
-        FOREIGN KEY (user_id)
-            REFERENCES users (id)
-            ON DELETE CASCADE
-);
-
 -- channels
 CREATE TABLE IF NOT EXISTS channels
 (
@@ -58,7 +42,7 @@ CREATE TABLE IF NOT EXISTS channels
     updated_at  TIMESTAMPTZ,
     name        VARCHAR(100),
     description VARCHAR(500),
-    type        VARCHAR(20) NOT NULL -- ✅ enum → varchar 변경
+    type        VARCHAR(20) NOT NULL
 );
 
 -- messages

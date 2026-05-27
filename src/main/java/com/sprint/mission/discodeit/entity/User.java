@@ -6,6 +6,8 @@ import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -33,9 +35,9 @@ public class User extends BaseUpdatableEntity {
   @JoinColumn(name = "profile_id")
   private BinaryContent profileImage;
 
-  @OneToOne(mappedBy = "user", fetch = FetchType.LAZY,
-      cascade = CascadeType.ALL, orphanRemoval = true)
-  private UserStatus status;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "role", nullable = false, length = 20)
+  private UserRole role = UserRole.USER;
 
   protected User() {
   }
@@ -60,10 +62,6 @@ public class User extends BaseUpdatableEntity {
     return profileImage == null ? null : profileImage.getId();
   }
 
-  public void bindStatus(UserStatus status) {
-    this.status = status;
-  }
-
   public void updateName(String username) {
     this.username = username;
     touch();
@@ -81,6 +79,11 @@ public class User extends BaseUpdatableEntity {
 
   public void updateProfileImage(BinaryContent image) {
     this.profileImage = image;
+    touch();
+  }
+
+  public void updateRole(UserRole role) {
+    this.role = role;
     touch();
   }
 
