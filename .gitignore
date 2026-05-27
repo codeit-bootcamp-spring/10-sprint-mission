@@ -46,3 +46,5 @@ bin/
 /data/
 /storage/
 .logs/
+*.env
+*.pem

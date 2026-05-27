@@ -1,0 +1,152 @@
+name: CD-deploy
+
+on:
+  push:
+    branches:
+      - release
+
+permissions:
+  contents: read
+
+env:
+  ECS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REPOSITORY_URI: ${{ vars.ECR_REPOSITORY_URI }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+  ECS_TASK_DEFINITION: ${{ vars.ECS_TASK_DEFINITION }}
+  CONTAINER_NAME: discodeit-app
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: AWS 인증 (ECR용)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1
+
+      - name: Public ECR 로그인
+        run: |
+          aws ecr-public get-login-password --region us-east-1 \
+          | docker login --username AWS --password-stdin public.ecr.aws
+
+      - name: 이미지 태그 설정
+        run: |
+          SHORT_SHA=${GITHUB_SHA::7}
+          echo "IMAGE_URI=${ECR_REPOSITORY_URI}:${SHORT_SHA}" >> $GITHUB_ENV
+
+      - name: Docker 이미지 빌드
+        run: |
+          docker build \
+            -t ${ECR_REPOSITORY_URI}:latest \
+            -t ${IMAGE_URI} \
+            .
+
+      - name: Docker 이미지 푸시
+        run: |
+          docker push ${ECR_REPOSITORY_URI}:latest
+          docker push ${IMAGE_URI}
+
+      - name: AWS 인증 (ECS용)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ env.ECS_REGION }}
+
+      - name: jq 설치
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: 기존 Task Definition 가져오기
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${ECS_TASK_DEFINITION} \
+            --region ${ECS_REGION} \
+            --query taskDefinition \
+            > task-def.json
+
+      - name: 새로운 Task Definition 생성
+        run: |
+          jq --arg IMAGE "${IMAGE_URI}" --arg NAME "${CONTAINER_NAME}" '
+            .containerDefinitions |=
+            map(if .name == $NAME then .image = $IMAGE else . end)
+            | del(
+                .taskDefinitionArn,
+                .revision,
+                .status,
+                .requiresAttributes,
+                .compatibilities,
+                .registeredAt,
+                .registeredBy
+              )
+          ' task-def.json > new-task-def.json
+
+          aws ecs register-task-definition \
+            --cli-input-json file://new-task-def.json \
+            --region ${ECS_REGION} \
+            --query "taskDefinition.taskDefinitionArn" \
+            --output text > task-arn.txt
+
+      - name: 기존 ECS 서비스 중단
+        run: |
+          TASK_ARNS=$(aws ecs list-tasks \
+            --cluster ${ECS_CLUSTER} \
+            --service-name ${ECS_SERVICE} \
+            --region ${ECS_REGION} \
+            --query "taskArns" \
+            --output text)
+
+          aws ecs update-service \
+            --cluster ${ECS_CLUSTER} \
+            --service ${ECS_SERVICE} \
+            --desired-count 0 \
+            --deployment-configuration "minimumHealthyPercent=0" \
+            --region ${ECS_REGION}
+
+          if [ -n "$TASK_ARNS" ] && [ "$TASK_ARNS" != "None" ]; then
+            echo "기존 task 종료 대기: $TASK_ARNS"
+            aws ecs wait tasks-stopped \
+              --cluster ${ECS_CLUSTER} \
+              --tasks $TASK_ARNS \
+              --region ${ECS_REGION}
+          fi
+
+      - name: 새 버전 배포
+        run: |
+          TASK_ARN=$(cat task-arn.txt)
+
+          aws ecs update-service \
+            --cluster ${ECS_CLUSTER} \
+            --service ${ECS_SERVICE} \
+            --task-definition ${TASK_ARN} \
+            --desired-count 1 \
+            --deployment-configuration "minimumHealthyPercent=0" \
+            --region ${ECS_REGION}
+
+          aws ecs wait services-stable \
+            --cluster ${ECS_CLUSTER} \
+            --services ${ECS_SERVICE} \
+            --region ${ECS_REGION}
+
+      - name: ECS 배포 상태 확인
+        run: |
+          aws ecs describe-services \
+            --cluster ${ECS_CLUSTER} \
+            --services ${ECS_SERVICE} \
+            --region ${ECS_REGION} \
+            --query "services[0].deployments"
+
+      - name: 서비스가 사용하는 Task Definition 확인
+        run: |
+          aws ecs describe-services \
+            --cluster ${ECS_CLUSTER} \
+            --services ${ECS_SERVICE} \
+            --region ${ECS_REGION} \
+            --query "services[0].taskDefinition" \
+            --output text
