@@ -21,27 +21,13 @@ CREATE TABLE users
     username   VARCHAR(50)              NOT NULL UNIQUE,
     email      VARCHAR(100)             NOT NULL UNIQUE,
     password   VARCHAR(60)              NOT NULL,
+    role       VARCHAR(20)              NOT NULL,
     profile_id UUID,
 
     CONSTRAINT fk_users_profile
         FOREIGN KEY (profile_id)
             REFERENCES binary_contents (id)
             ON DELETE SET NULL
-);
-
--- 유저 상태 테이블
-CREATE TABLE user_statuses
-(
-    id             UUID PRIMARY KEY,
-    created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at     TIMESTAMP WITH TIME ZONE,
-    user_id        UUID                     NOT NULL UNIQUE,
-    last_active_at TIMESTAMP WITH TIME ZONE NOT NULL,
-
-    CONSTRAINT fk_user_statuses_user
-        FOREIGN KEY (user_id)
-            REFERENCES users (id)
-            ON DELETE CASCADE
 );
 
 -- 채널 테이블

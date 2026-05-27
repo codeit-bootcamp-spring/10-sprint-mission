@@ -19,6 +19,11 @@ public enum ErrorCode {
 
   // Auth (200~299)
   LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "A201", "아이디 또는 비밀번호가 일치하지 않습니다."),
+  INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "A202", "유효하지 않은 토큰입니다."),
+  EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "A203", "토큰이 만료되었습니다."),
+  REVOKED_TOKEN(HttpStatus.UNAUTHORIZED, "A204", "폐기된 토큰입니다."),
+  REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "A205", "리프레시 토큰이 존재하지 않습니다."),
+  REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "A206", "만료된 리프레시 토큰입니다."),
 
   // User (300~399)
   INVALID_USERNAME(HttpStatus.BAD_REQUEST, "U301", "이름은 공백 없이, 2~10자 사이여야 합니다."),
