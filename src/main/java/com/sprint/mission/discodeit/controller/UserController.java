@@ -77,7 +77,7 @@ public class UserController {
       @ApiResponse(responseCode = "204", description = "User가 성공적으로 삭제됨"),
       @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음")
   })
-  public ResponseEntity<UserDto> delete(
+  public ResponseEntity<Void> delete(
       @Parameter(description = "삭제할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @NotNull @PathVariable UUID userId
   ) {

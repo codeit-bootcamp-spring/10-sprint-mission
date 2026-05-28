@@ -86,7 +86,7 @@ public class ChannelController {
       @ApiResponse(responseCode = "204", description = "Channel이 성공적으로 삭제됨"),
       @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음")
   })
-  public ResponseEntity<ChannelDto> delete(
+  public ResponseEntity<Void> delete(
       @Parameter(description = "삭제할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @NotNull @PathVariable UUID channelId
   ) {

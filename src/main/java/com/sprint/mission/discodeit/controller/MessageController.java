@@ -85,7 +85,7 @@ public class MessageController {
       @ApiResponse(responseCode = "204", description = "Message가 성공적으로 삭제됨"),
       @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음")
   })
-  public ResponseEntity<MessageDto> delete(
+  public ResponseEntity<Void> delete(
       @Parameter(description = "삭제할 Message ID", example = "4e23cb1a-e2ae-4171-811f-ccc4c13fc577")
       @NotNull @PathVariable UUID messageId
   ) {
