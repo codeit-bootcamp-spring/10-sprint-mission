@@ -1,40 +1,75 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.dto.jwt.JwtInformation;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.DiscodeitUnauthorizedException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.registry.JwtRegistry;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.security.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BasicAuthService implements AuthService {
 
-    private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
+  private final JwtRegistry jwtRegistry;
+  private final JwtTokenProvider jwtTokenProvider;
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
 
-    @Override
-    public UserDto.Response login(UserDto.Login request) {
-        User user = userRepository.findAll().stream()
-                .filter(u -> u.getUsername().equals(request.username()))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
+  @Override
+  public void expireUserSessions(UUID userId) {
+    jwtRegistry.invalidateJwtInformationByUserId(userId);
+    log.debug("[AUTH] 권한 변경 유저 로그인 상태 변경: userId={}", userId);
+  }
 
-        if (!user.getPassword().equals(request.password())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
+  @Override
+  public boolean isUserLoggedIn(UUID userId) {
+    return jwtRegistry.hasActiveJwtInformationByUserId(userId);
+  }
 
-        UserStatus status = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
+  @Override
+  public JwtInformation rotateToken(String oldRefreshToken) {
+    UUID userId = UUID.fromString(jwtTokenProvider.getSubject(oldRefreshToken));
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
+    UserDto userDto = userMapper.toDto(user, false);
+    String newAccessToken = delegateAccessToken(userDto);
+    String newRefreshToken = delegateRefreshToken(userDto);
+    JwtInformation newJwtInformation = new JwtInformation(
+        userDto,
+        newAccessToken,
+        newRefreshToken
+    );
+    jwtRegistry.rotateJwtInformation(oldRefreshToken, newJwtInformation);
+    return newJwtInformation;
+  }
 
-        status.updateOnline();
-        userStatusRepository.save(status);
+  private String delegateAccessToken(UserDto userDto) {
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("username", userDto.username());
+    claims.put("email", userDto.email());
+    claims.put("roles", userDto.role().getDbKey());
+    claims.put("userId", userDto.id());
 
-        return UserDto.Response.of(user, status);
-    }
+    String subject = userDto.id().toString();
+
+    return jwtTokenProvider.generateAccessToken(
+        claims, subject);
+  }
+
+  private String delegateRefreshToken(UserDto userDto) {
+    String subject = userDto.id().toString();
+    return jwtTokenProvider.generateRefreshToken(subject);
+  }
 }
