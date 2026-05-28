@@ -57,6 +57,7 @@ jobs:
           export AWS_REGION=${{ vars.AWS_REGION }}
           export IMAGE_TAG=${{ env.IMAGE_TAG }}
           export ECS_TASK_DEFINITION=${{ vars.ECS_TASK_DEFINITION }}
+          export AWS_S3_ENV_FILE_ARN=${{ secrets.AWS_S3_ENV_FILE_ARN }}
           envsubst < ecs-task-def.json > task-def.rendered.json
           echo "=== Rendered task def ==="
           cat task-def.rendered.json

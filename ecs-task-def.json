@@ -22,7 +22,7 @@
       "essential": true,
       "environmentFiles": [
         {
-          "value": "arn:aws:s3:::discodeit-binary-content-storage-plzslp/config/discodeit.env",
+          "value": "${AWS_S3_ENV_FILE_ARN}",
           "type": "s3"
         }
       ],
