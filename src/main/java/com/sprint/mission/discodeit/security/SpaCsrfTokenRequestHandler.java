@@ -13,9 +13,9 @@ import org.springframework.util.StringUtils;
 @Component
 public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
 
-  // 폼 기반 (XOR 인코딩) 처리용
-  private final CsrfTokenRequestHandler plain = new CsrfTokenRequestAttributeHandler();
   // SPA 헤더 기반 (평문) 처리용
+  private final CsrfTokenRequestHandler plain = new CsrfTokenRequestAttributeHandler();
+  // 폼 기반 (XOR 인코딩) 처리용
   private final CsrfTokenRequestHandler xor = new XorCsrfTokenRequestAttributeHandler();
 
   @Override
