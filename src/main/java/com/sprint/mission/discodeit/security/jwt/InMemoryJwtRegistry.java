@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -117,6 +118,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 		return rotated.get();
 	}
 
+	@Scheduled(fixedDelay = 1000 * 60 * 5)
 	@Override
 	public void clearExpiredJwtInformation() {
 		Instant now = Instant.now();

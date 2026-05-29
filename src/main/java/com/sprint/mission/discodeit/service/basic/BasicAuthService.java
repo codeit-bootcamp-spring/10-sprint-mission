@@ -17,7 +17,6 @@ import com.sprint.mission.discodeit.exception.auth.InvalidRefreshTokenException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.SessionManager;
 import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenException;
@@ -34,7 +33,6 @@ public class BasicAuthService implements AuthService {
 
 	private final UserRepository userRepository;
 	private final UserMapper userMapper;
-	private final SessionManager sessionManager;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final JwtRegistry jwtRegistry;
 
@@ -104,7 +102,7 @@ public class BasicAuthService implements AuthService {
 		user.updateRole(newRole);
 
 		if (newRole != null && !previousRole.equals(newRole)) {
-			sessionManager.invalidateSessionsByUserId(userId);
+			jwtRegistry.invalidateJwtInformationByUserId(userId);
 		}
 
 		log.info("[USER_ROLE_UPDATE] 사용자 권한 수정 완료: userId={}, role={}", userId, user.getRole());

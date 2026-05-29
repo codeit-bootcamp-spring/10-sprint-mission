@@ -1,24 +1,21 @@
 package com.sprint.mission.discodeit.mapper;
 
-import java.util.UUID;
-
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.session.SessionRegistry;
 
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 
 @Mapper(componentModel = "spring", uses = {BinaryContentMapper.class})
 public abstract class UserMapper {
 
-	private SessionRegistry sessionRegistry;
+	private JwtRegistry jwtRegistry;
 
 	@Autowired
-	protected void setSessionRegistry(SessionRegistry sessionRegistry) {
-		this.sessionRegistry = sessionRegistry;
+	protected void setJwtRegistry(JwtRegistry jwtRegistry) {
+		this.jwtRegistry = jwtRegistry;
 	}
 
 	@Mapping(target = "online", expression = "java(isOnline(user))")
@@ -29,12 +26,6 @@ public abstract class UserMapper {
 			return false;
 		}
 
-		UUID userId = user.getId();
-		return sessionRegistry.getAllPrincipals().stream()
-			.filter(DiscodeitUserDetails.class::isInstance)
-			.map(DiscodeitUserDetails.class::cast)
-			.filter(principal -> userId.equals(principal.getUserDto().id()))
-			.anyMatch(principal -> sessionRegistry.getAllSessions(principal, false).stream()
-				.anyMatch(sessionInformation -> !sessionInformation.isExpired()));
+		return jwtRegistry.hasActiveJwtInformationByUserId(user.getId());
 	}
 }

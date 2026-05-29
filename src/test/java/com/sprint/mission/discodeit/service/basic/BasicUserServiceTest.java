@@ -26,7 +26,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UsernameAlreadyExistsException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.SessionManager;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 
 @ExtendWith(MockitoExtension.class)
 class BasicUserServiceTest {
@@ -41,7 +41,7 @@ class BasicUserServiceTest {
 	private PasswordEncoder passwordEncoder;
 
 	@Mock
-	private SessionManager sessionManager;
+	private JwtRegistry jwtRegistry;
 
 	@InjectMocks
 	private BasicUserService userService;
@@ -180,7 +180,7 @@ class BasicUserServiceTest {
 		userService.delete(userId);
 
 		// then
-		verify(sessionManager).invalidateSessionsByUserId(eq(userId));
+		verify(jwtRegistry).invalidateJwtInformationByUserId(eq(userId));
 		verify(userRepository).deleteById(eq(userId));
 	}
 

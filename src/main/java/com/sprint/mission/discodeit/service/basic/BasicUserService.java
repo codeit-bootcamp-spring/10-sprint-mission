@@ -19,8 +19,8 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UsernameAlreadyExistsException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.security.SessionManager;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 
@@ -37,7 +37,7 @@ public class BasicUserService implements UserService {
 	private final BinaryContentRepository binaryContentRepository;
 	private final BinaryContentStorage binaryContentStorage;
 	private final PasswordEncoder passwordEncoder;
-	private final SessionManager sessionManager;
+	private final JwtRegistry jwtRegistry;
 
 	@Transactional
 	@Override
@@ -139,7 +139,7 @@ public class BasicUserService implements UserService {
 			throw new UserNotFoundException(userId);
 		}
 
-		sessionManager.invalidateSessionsByUserId(userId);
+		jwtRegistry.invalidateJwtInformationByUserId(userId);
 		userRepository.deleteById(userId);
 		log.info("[USER_DELETE] 사용자 삭제 완료: userId={}", userId);
 	}
