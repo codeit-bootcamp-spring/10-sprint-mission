@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,8 +17,9 @@ import com.sprint.mission.discodeit.exception.auth.InvalidRefreshTokenException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.RefreshTokenRotationStore;
 import com.sprint.mission.discodeit.security.SessionManager;
+import com.sprint.mission.discodeit.security.jwt.JwtInformation;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenException;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -36,7 +36,7 @@ public class BasicAuthService implements AuthService {
 	private final UserMapper userMapper;
 	private final SessionManager sessionManager;
 	private final JwtTokenProvider jwtTokenProvider;
-	private final RefreshTokenRotationStore refreshTokenRotationStore;
+	private final JwtRegistry jwtRegistry;
 
 	@Transactional(readOnly = true)
 	@Override
@@ -49,10 +49,7 @@ public class BasicAuthService implements AuthService {
 			if (!jwtTokenProvider.validateRefreshToken(refreshToken)) {
 				throw new InvalidRefreshTokenException();
 			}
-
-			String refreshTokenId = jwtTokenProvider.getTokenId(refreshToken);
-			Instant refreshTokenExpiresAt = jwtTokenProvider.getExpiresAt(refreshToken);
-			if (!refreshTokenRotationStore.markUsed(refreshTokenId, refreshTokenExpiresAt)) {
+			if (!jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
 				throw new InvalidRefreshTokenException();
 			}
 
@@ -70,6 +67,17 @@ public class BasicAuthService implements AuthService {
 				user.getUsername(),
 				user.getRole()
 			);
+			JwtInformation jwtInformation = new JwtInformation(
+				user.getId(),
+				accessToken,
+				rotatedRefreshToken,
+				jwtTokenProvider.getExpiresAt(accessToken),
+				jwtTokenProvider.getExpiresAt(rotatedRefreshToken)
+			);
+			if (!jwtRegistry.rotateJwtInformation(refreshToken, jwtInformation)) {
+				throw new InvalidRefreshTokenException();
+			}
+
 			UserDto userDto = markOnline(userMapper.toDto(user));
 
 			log.debug("[JWT_REFRESH] 액세스 토큰 재발급 완료: userId={}", userId);
