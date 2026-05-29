@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,7 +29,7 @@ import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.RefreshTokenCookieManager;
+import com.sprint.mission.discodeit.security.JwtLogoutHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 
 import lombok.RequiredArgsConstructor;
@@ -43,7 +42,7 @@ public class SecurityConfig {
 	private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
 	private final LoginFailureHandler loginFailureHandler;
 	private final ObjectMapper objectMapper;
-	private final RefreshTokenCookieManager refreshTokenCookieManager;
+	private final JwtLogoutHandler jwtLogoutHandler;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(
@@ -66,10 +65,7 @@ public class SecurityConfig {
 			.rememberMe(AbstractHttpConfigurer::disable)
 			.logout(logout -> logout
 				.logoutUrl("/api/auth/logout")
-				.addLogoutHandler((request, response, authentication) -> response.addHeader(
-					HttpHeaders.SET_COOKIE,
-					refreshTokenCookieManager.expire(request).toString()
-				))
+				.addLogoutHandler(jwtLogoutHandler)
 				.invalidateHttpSession(false)
 				.clearAuthentication(true)
 				.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
