@@ -27,7 +27,7 @@ management:
 
 info:
   name: Discodeit
-  version: 2.0-M9
+  version: 2.1-M10
   java:
     version: 17
   spring-boot:
