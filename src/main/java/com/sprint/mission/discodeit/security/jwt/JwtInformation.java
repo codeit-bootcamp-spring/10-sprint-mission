@@ -22,6 +22,21 @@ public record JwtInformation(
 		validateToken(refreshToken, "refreshToken");
 	}
 
+	public JwtInformation rotate(
+		String accessToken,
+		String refreshToken,
+		Instant accessTokenExpiresAt,
+		Instant refreshTokenExpiresAt
+	) {
+		return new JwtInformation(
+			this.userId,
+			accessToken,
+			refreshToken,
+			accessTokenExpiresAt,
+			refreshTokenExpiresAt
+		);
+	}
+
 	public boolean hasAccessToken(String accessToken) {
 		return this.accessToken.equals(accessToken);
 	}

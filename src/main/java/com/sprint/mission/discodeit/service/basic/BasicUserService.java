@@ -102,12 +102,7 @@ public class BasicUserService implements UserService {
 
 		String newUsername = userUpdateRequest.newUsername();
 		String newEmail = userUpdateRequest.newEmail();
-		if (userRepository.existsByEmail(newEmail)) {
-			throw new UserEmailAlreadyExistsException(newEmail);
-		}
-		if (userRepository.existsByUsername(newUsername)) {
-			throw new UsernameAlreadyExistsException(newUsername);
-		}
+		validateDuplicatedUserFields(user, newUsername, newEmail);
 
 		BinaryContent nullableProfile = optionalProfileCreateRequest
 			.map(profileRequest -> {
@@ -130,6 +125,15 @@ public class BasicUserService implements UserService {
 
 		log.info("[USER_UPDATE] 사용자 수정 완료. userId={}", userId);
 		return userMapper.toDto(user);
+	}
+
+	private void validateDuplicatedUserFields(User user, String newUsername, String newEmail) {
+		if (newEmail != null && !newEmail.equals(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
+			throw new UserEmailAlreadyExistsException(newEmail);
+		}
+		if (newUsername != null && !newUsername.equals(user.getUsername()) && userRepository.existsByUsername(newUsername)) {
+			throw new UsernameAlreadyExistsException(newUsername);
+		}
 	}
 
 	@Transactional
