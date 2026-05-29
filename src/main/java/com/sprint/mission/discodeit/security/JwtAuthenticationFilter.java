@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenException;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 
@@ -29,6 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private static final String BEARER_PREFIX = "Bearer ";
 
 	private final JwtTokenProvider jwtTokenProvider;
+	private final JwtRegistry jwtRegistry;
 	private final UserDetailsService userDetailsService;
 
 	@Override
@@ -46,6 +48,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private void authenticate(HttpServletRequest request, String accessToken) {
 		try {
 			if (!jwtTokenProvider.validateAccessToken(accessToken)) {
+				return;
+			}
+			if (!jwtRegistry.hasActiveJwtInformationByAccessToken(accessToken)) {
 				return;
 			}
 

@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.auth.JwtDto;
 import com.sprint.mission.discodeit.dto.response.UserDto;
+import com.sprint.mission.discodeit.security.jwt.JwtInformation;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 
 import jakarta.servlet.ServletException;
@@ -25,6 +27,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
 	private final ObjectMapper objectMapper;
 	private final JwtTokenProvider jwtTokenProvider;
+	private final JwtRegistry jwtRegistry;
 	private final RefreshTokenCookieManager refreshTokenCookieManager;
 
 	@Override
@@ -34,6 +37,14 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 		UserDto userDto = markOnline(userDetails.getUserDto());
 		String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
 		String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
+		JwtInformation jwtInformation = new JwtInformation(
+			userDto.id(),
+			accessToken,
+			refreshToken,
+			jwtTokenProvider.getExpiresAt(accessToken),
+			jwtTokenProvider.getExpiresAt(refreshToken)
+		);
+		jwtRegistry.registerJwtInformation(jwtInformation);
 		JwtDto jwtDto = new JwtDto(userDto, accessToken);
 
 		response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookieManager.create(request, refreshToken).toString());
