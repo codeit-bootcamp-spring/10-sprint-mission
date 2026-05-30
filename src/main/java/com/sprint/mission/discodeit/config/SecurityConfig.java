@@ -111,18 +111,26 @@ public class SecurityConfig {
 
             // 권한 변경
             .requestMatchers(HttpMethod.PUT, "/api/auth/role").hasRole("ADMIN")
-            .requestMatchers("/api/auth/me").authenticated()
-
+            // 유저 조회
             .requestMatchers(HttpMethod.GET, "/api/users").authenticated()
+            // 유저 수정
             .requestMatchers(HttpMethod.PATCH, "/api/users/**").authenticated()
+            // 유저 삭제
             .requestMatchers(HttpMethod.DELETE, "/api/users/**").authenticated()
+            // 메시지 관련 요청은 인증된 사용자만 접근 가능
             .requestMatchers("/api/messages/**").authenticated()
+            // 읽기 정보 관련 요청은 인증된 사용자만 접근 가능
             .requestMatchers("/api/readStatuses/**").authenticated()
+            // 공용 채널 생성은 어드민이나 채널 매니저만 요청 가능
             .requestMatchers(HttpMethod.POST, "/api/channels/public").hasRole("CHANNEL_MANAGER")
+            .requestMatchers(HttpMethod.POST, "/api/channels/public").hasRole("ADMIN")
+            // 채널 관련 요청은 인증된 사용자만 접근 가능
             .requestMatchers("/api/channels/**").authenticated()
+            // 파일 관련 요청은 인증된 사용자만 접근 가능
             .requestMatchers("/api/binaryContents/**").authenticated()
-            .requestMatchers(HttpMethod.DELETE, "/api/messages/").hasRole("ADMIN")
-
+            // refresh 토큰 발급 & 액세스 토큰 검증 요청은 누구나 접근 가능
+            .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
+            .requestMatchers("/files/**").authenticated()
             .anyRequest().denyAll()
         )
         .exceptionHandling(exception -> exception

@@ -46,7 +46,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
-  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+  @PreAuthorize("hasRole('CHANNEL_MANAGER') or hasRole('ADMIN')")
   public ChannelDto createPublicChannel(PublicChannelCreateDTO req) {
 
     if (req == null) {
@@ -180,7 +180,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
-  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+  @PreAuthorize("hasRole('CHANNEL_MANAGER') or hasRole('ADMIN')")
   public ChannelDto updatePublicChannel(UUID channelId, PublicChannelUpdateRequestDTO req) {
     if (channelId == null) {
       throw new FieldNotValidException("channelId");
@@ -214,6 +214,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
+  @PreAuthorize()
   public ChannelDto updatePrivateChannel(UUID channelId, PublicChannelUpdateRequestDTO req) {
     if (channelId == null) {
       throw new FieldNotValidException("channelId");
@@ -258,7 +259,7 @@ public class BasicChannelService implements ChannelService {
 
   @Transactional
   @Override
-  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+  @PreAuthorize("hasRole('CHANNEL_MANAGER') or hasRole('ADMIN')")
   public void deletePublicChannel(UUID channelId) {
     // 채널 삭제 메서드 시작 로그
     log.trace("공개 채널 삭제 메서드 시작: channelId={}", channelId);

@@ -178,6 +178,7 @@ public class BasicMessageService implements MessageService {
 
   @Transactional
   @Override
+  // 인증된 사용자거나 메시지의 작성자일 때 수정이 가능하다.
   @PreAuthorize("isAuthenticated() and @messagePermissionEvaluator.isAuthor(#p0, principal.getUserDto().id())")
   public MessageDto update(UUID messageId, MessageUpdateRequestDto req) {
     // 파라미터 null 체크
@@ -211,6 +212,7 @@ public class BasicMessageService implements MessageService {
 
   @Transactional
   @Override
+  // 인증된 사용자거나 메시지 작성자만 해당 메시지 삭제 가능
   @PreAuthorize("isAuthenticated() and @messagePermissionEvaluator.isAuthor(#p0, principal.getUserDto().id())")
   public void delete(UUID messageId) {
 
