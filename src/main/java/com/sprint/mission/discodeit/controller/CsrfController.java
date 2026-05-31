@@ -16,7 +16,7 @@ public class CsrfController {
   @GetMapping
   public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
     String tokenValue = csrfToken.getToken();
-    log.debug("CSRF 토큰 요청: {}", tokenValue);
+    log.debug("CSRF 토큰 요청 수신");
 
     return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).build();
   }

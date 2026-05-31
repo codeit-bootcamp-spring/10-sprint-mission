@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.authdto.RoleUpdateRequest;
-import com.sprint.mission.discodeit.dto.jwtdto.JwtInformation;
 import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.config.JwtTokenProvider;
 import com.sprint.mission.discodeit.entity.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.entity.JwtInformation;
 import com.sprint.mission.discodeit.entity.RefreshToken;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;

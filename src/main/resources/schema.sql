@@ -77,3 +77,17 @@ CREATE TABLE read_statuses
             REFERENCES channels (id)
             ON DELETE CASCADE
 );
+
+DROP TABLE IF EXISTS refresh_tokens CASCADE;
+CREATE TABLE refresh_tokens
+(
+    id         UUID PRIMARY KEY,
+    created_at timestamptz   NOT NULL,
+    updated_at timestamptz,
+    user_id    UUID          NOT NULL UNIQUE,
+    token      VARCHAR(1000) NOT NULL,
+    CONSTRAINT fk_refresh_token_user
+        FOREIGN KEY (user_id)
+            REFERENCES users (id)
+            ON DELETE CASCADE
+);
