@@ -1,63 +1,48 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.auth.InvalidPasswordException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+@Slf4j
 @RequiredArgsConstructor
+@Service
 public class BasicAuthService implements AuthService {
 
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
+  private final SessionRegistry sessionRegistry;
 
-    @Override
-    @Transactional
-    public UserDto login(LoginRequest request) {
-        validateUsername(request);
-        User user = getUserOrThrow(request);
+  @Transactional
+  @Override
+  public UserDto updateRole(UserRoleUpdateRequest request) {
+    log.debug("사용자 역할 변경 시작: userId={}, newRole={}", request.userId(), request.role());
 
-        validatePassword(request, user);
+    User user = userRepository.findById(request.userId())
+        .orElseThrow(() -> UserNotFoundException.withId(request.userId()));
 
-        UserStatus userStatus = user.getStatus();
-        userStatus.markActive();
+    user.updateRole(request.role());
+    userRepository.save(user);
 
-        return userMapper.toDto(user);
-    }
+    sessionRegistry.getAllPrincipals().stream()
+        .filter(principal -> principal instanceof com.sprint.mission.discodeit.config.DiscodeitUserDetails)
+        .filter(principal -> ((com.sprint.mission.discodeit.config.DiscodeitUserDetails) principal)
+            .getUserDto().id().equals(request.userId()))
+        .forEach(principal -> {
+          sessionRegistry.getAllSessions(principal, false)
+              .forEach(session -> session.expireNow());
+        });
 
-    private void validateUsername(LoginRequest request) {
-        if (!userRepository.existsByUsername(request.username())) {
-            throw new UserNotFoundException(
-                    "존재하지 않은 username 입니다 username: " + request.username(),
-                    Map.of("username", request.username())
-            );
-        }
-    }
-
-    private User getUserOrThrow(LoginRequest request) {
-        return userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new UserNotFoundException(
-                        "사용자를 찾을 수 없습니다 username: " + request.username(),
-                        Map.of("username", request.username())
-                ));
-    }
-
-    private void validatePassword(LoginRequest request, User user) {
-        if (!user.getPassword().equals(request.password())) {
-            throw new InvalidPasswordException(
-                    "일치하지않은 비밀번호 입니다. username: " + request.username(),
-                    Map.of("username", request.username())
-            );
-        }
-    }
+    log.info("사용자 역할 변경 완료: userId={}, newRole={}", request.userId(), request.role());
+    return userMapper.toDto(user);
+  }
 }
