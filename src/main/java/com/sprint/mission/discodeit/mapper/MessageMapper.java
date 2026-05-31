@@ -10,6 +10,6 @@ public interface MessageMapper {
 
     @Mapping(target = "channelId", source = "channel.id")
     @Mapping(target = "author", source = "author")
-    @Mapping(target = "attachmentIds", source = "attachments")
+    @Mapping(target = "attachments", source = "attachments")
     MessageDto toDto(Message message);
 }
