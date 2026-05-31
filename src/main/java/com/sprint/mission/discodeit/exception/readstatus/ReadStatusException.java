@@ -5,6 +5,9 @@ import com.sprint.mission.discodeit.exception.ErrorCode;
 import java.util.Map;
 
 public class ReadStatusException extends DiscodeitException {
+    public ReadStatusException(ErrorCode errorCode) {
+        super(errorCode);
+    }
 
     public ReadStatusException(ErrorCode errorCode, String message) {
         super(errorCode, message);
@@ -14,12 +17,12 @@ public class ReadStatusException extends DiscodeitException {
         super(errorCode, message, details);
     }
 
-    public ReadStatusException(
-            ErrorCode errorCode,
-            String message,
-            Map<String, Object> details,
-            Throwable cause
-    ) {
+    public ReadStatusException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
+
+    public ReadStatusException(ErrorCode errorCode, String message, Map<String, Object> details, Throwable cause) {
         super(errorCode, message, details, cause);
     }
 }
+ 
