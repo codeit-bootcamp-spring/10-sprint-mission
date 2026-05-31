@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.filter;
 
 import com.sprint.mission.discodeit.config.JwtTokenProvider;
+import com.sprint.mission.discodeit.registry.InMemoryJwtRegistry;
+import com.sprint.mission.discodeit.registry.JwtRegistry;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,13 +19,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtTokenProvider jwtTokenProvider;
+  private final JwtRegistry jwtRegistry;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
     String token = jwtTokenProvider.resolveToken(request);
 
-    if (token != null && jwtTokenProvider.validateAccessToken(token)) {
+    if (token != null && jwtTokenProvider.validateAccessToken(token)
+        && jwtRegistry.hasActiveJwtInformationByAccessToken(token)) {
       Authentication authentication = jwtTokenProvider.getAuthentication(token);
       SecurityContextHolder.getContext().setAuthentication(authentication);
     }

@@ -73,7 +73,11 @@ public class SecurityConfig {
     return http
         // csrf 관련 설정
         .csrf(csrf -> csrf
-            .ignoringRequestMatchers("/h2-console/**") // h2 콘솔로 들어가는 요청은 csrf 무시
+            .ignoringRequestMatchers(
+                "/h2-console/**", // h2 콘솔로 들어가는 요청은 csrf 무시
+                "/api/auth/login",
+                "/api/auth/logout",
+                "/api/auth/refresh")
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
         )

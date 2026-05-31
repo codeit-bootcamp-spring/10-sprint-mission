@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
+import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -29,6 +30,7 @@ import org.springframework.util.StringUtils;
 @Component
 public class JwtTokenProvider {
 
+  public static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
   private static final String TOKEN_TYPE_CLAIM = "typ"; // 토큰 타입
   private static final String USER_ID_CLAIM = "uid"; // 유저 아이디
   private static final String USERNAME_CLAIM = "username"; // 유저 이름
@@ -42,6 +44,7 @@ public class JwtTokenProvider {
   private final Duration accessTokenValidity; // 액세스 토큰의 유효기간
   private final Duration refreshTokenValidity; // Refresh 토큰의 유효기간
 
+  // 생성자 초기화
   // 환경 변수가 있으면 해당 값 사용, 없으면 기본 값
   public JwtTokenProvider(
       @Value("${discodeit.jwt.secret:discodeit-local-development-jwt-secret}") String secret,
@@ -92,6 +95,18 @@ public class JwtTokenProvider {
       return authorization.substring(BEARER_PREFIX.length());
     }
     return null;
+  }
+
+  // 토큰이 만료되었는지 확인하는 메서드
+  public static boolean isExpired(String token) {
+    try {
+      Date expirationTime = JWTClaimsSet.parse(token)
+          .getExpirationTime();  // 토큰을 파싱 및 토큰에서 만료 시간을 추출해온다.
+      return expirationTime.before(new Date()); // 만료 시간이 현재 시간보다 이전이면 true를 반환한다.
+    } catch (ParseException e) {
+      return true; // jjwt 라이브러리 내부에서도 exp가 현재 시간보다 과거면 ParseException을 발생시키므로 true 반환.
+    }
+
   }
 
   // 토큰을 실질적으로 생성하는 메서드

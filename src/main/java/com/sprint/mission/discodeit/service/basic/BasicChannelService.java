@@ -214,7 +214,6 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
-  @PreAuthorize()
   public ChannelDto updatePrivateChannel(UUID channelId, PublicChannelUpdateRequestDTO req) {
     if (channelId == null) {
       throw new FieldNotValidException("channelId");

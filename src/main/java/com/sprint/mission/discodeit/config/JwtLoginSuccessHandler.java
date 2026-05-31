@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.jwtdto.JwtDto;
 import com.sprint.mission.discodeit.entity.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.entity.JwtInformation;
+import com.sprint.mission.discodeit.registry.JwtRegistry;
 import com.sprint.mission.discodeit.service.AuthService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -23,6 +25,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final ObjectMapper objectMapper;
   private final JwtTokenProvider jwtTokenProvider;
   private final AuthService authService;
+  private final JwtRegistry jwtRegistry;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -33,6 +36,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     // TokenProvider에서 Access, Refresh 토큰 발급 받음
     String accessToken = jwtTokenProvider.generateAccessToken(authentication);
     String refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
+    jwtRegistry.registerJwtInformation(
+        new JwtInformation(principal.getUserDto(), accessToken, refreshToken));
     authService.saveRefreshToken(principal.getUserDto().id(), refreshToken);
 
     // Refresh 토큰은 쿠키에 저장

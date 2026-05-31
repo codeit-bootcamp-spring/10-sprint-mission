@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.RefreshToken;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.registry.JwtRegistry;
 import com.sprint.mission.discodeit.repository.RefreshTokenRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -30,6 +31,7 @@ public class BasicAuthService implements AuthService {
   private final SessionRegistry sessionRegistry;
   private final JwtTokenProvider jwtTokenProvider;
   private final RefreshTokenRepository refreshTokenRepository;
+  private final JwtRegistry jwtRegistry;
 
   @Transactional
   @PreAuthorize("hasRole('ADMIN')")
@@ -42,7 +44,7 @@ public class BasicAuthService implements AuthService {
         .orElseThrow(() -> new UserNotFoundException(req.userId()));
 
     user.updateRole(req.newRole());
-    expireUserSessions(user);
+    jwtRegistry.removeJwtInformationByUserId(req.userId());
 
     return userMapper.toDto(user);
   }
@@ -91,13 +93,5 @@ public class BasicAuthService implements AuthService {
     refreshTokenRepository.save(token);
   }
 
-  private void expireUserSessions(User user) {
-    sessionRegistry.getAllPrincipals().stream()
-        .filter(DiscodeitUserDetails.class::isInstance)
-        .map(DiscodeitUserDetails.class::cast)
-        .filter(principal -> Objects.equals(principal.getUserDto().id(), user.getId()))
-        .forEach(principal -> sessionRegistry.getAllSessions(principal, false)
-            .forEach(sessionInformation -> sessionInformation.expireNow()));
-  }
 
 }
