@@ -1,36 +1,40 @@
 package com.sprint.mission.discodeit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.exception.ErrorResponse;
-import java.time.Instant;
-import java.util.Map;
+import com.sprint.mission.discodeit.jwt.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.jwt.JwtLogoutHandler;
+import com.sprint.mission.discodeit.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
-import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 
 @RequiredArgsConstructor
 @EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
-    private final LoginSuccessHandler loginSuccessHandler;
+    private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
     private final LoginFailureHandler loginFailureHandler;
+    private final JwtLogoutHandler jwtLogoutHandler;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtRegistry jwtRegistry;
+    private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
 
     @Bean
@@ -46,16 +50,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SessionRegistry sessionRegistry() {
-        return new SessionRegistryImpl();
-    }
-
-    @Bean
-    public HttpSessionEventPublisher httpSessionEventPublisher() {
-        return new HttpSessionEventPublisher();
-    }
-
-    @Bean
     static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
         RoleHierarchy roleHierarchy) {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
@@ -64,7 +58,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtTokenProvider, jwtRegistry, userDetailsService);
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
@@ -72,39 +71,20 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginProcessingUrl("/api/auth/login")
-                        .successHandler(loginSuccessHandler)
+                        .successHandler(jwtLoginSuccessHandler)
                         .failureHandler(loginFailureHandler)
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
+                        .addLogoutHandler(jwtLogoutHandler)
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
                 )
-                .sessionManagement(management -> management
-                        .sessionConcurrency(concurrency -> concurrency
-                                .maximumSessions(1)
-                                .sessionRegistry(sessionRegistry)
-                                .expiredSessionStrategy(event -> {
-                                    ErrorResponse errorResponse = new ErrorResponse(
-                                        Instant.now(),
-                                        "SESSION_EXPIRED",
-                                        "세션이 만료되었습니다. 다시 로그인해주세요.",
-                                        Map.of(),
-                                        "SessionExpired",
-                                        HttpStatus.UNAUTHORIZED.value()
-                                    );
-                                    event.getResponse().setContentType(MediaType.APPLICATION_JSON_VALUE);
-                                    event.getResponse().setStatus(HttpStatus.UNAUTHORIZED.value());
-                                    event.getResponse().getWriter().write(objectMapper.writeValueAsString(errorResponse));
-                                })
-                                )
-                )
-                .rememberMe(remember -> remember
-                        .key("discodeit-remember-me")
-                        .tokenValiditySeconds(86400)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
-                        .requestMatchers("/api/auth/csrf-token", "/api/auth/logout").permitAll()
+                        .requestMatchers("/api/auth/csrf-token", "/api/auth/logout", "/api/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
                         .anyRequest().authenticated()
@@ -112,7 +92,8 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new AuthenticationEntryPointImpl(objectMapper))
                         .accessDeniedHandler(new AccessDeniedHandlerImpl(objectMapper))
-                );
+                )
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }

@@ -55,6 +55,10 @@ discodeit:
       region: ${AWS_S3_REGION:ap-northeast-2}
       bucket: ${AWS_S3_BUCKET:}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
+  jwt:
+    secret: ${JWT_SECRET:discodeit-default-secret-key-please-change-in-production-environment}
+    access-token-validity-seconds: ${JWT_ACCESS_TOKEN_VALIDITY:1800}
+    refresh-token-validity-seconds: ${JWT_REFRESH_TOKEN_VALIDITY:1209600}
 
 logging:
   level:
