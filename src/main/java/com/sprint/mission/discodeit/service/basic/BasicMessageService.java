@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -71,7 +72,11 @@ public class BasicMessageService implements MessageService {
                   byte[] bytes = attachmentRequest.bytes();
 
                   BinaryContent binaryContent =
-                      new BinaryContent(fileName, (long) bytes.length, contentType);
+                      new BinaryContent(
+                          fileName,
+                          (long) bytes.length,
+                          contentType,
+                          BinaryContentStatus.PROCESSING);
                   binaryContentRepository.save(binaryContent);
 
                   eventPublisher.publishEvent(

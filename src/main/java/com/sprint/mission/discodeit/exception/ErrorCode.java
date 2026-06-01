@@ -18,6 +18,8 @@ public enum ErrorCode {
 
   // BinaryContent 관련 에러 코드
   BINARY_CONTENT_NOT_FOUND("바이너리 컨텐츠를 찾을 수 없습니다."),
+  INVALID_BINARY_CONTENT("유효하지 않은 바이너리 콘텐츠입니다."),
+  BINARY_CONTENT_PROCESSING_ERROR("바이너리 콘텐츠 처리 중 오류가 발생했습니다."),
 
   // ReadStatus 관련 에러 코드
   READ_STATUS_NOT_FOUND("읽음 상태를 찾을 수 없습니다."),
@@ -37,4 +39,4 @@ public enum ErrorCode {
   ErrorCode(String message) {
     this.message = message;
   }
-} 
+}

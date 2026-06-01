@@ -19,7 +19,8 @@ CREATE TABLE binary_contents
     created_at   timestamp with time zone NOT NULL,
     file_name    varchar(255)             NOT NULL,
     size         bigint                   NOT NULL,
-    content_type varchar(100)             NOT NULL
+    content_type varchar(100)             NOT NULL,
+    status       varchar(20)              NOT NULL
 --     ,bytes        bytea        NOT NULL
 );
 
@@ -109,3 +110,4 @@ ALTER TABLE read_statuses
         FOREIGN KEY (channel_id)
             REFERENCES channels (id)
             ON DELETE CASCADE;
+
