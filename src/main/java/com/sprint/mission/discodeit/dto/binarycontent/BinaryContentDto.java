@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.dto.binarycontent;
 
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 
@@ -12,7 +14,9 @@ public record BinaryContentDto(
     @Schema(description = "첨부 파일 크기", example = "1048576")
     long size,
     @Schema(description = "첨부 파일 타입", example = "image/png")
-    String contentType
+    String contentType,
+    @Schema(description = "첨부 파일 업로드 상태", example = "SUCCESS")
+    BinaryContentStatus status
 ) {
 
 }
