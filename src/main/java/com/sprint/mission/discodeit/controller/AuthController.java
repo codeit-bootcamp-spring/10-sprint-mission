@@ -37,7 +37,7 @@ public class AuthController {
     @GetMapping("/csrf-token")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
         String tokenValue = csrfToken.getToken();
-        log.debug("[CSRF TOKEN] CSRF 토큰 요청: {}", tokenValue);
+        log.debug("[CSRF TOKEN] CSRF 토큰 요청");
 
         // 응답 203으로 설정
         return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).build();
