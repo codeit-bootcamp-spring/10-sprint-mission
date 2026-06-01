@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.config.SecurityConfig;
 import com.sprint.mission.discodeit.dto.channeldto.ChannelDto;
 import com.sprint.mission.discodeit.dto.channeldto.PrivateChannelCreateDTO;
 import com.sprint.mission.discodeit.dto.channeldto.PublicChannelCreateDTO;
@@ -28,7 +29,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @WebMvcTest(controllers = ChannelController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class ChannelControllerWebMvcTest {
 
     @Autowired

@@ -20,6 +20,7 @@ bin/
 ### 로컬 로그 및 첨부 파일 ###
 .discodeit/
 *.logs
+*/logs
 
 ### IntelliJ IDEA ###
 .idea

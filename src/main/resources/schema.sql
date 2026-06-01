@@ -7,7 +7,8 @@ CREATE TABLE users
     username   VARCHAR(50) UNIQUE  NOT NULL,
     email      VARCHAR(100) UNIQUE NOT NULL,
     password   VARCHAR(60)         NOT NULL,
-    profile_id UUID
+    profile_id UUID,
+    role       varchar(20)         NOT NULL DEFAULT USER
 );
 
 DROP TABLE IF EXISTS channels CASCADE;
@@ -59,21 +60,6 @@ ALTER TABLE users
             REFERENCES binary_contents (id)
             ON DELETE SET NULL;
 
-DROP TABLE IF EXISTS user_statuses CASCADE;
-CREATE TABLE user_statuses
-(
-    id             UUID PRIMARY KEY,
-    created_at     timestamptz NOT NULL,
-    updated_at     timestamptz,
-    user_id        UUID        NOT NULL UNIQUE,
-    last_active_at timestamptz NOT NULL,
-    online         BOOLEAN     NOT NULL DEFAULT FALSE,
-    CONSTRAINT fk_user_status_user
-        FOREIGN KEY (user_id)
-            REFERENCES users (id)
-            ON DELETE CASCADE
-);
-
 DROP TABLE IF EXISTS read_statuses CASCADE;
 CREATE TABLE read_statuses
 (
@@ -91,5 +77,19 @@ CREATE TABLE read_statuses
     CONSTRAINT fk_read_status_channel
         FOREIGN KEY (channel_id)
             REFERENCES channels (id)
+            ON DELETE CASCADE
+);
+
+DROP TABLE IF EXISTS refresh_tokens CASCADE;
+CREATE TABLE refresh_tokens
+(
+    id         UUID PRIMARY KEY,
+    created_at timestamptz   NOT NULL,
+    updated_at timestamptz,
+    user_id    UUID          NOT NULL UNIQUE,
+    token      VARCHAR(1000) NOT NULL,
+    CONSTRAINT fk_refresh_token_user
+        FOREIGN KEY (user_id)
+            REFERENCES users (id)
             ON DELETE CASCADE
 );

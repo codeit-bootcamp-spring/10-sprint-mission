@@ -10,12 +10,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.config.SecurityConfig;
 import com.sprint.mission.discodeit.dto.userdto.UserCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.exception.user.UserNameDuplicateException;
 import com.sprint.mission.discodeit.exceptionhandler.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -31,7 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 @WebMvcTest(controllers = UserController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class UserControllerWebMvcTest {
 
     @Autowired
@@ -42,9 +42,6 @@ class UserControllerWebMvcTest {
 
     @MockBean
     private UserService userService;
-
-    @MockBean
-    private UserStatusService userStatusService;
 
     @MockBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
