@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.exception.binarycontent.FileDownloadException;
+import com.sprint.mission.discodeit.exception.binarycontent.FileUploadException;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,7 +43,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         log.info("로컬 저장소 디렉토리를 초기화했습니다: {}", root.toAbsolutePath());
       }
     } catch (IOException e) {
-      throw new RuntimeException("로컬 저장소 초기화 실패", e);
+      throw new IllegalStateException("로컬 저장소 초기화 실패", e); // 기동 시점 에러는 시스템 크래시를 유도하기 위해 언체크 예외로 던짐
     }
   }
 
@@ -50,7 +54,8 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
       Files.write(targetPath, data);
       return id;
     } catch (IOException e) {
-      throw new RuntimeException("파일 저장 실패", e);
+      log.error("파일 저장 실패 - id: {}", id, e);
+      throw new FileUploadException(Map.of("fileId", id), e);
     }
   }
 
@@ -58,12 +63,14 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   public InputStream get(UUID id) {
     Path targetPath = resolvePath(id);
     if (!Files.exists(targetPath)) {
-      throw new java.util.NoSuchElementException("이미지 파일이 존재하지 않습니다: " + id);
+      log.warn("이미지 파일이 존재하지 않음 - id: {}", id);
+      throw new BinaryContentNotFoundException(Map.of("fileId", id));
     }
     try {
       return Files.newInputStream(targetPath);
     } catch (IOException e) {
-      throw new RuntimeException("파일 읽기 실패", e);
+      log.error("파일 읽기 실패 - id: {}", id, e);
+      throw new FileDownloadException(Map.of("fileId", id), e);
     }
   }
 
