@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentUploadException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.ChannelParticipantException;
@@ -31,6 +32,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,9 +51,9 @@ public class BasicMessageService implements MessageService {
   private final MessageRepository messageRepository;
   private final ReadStatusRepository readStatusRepository;
   private final MessageMapper messageMapper;
-  private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentRepository binaryContentRepository;
   private final PageMapper pageMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public MessageDto create(MessageCreateRequest request, List<MultipartFile> multipartFiles) {
@@ -84,7 +86,8 @@ public class BasicMessageService implements MessageService {
               file.getContentType()
           );
           binaryContentRepository.save(attachment);
-          binaryContentStorage.put(attachment.getId(), file.getBytes());
+          eventPublisher.publishEvent(
+              new BinaryContentCreatedEvent(attachment.getId(), file.getBytes()));
           message.addAttachment(attachment); //편의 메서드 사용
           log.info("[MESSAGE] 첨부 파일 저장 성공: attachmentId={}", attachment.getId());
         } catch (IOException e) {

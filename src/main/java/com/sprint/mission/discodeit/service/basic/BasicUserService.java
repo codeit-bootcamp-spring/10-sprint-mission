@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentUploadException;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateUsernameException;
@@ -15,14 +16,13 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,19 +37,17 @@ public class BasicUserService implements UserService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
   private final AuthService authService;
-  private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentRepository binaryContentRepository;
   private final PasswordEncoder passwordEncoder;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public UserDto create(UserCreateRequest request, MultipartFile file) {
     existsByUsername(request.username());
     existsByEmail(request.email());
 
-    //프로필 설정하지 않으면 null
     BinaryContent profile = null;
 
-    //요청에 프로필이 있다면 binaryContent 객체 생성 후 저장
     if (file != null && !file.isEmpty()) {
       try {
         log.debug("[USER] 프로필 사진 업로드 시작: name={}, size={}", file.getOriginalFilename(),
@@ -60,7 +58,8 @@ public class BasicUserService implements UserService {
             file.getContentType()
         );
         binaryContentRepository.save(profile);
-        binaryContentStorage.put(profile.getId(), file.getBytes());
+        eventPublisher.publishEvent(
+            new BinaryContentCreatedEvent(profile.getId(), file.getBytes()));
         log.info("[USER] 프로필 사진 저장 성공: profileId={}", profile.getId());
       } catch (IOException e) {
         throw new BinaryContentUploadException(e);
@@ -126,7 +125,8 @@ public class BasicUserService implements UserService {
             file.getContentType()
         );
         binaryContentRepository.save(newProfile);
-        binaryContentStorage.put(newProfile.getId(), file.getBytes());
+        eventPublisher.publishEvent(
+            new BinaryContentCreatedEvent(newProfile.getId(), file.getBytes()));
         user.updateProfile(newProfile);
         log.info("[USER] 새로운 프로필 사진 저장 성공: profileId={}", newProfile.getId());
       } catch (IOException e) {
