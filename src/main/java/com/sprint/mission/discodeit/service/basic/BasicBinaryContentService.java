@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentUploadException;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,7 +42,6 @@ public class BasicBinaryContentService implements BinaryContentService {
       );
       //DB에 메타데이터 저장
       binaryContentRepository.save(binaryContent);
-      //실제 byte[] 저장
       eventPublisher.publishEvent(
           new BinaryContentCreatedEvent(binaryContent.getId(), multipartFile.getBytes()));
       log.info("[BINARY_CONTENT] 파일 저장 성공: binaryContentId={}", binaryContent.getId());
@@ -70,6 +71,16 @@ public class BasicBinaryContentService implements BinaryContentService {
     return allByIdIn.stream()
         .map(binaryContentMapper::toDto)
         .toList();
+  }
+
+  @Override
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+    BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
+        .orElseThrow(() -> new BinaryContentNotFoundException(
+            Map.of("binaryContentId", binaryContentId)));
+    binaryContent.updateStatus(status);
+    return binaryContentMapper.toDto(binaryContent);
   }
 
   @Override
