@@ -62,10 +62,12 @@ discodeit:
     email: ${DISCODEIT_ADMIN_EMAIL}
     password: ${DISCODEIT_ADMIN_PASSWORD}
   jwt:
-    issuer: discodeit
-    secret: ${DISCODEIT_JWT_SECRET:discodeit-jwt-secret-key-must-be-at-least-32-bytes}
-    access-token-expiration-seconds: ${DISCODEIT_JWT_ACCESS_EXPIRATION_SECONDS:1800}
-    refresh-token-expiration-seconds: ${DISCODEIT_JWT_REFRESH_EXPIRATION_SECONDS:1209600}
+    access-token:
+      secret: ${JWT_ACCESS_SECRET:your-access-token-secret-key-here-make-it-long-and-random}
+      expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:1800000} # 30 minutes
+    refresh-token:
+      secret: ${JWT_REFRESH_SECRET:your-refresh-token-secret-key-here-make-it-different-and-long}
+      expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 days
 
 logging:
   level:
