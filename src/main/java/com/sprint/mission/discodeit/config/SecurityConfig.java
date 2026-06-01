@@ -66,6 +66,7 @@ public class SecurityConfig {
             .requestMatchers("/api/auth/login").permitAll()
             .requestMatchers("/api/auth/logout").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+            .requestMatchers("/api/binaryContents//{binaryContentId}/download").permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
             .anyRequest().authenticated()
         )
