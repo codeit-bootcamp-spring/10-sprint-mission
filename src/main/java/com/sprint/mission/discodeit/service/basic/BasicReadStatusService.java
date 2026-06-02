@@ -78,7 +78,7 @@ public class BasicReadStatusService implements ReadStatusService {
   public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> new ReadStatusNotFoundException(Map.of("readStatusId", readStatusId)));
-    readStatus.updateLastReadAt(request.newLastReadAt());
+    readStatus.update(request.newLastReadAt(), request.newNotificationEnabled());
     log.info("[READ_STATUS] ReadStatus 수정 완료: readStatusId={}", readStatus.getId());
     return readStatusMapper.toDto(readStatus);
   }

@@ -53,7 +53,7 @@ class ChannelRepositoryTest {
     userRepository.save(fixedUser);
     Channel privateChannel = new Channel(ChannelType.PRIVATE, null, null);
     channelRepository.save(privateChannel);
-    ReadStatus fixedReadStatus = new ReadStatus(fixedUser, privateChannel, Instant.now());
+    ReadStatus fixedReadStatus = new ReadStatus(fixedUser, privateChannel, Instant.now(), true);
     readStatusRepository.save(fixedReadStatus);
 
     // when
