@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentUploadException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.ChannelParticipantException;
@@ -95,7 +96,8 @@ public class BasicMessageService implements MessageService {
         }
       }
     }
-    messageRepository.save(message); //cascade로 attachment들도 같이 INSERT
+    messageRepository.save(message);
+    eventPublisher.publishEvent(new MessageCreatedEvent(message.getId()));
     log.info("[MESSAGE] 메시지 생성 완료: messageId={}", message.getId());
     return messageMapper.toDto(message);
   }
