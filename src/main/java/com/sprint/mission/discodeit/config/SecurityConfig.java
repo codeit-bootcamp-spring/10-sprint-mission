@@ -77,7 +77,10 @@ public class SecurityConfig {
                 "/h2-console/**", // h2 콘솔로 들어가는 요청은 csrf 무시
                 "/api/auth/login",
                 "/api/auth/logout",
-                "/api/auth/refresh")
+                "/api/auth/refresh",
+                "/api/channels/**",
+                "/api/users/**")
+
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
         )
@@ -87,6 +90,8 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             // H2 console
             .requestMatchers("/h2-console/**").permitAll()
+            // 노티는 permitAll
+            .requestMatchers(HttpMethod.GET, "/api/notifications/**").permitAll()
 
             // CSRF token 발급
             .requestMatchers(HttpMethod.GET, "/api/auth/csrf-token").permitAll()
@@ -119,6 +124,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/api/users").authenticated()
             // 유저 수정
             .requestMatchers(HttpMethod.PATCH, "/api/users/**").authenticated()
+            .requestMatchers("/files/**").authenticated()
             // 유저 삭제
             .requestMatchers(HttpMethod.DELETE, "/api/users/**").authenticated()
             // 메시지 관련 요청은 인증된 사용자만 접근 가능
@@ -126,15 +132,19 @@ public class SecurityConfig {
             // 읽기 정보 관련 요청은 인증된 사용자만 접근 가능
             .requestMatchers("/api/readStatuses/**").authenticated()
             // 공용 채널 생성은 어드민이나 채널 매니저만 요청 가능
-            .requestMatchers(HttpMethod.POST, "/api/channels/public").hasRole("CHANNEL_MANAGER")
-            .requestMatchers(HttpMethod.POST, "/api/channels/public").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.POST, "/api/channels/public")
+            .hasAnyRole("CHANNEL_MANAGER", "ADMIN")
             // 채널 관련 요청은 인증된 사용자만 접근 가능
             .requestMatchers("/api/channels/**").authenticated()
             // 파일 관련 요청은 인증된 사용자만 접근 가능
+            .requestMatchers(HttpMethod.GET, "/api/binaryContents/*/download").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/binaryContents/*").permitAll()
             .requestMatchers("/api/binaryContents/**").authenticated()
             // refresh 토큰 발급 & 액세스 토큰 검증 요청은 누구나 접근 가능
             .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
-            .requestMatchers("/files/**").authenticated()
+
+            .requestMatchers("/error").permitAll()
+
             .anyRequest().denyAll()
         )
         .exceptionHandling(exception -> exception

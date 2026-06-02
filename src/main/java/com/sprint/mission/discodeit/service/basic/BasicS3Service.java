@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDto;
+import com.sprint.mission.discodeit.enums.binarycontents.BinaryContentStatus;
 import com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorage;
 import java.io.IOException;
 import java.util.Objects;
@@ -33,6 +34,7 @@ public class BasicS3Service {
             (filename != null && !filename.isBlank()) ? filename : key,
             0L,
             null,
+            BinaryContentStatus.SUCCESS,
             null
         );
 

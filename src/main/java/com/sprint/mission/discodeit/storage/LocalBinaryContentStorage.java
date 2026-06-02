@@ -126,16 +126,19 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             binaryContentDto.fileName() != null && !binaryContentDto.fileName().isBlank()
                 ? binaryContentDto.fileName()
                 : binaryContentDto.id().toString();
-
-        // 다운로드 응답을 반환
-        ResponseEntity<Resource> response = ResponseEntity.ok()
+        ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok()
             .contentType(mediaType)
             .contentLength(bytes.length)
-            .header(
-                HttpHeaders.CONTENT_DISPOSITION, // 브라우저로 하여금 다운로드를 "강제"
+            .header(HttpHeaders.CACHE_CONTROL, "no-store");
+
+        if (!mediaType.getType().equals("image")) {
+            responseBuilder.header(
+                HttpHeaders.CONTENT_DISPOSITION,
                 ContentDisposition.attachment().filename(fileName).build().toString()
-            )
-            .body(resource);
+            );
+        }
+
+        ResponseEntity<Resource> response = responseBuilder.body(resource);
 
         log.info("다운로드 완료: fileName={}", fileName);
 

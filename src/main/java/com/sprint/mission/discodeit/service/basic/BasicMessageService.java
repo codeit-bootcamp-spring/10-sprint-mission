@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.events.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.FieldNotValidException;
 import com.sprint.mission.discodeit.exception.InternalServiceException;
 import com.sprint.mission.discodeit.exception.RequestNullException;
@@ -21,8 +22,8 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import java.io.IOException;
 import java.time.Instant;
@@ -45,7 +46,7 @@ public class BasicMessageService implements MessageService {
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
   private final MessageMapper messageMapper;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher eventPublisher;
   private final PageResponseMapper pageResponseMapper;
 
   @Transactional
@@ -84,7 +85,12 @@ public class BasicMessageService implements MessageService {
         profileList.add(saved);
 
         try {
-          binaryContentStorage.put(saved.getId(), profile.getBytes());
+
+          eventPublisher.publishEvent(
+              new BinaryContentCreatedEvent(
+                  saved.id, profile.getBytes()
+              )
+          );
         } catch (IOException e) {
           log.error("IO 예외 발생!: {} ", e.getMessage(), e);
           throw new InternalServiceException();

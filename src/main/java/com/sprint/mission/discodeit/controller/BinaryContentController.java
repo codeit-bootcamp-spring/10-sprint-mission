@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -65,10 +66,15 @@ public class BinaryContentController {
             )
         )
     })
-    public ResponseEntity<BinaryContentDto> getBinaryContent(
-        @PathVariable UUID binaryContentId) {
+    public ResponseEntity<?> getBinaryContent(
+        @PathVariable UUID binaryContentId,
+        HttpServletRequest request) {
         log.trace("[BinaryContent] 컨트롤러에서 단일 조회 요청 받음.");
-        return new ResponseEntity<>(binaryContentService.find(binaryContentId), HttpStatus.OK);
+        BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
+        if (isImageRequest(request)) {
+            return binaryContentStorage.download(binaryContent);
+        }
+        return new ResponseEntity<>(binaryContent, HttpStatus.OK);
     }
 
     @GetMapping(value = "/{binaryContentId}/download")
@@ -77,6 +83,11 @@ public class BinaryContentController {
         log.trace("[BinaryContent] 컨트롤러에서 다운로드 요청 받음");
 
         return binaryContentStorage.download(binaryContentService.find(binaryContentId));
+    }
+
+    private boolean isImageRequest(HttpServletRequest request) {
+        String accept = request.getHeader("Accept");
+        return accept != null && accept.contains("image/");
     }
 
 }

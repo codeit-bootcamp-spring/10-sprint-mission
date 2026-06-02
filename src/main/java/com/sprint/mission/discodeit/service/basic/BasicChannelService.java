@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.channeldto.PublicChannelCreateDTO;
 import com.sprint.mission.discodeit.dto.channeldto.PublicChannelUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.exception.FieldNotValidException;
@@ -21,6 +22,8 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,6 +32,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,15 +92,22 @@ public class BasicChannelService implements ChannelService {
     }
 
     // 사설 채널 유저 리스트를 생성 (Null 요소 제외 및 중복 유저 제거)
-    List<UUID> participantIds = req.users().stream()
+    LinkedHashSet<UUID> participantIdSet = req.users().stream()
         .filter(Objects::nonNull)
-        .distinct()
-        .toList();
+        .collect(Collectors.toCollection(LinkedHashSet::new));
 
     // 유저 리스트가 비어있으면 예외 발생
-    if (participantIds.isEmpty()) {
+    if (participantIdSet.isEmpty()) {
       throw new ChannelParticipantListEmptyException();
     }
+
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication != null
+        && authentication.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
+      participantIdSet.add(userDetails.getUserDto().id());
+    }
+
+    List<UUID> participantIds = new ArrayList<>(participantIdSet);
 
     log.trace("사설 채널 객체 생성 시도");
     String privateChannelName = "private-" + UUID.randomUUID();
@@ -111,6 +123,7 @@ public class BasicChannelService implements ChannelService {
       ReadStatus rs = new ReadStatus(userRepository.findById(u)
           .orElseThrow(() -> new UserNotFoundException(u)), saved);
       readStatusRepository.save(rs);
+      saved.getReadStatuses().add(rs);
     });
 
     // ReadStatus가 최신화된 채널을 다시 영속화, 변동사항 없으면 이전에 영속화했던 saved를 대입

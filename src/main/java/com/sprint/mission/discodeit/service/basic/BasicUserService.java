@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.enums.Role;
+import com.sprint.mission.discodeit.events.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.FieldNotValidException;
 import com.sprint.mission.discodeit.exception.RequestNullException;
 import com.sprint.mission.discodeit.exception.user.UserEmailDuplicateException;
@@ -16,9 +17,9 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,8 +36,8 @@ public class BasicUserService implements UserService {
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository; // 아직 인터페이스 구현체가 없어서 bean을 못찾음.
   private final UserMapper userMapper;
-  private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
+  private final ApplicationEventPublisher eventPublisher;
 
 
   // 유저 생성 요청 DTO를 받아 유저 도메인 객체를 생성하고, 해당 객체 정보를 바탕으로 UserResponseDTO를 만들어 반환한다.
@@ -74,7 +75,12 @@ public class BasicUserService implements UserService {
           profileDto.contentType()
       ));
       // BinaryContentStorage 인터페이스 사용. UUID, MULTIPART의 Bytes를 Storage에 put.
-      binaryContentStorage.put(saved.getId(), profileDto.bytes());
+
+      eventPublisher.publishEvent(
+          new BinaryContentCreatedEvent(saved.id, profileDto.bytes())
+      );
+
+      //binaryContentStorage.put(saved.getId(), profileDto.bytes());
     }
 
     User user = new User(
@@ -170,7 +176,12 @@ public class BasicUserService implements UserService {
       ));
 
       // BinaryContentStorage 인터페이스 사용. UUID, MULTIPART의 Bytes를 Storage에 put.
-      binaryContentStorage.put(saved.getId(), profileDto.bytes());
+      eventPublisher.publishEvent(
+          new BinaryContentCreatedEvent(
+              saved.id, profileDto.bytes()
+          )
+      );
+
     }
 
     // 유저 도메인 객체의 update 메소드를 통해 업데이트.

@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.userdto.UserCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
+import com.sprint.mission.discodeit.enums.binarycontents.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -90,6 +91,7 @@ public class UserController {
           profileImage.getOriginalFilename(),
           profileImage.getSize(),
           profileImage.getContentType(),
+          BinaryContentStatus.PROCESSING,
           profileImage.getBytes()
       );
     }
@@ -166,6 +168,7 @@ public class UserController {
           profile.getOriginalFilename(),
           profile.getSize(),
           profile.getContentType(),
+          BinaryContentStatus.PROCESSING,
           profile.getBytes()
       );
       log.debug("[User] BinaryContentDto 정보: id={}", profileDto.id());

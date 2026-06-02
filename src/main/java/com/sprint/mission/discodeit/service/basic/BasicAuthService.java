@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
@@ -78,10 +79,29 @@ public class BasicAuthService implements AuthService {
     }
 
     // 새로운 RefreshToken을 생성하고 DB 내의 토큰을 변경
-    String newRefreshToken = jwtTokenProvider.generateRefreshToken(authentication);
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new UserNotFoundException(userId));
+    UserDto userDto = userMapper.toDto(user);
+    DiscodeitUserDetails refreshedPrincipal = new DiscodeitUserDetails(userDto, "");
+    Authentication refreshedAuthentication = new UsernamePasswordAuthenticationToken(
+        refreshedPrincipal,
+        null,
+        refreshedPrincipal.getAuthorities()
+    );
+
+    accessToken = jwtTokenProvider.generateAccessToken(refreshedAuthentication);
+    String newRefreshToken = jwtTokenProvider.generateRefreshToken(refreshedAuthentication);
     savedToken.updateToken(newRefreshToken);
 
-    return new JwtInformation(principal.getUserDto(), accessToken, newRefreshToken);
+    // refresh 후 jwtInformation을 다시 레지스트리에 담음
+    JwtInformation newJwtInformation = new JwtInformation(
+        userDto,
+        accessToken,
+        newRefreshToken
+    );
+    jwtRegistry.rotateJwtInformation(refreshToken, newJwtInformation);
+
+    return newJwtInformation;
   }
 
   @Override
