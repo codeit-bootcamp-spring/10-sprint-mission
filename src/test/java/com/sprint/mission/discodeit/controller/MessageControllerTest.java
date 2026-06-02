@@ -15,6 +15,8 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -56,7 +58,8 @@ class MessageControllerTest {
         UUID.randomUUID(),
         "test.png",
         1024L,
-        "image/png"
+        "image/png",
+        BinaryContentStatus.PROCESSING
     );
 
     UserDto userDto = new UserDto(
@@ -64,7 +67,8 @@ class MessageControllerTest {
         "김코딩",
         "hello@hello.com",
         null,
-        true
+        true,
+        Role.USER
     );
 
     MessageDto expectedResponse = new MessageDto(
