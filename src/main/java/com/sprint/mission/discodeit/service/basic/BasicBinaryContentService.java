@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binaryContent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -52,6 +53,14 @@ public class BasicBinaryContentService implements BinaryContentService {
         return binaryContentRepository.findAllById(binaryContentIds).stream()
                 .map(binaryContentMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+        BinaryContent binaryContent = getBinaryContent(binaryContentId);
+        binaryContent.updateStatus(status);
+        return binaryContentMapper.toDto(binaryContent);
     }
 
     @Override

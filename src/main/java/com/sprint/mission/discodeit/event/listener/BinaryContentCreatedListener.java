@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.event.listener;
 
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.file.FileUploadFailException;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BinaryContentCreatedListener {
     private final S3BinaryContentStorage s3BinaryContentStorage;
+    private final BinaryContentService binaryContentService;
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -25,10 +28,12 @@ public class BinaryContentCreatedListener {
         try{
             log.info("비동기 s3 업로드 시작: id = {}", binaryContentId);
             s3BinaryContentStorage.put(binaryContentId, event.getBytes());
+            binaryContentService.updateStatus(binaryContentId, BinaryContentStatus.SUCCESS);
             log.info("비동기 s3 업로드 완료: id = {}", binaryContentId);
         } catch (Exception e) {
             log.error("비동기 s3 업로드 실패: id = {}", binaryContentId);
-            throw new FileUploadFailException();
+            binaryContentService.updateStatus(binaryContentId, BinaryContentStatus.FAIL);
+            throw new RuntimeException(e);
         } finally {
             event.clear();
         }

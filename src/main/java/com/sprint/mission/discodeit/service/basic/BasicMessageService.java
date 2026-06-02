@@ -81,7 +81,6 @@ public class BasicMessageService implements MessageService {
 
         // 데이터에 정보 저장
         messageRepository.save(message);
-        log.info("메시지 생성 성공: 메시지 id = {}, 첨부파일 수 = {}", message.getId(), attachments.size());
         return messageMapper.toDto(message);
     }
 

@@ -13,7 +13,6 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -32,7 +31,6 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -52,19 +50,17 @@ public class BasicUserService implements UserService {
                 Role.USER);
 
         // 프로필 등록 여부 & binaryContent객체 생성
-        if(profile != null){
-            try{
+        if(profile != null) {
+            try {
                 BinaryContent binaryContent = new BinaryContent(
-                    profile.getSize(),
-                    profile.getOriginalFilename(),
-                    profile.getContentType());
+                        profile.getSize(),
+                        profile.getOriginalFilename(),
+                        profile.getContentType());
 
                 user.addProfileImage(binaryContent);
                 // 연관성 주입
                 binaryContent = binaryContentRepository.save(binaryContent);
                 applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), profile.getBytes()));
-                log.info("파일 업로드 성공: 유저 email = {}, 파일 id = {}, 파일 이름 = {}",
-                        request.getEmail(), binaryContent.getId(), binaryContent.getFileName());
 
             } catch (Exception e) {
                 throw new FileUploadFailException();
@@ -143,7 +139,6 @@ public class BasicUserService implements UserService {
                 throw new FileUploadFailException();
             }
         }
-        log.info("유저 정보 수정 성공: 유저 id = {}", userId);
         return findUser(userId);
     }
 
