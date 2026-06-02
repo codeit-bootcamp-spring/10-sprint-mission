@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.global.InvalidInputException;
@@ -21,9 +22,9 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -45,8 +46,9 @@ public class BasicMessageService implements MessageService {
 
     private final MessageMapper messageMapper;
     private final BinaryContentMapper binaryContentMapper;
-    private final BinaryContentStorage binaryContentStorage;
     private final PageResponseMapper pageResponseMapper;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public MessageDto createMessage(CreateMessageRequestDTO dto, List<CreateBinaryContentPayloadDTO> attachments) {
@@ -69,9 +71,11 @@ public class BasicMessageService implements MessageService {
         if (attachments != null && !attachments.isEmpty()) {
             List<BinaryContent> savedAttachments = savedMessage.getAttachments();
             for (int i = 0; i < attachments.size(); i++) {
-                binaryContentStorage.put(
-                        savedAttachments.get(i).getId(),
-                        attachments.get(i).bytes()
+                eventPublisher.publishEvent(
+                        new BinaryContentCreatedEvent(
+                                savedAttachments.get(i),
+                                attachments.get(i)
+                        )
                 );
             }
         }

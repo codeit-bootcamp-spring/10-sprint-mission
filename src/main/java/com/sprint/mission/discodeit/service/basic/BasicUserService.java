@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UpdateUserRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.global.DuplicateResourceException;
 import com.sprint.mission.discodeit.exception.global.InvalidInputException;
@@ -17,9 +18,9 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,13 +35,14 @@ import java.util.*;
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
 
     private final UserMapper userMapper;
     private final BinaryContentMapper binaryContentMapper;
 
     private final PasswordEncoder passwordEncoder;
     private final JwtRegistry jwtRegistry;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public UserDto createUser(CreateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
@@ -73,7 +75,7 @@ public class BasicUserService implements UserService {
         User savedUser = userRepository.saveAndFlush(user);
 
         if (profileImage != null && savedUser.getProfile() != null) {
-            binaryContentStorage.put(savedUser.getProfile().getId(), profileImage.bytes());
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(savedUser.getProfile(), profileImage));
         }
 
         log.info("[USER_CREATE_SUCCESS] 유저 생성 성공: userId={}", savedUser.getId());
@@ -111,12 +113,11 @@ public class BasicUserService implements UserService {
         if (profileImage != null) {
             // binaryConent는 수정불가 -> 요구사항
             BinaryContent profile = binaryContentMapper.toEntity(profileImage);
-            BinaryContent savedProfile = binaryContentRepository.save(profile);
-            user.updateProfile(savedProfile);
+            user.updateProfile(profile);
 
             userRepository.saveAndFlush(user); // 여기서 cascade로 profile도 저장되고 id 생성
 
-            binaryContentStorage.put(savedProfile.getId(), profileImage.bytes());
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(profile, profileImage));
         }
 
         log.info("[USER_UPDATE_SUCCESS] 유저 정보 수정 성공: userId={}", user.getId());
