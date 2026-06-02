@@ -14,7 +14,9 @@ CREATE TABLE binary_contents
     file_name    VARCHAR(225) not null,
     size         BIGINT not null ,
     content_type VARCHAR(100) not null,
-    created_at   TIMESTAMPTZ NOT NULL
+    status       VARCHAR(20) not null DEFAULT 'PROCESSING',
+    created_at   TIMESTAMPTZ NOT NULL,
+    updated_at   timestamptz
 );
 
 -- 3. 채널을 관리하는 테이블
