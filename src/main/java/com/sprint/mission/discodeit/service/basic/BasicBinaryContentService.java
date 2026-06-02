@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.*;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,7 +25,7 @@ import java.util.UUID;
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   @Transactional
@@ -40,9 +42,11 @@ public class BasicBinaryContentService implements BinaryContentService {
           file.getSize(),
           file.getContentType()
       );
-      binaryContentRepository.save(binaryContent);
+      binaryContentRepository.save(binaryContent); // 메타데이터 저장
 
-      binaryContentStorage.put(binaryContent.getId(), file.getBytes());
+      // 메타데이터 저장 이벤트 발행
+      eventPublisher.publishEvent(
+          new BinaryContentCreatedEvent(binaryContent.getId(), file.getBytes()));
       return binaryContent;
 
     } catch (IOException e) {

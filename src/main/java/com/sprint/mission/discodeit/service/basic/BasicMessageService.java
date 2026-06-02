@@ -1,18 +1,18 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.*;
 import com.sprint.mission.discodeit.exception.channel.*;
 import com.sprint.mission.discodeit.exception.message.*;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Hibernate;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,7 +32,7 @@ public class BasicMessageService implements MessageService {
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   @Transactional
@@ -59,9 +59,11 @@ public class BasicMessageService implements MessageService {
                   file.getSize(),
                   file.getContentType()
               );
-              binaryContentRepository.save(binaryContent);
+              binaryContentRepository.save(binaryContent); // 메타데이터 저장
 
-              binaryContentStorage.put(binaryContent.getId(), file.getBytes());
+              // 메타데이터 저장 이벤트 발행
+              eventPublisher.publishEvent(
+                  new BinaryContentCreatedEvent(binaryContent.getId(), file.getBytes()));
 
               binaryContents.add(binaryContent);
               log.debug("Attachment saved successfully: {}",

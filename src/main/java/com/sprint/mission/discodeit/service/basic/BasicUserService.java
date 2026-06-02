@@ -1,19 +1,18 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.FileUploadException;
 import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +27,7 @@ public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher eventPublisher;
   private final PasswordEncoder passwordEncoder;
   private final JwtRegistry jwtRegistry;
 
@@ -55,9 +54,11 @@ public class BasicUserService implements UserService {
             profileFile.getSize(),
             profileFile.getContentType()
         );
-        binaryContentRepository.save(profile);
+        binaryContentRepository.save(profile); // 메타데이터 저장
 
-        binaryContentStorage.put(profile.getId(), profileFile.getBytes());
+        // 메타데이터 저장 이벤트 발행
+        eventPublisher.publishEvent(
+            new BinaryContentCreatedEvent(profile.getId(), profileFile.getBytes()));
       } catch (IOException e) {
         throw new FileUploadException(Map.of(
             "username", username,
@@ -141,7 +142,9 @@ public class BasicUserService implements UserService {
         );
         BinaryContent savedImage = binaryContentRepository.save(newImage);
 
-        binaryContentStorage.put(savedImage.getId(), profileFile.getBytes());
+        // 메타 데이터 저장 이벤트 발행
+        eventPublisher.publishEvent(
+            new BinaryContentCreatedEvent(savedImage.getId(), profileFile.getBytes()));
 
         user.updateProfileImage(savedImage);
       } catch (IOException e) {
