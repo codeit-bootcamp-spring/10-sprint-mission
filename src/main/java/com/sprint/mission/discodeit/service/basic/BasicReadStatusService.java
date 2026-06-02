@@ -4,6 +4,11 @@ import com.sprint.mission.discodeit.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.etc.InternalServerException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -36,20 +41,20 @@ public class BasicReadStatusService implements ReadStatusService {
         Instant lastReadAt = request.lastReadAt();
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + userId));
+                .orElseThrow(() -> UserNotFoundException.withId(userId));
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다: " + channelId));
+                .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
 
         boolean isExist = readStatusRepository.existsByUserIdAndChannelId(userId, channelId);
-        if(isExist) throw new IllegalArgumentException("이미 해당 유저와 채널 간 ReadStatus가 존재합니다.");
+        if(isExist) throw ReadStatusAlreadyExistsException.withUserAndChannel(userId, channelId);
 
         ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
 
-        try { // 레이스 컨디션 발생에 따른 ReadStatus 중복 저장에 의해 발생하는 DB 예외를 성공으로 변환
+        try { // 레이스 컨디션으로 이미 데이터가 생성된 경우, 기존 데이터를 조회하여 반환함으로써 멱등성 보장
             return readStatusMapper.toResponse(readStatusRepository.saveAndFlush(readStatus));
         } catch (DataIntegrityViolationException e) {
             ReadStatus existingStatus = readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId())
-                    .orElseThrow(() -> new IllegalStateException("서버 측 오류"));
+                    .orElseThrow(() -> InternalServerException.dataIntegrity("ReadStatus가 존재해야 함에도 찾을 수 없음: User %s, Channel %s", user.getId(), channel.getId()));
             return readStatusMapper.toResponse(existingStatus);
         }
     }
@@ -58,13 +63,13 @@ public class BasicReadStatusService implements ReadStatusService {
     public ReadStatusDto.Response find(UUID readStatusId) {
         return readStatusRepository.findById(readStatusId)
                 .map(readStatusMapper::toResponse)
-                .orElseThrow(() -> new NoSuchElementException("해당 ReadStatus를 찾을 수 없습니다: " + readStatusId));
+                .orElseThrow(() -> ReadStatusNotFoundException.withId(readStatusId));
     }
 
     @Override
     public List<ReadStatusDto.Response> findAllByUserId(UUID userId) {
         if (!userRepository.existsById(userId)) {
-            throw new NoSuchElementException("해당 유저를 찾을 수 없습니다:" + userId);
+            throw UserNotFoundException.withId(userId);
         }
         return readStatusRepository.findAllByUserId(userId).stream()
                 .map(readStatusMapper::toResponse)
@@ -75,7 +80,7 @@ public class BasicReadStatusService implements ReadStatusService {
     @Transactional
     public ReadStatusDto.Response update(UUID readStatusId, ReadStatusDto.UpdateRequest request) {
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-                .orElseThrow(() -> new NoSuchElementException("해당 ReadStatus를 찾을 수 없습니다: " + readStatusId));
+                .orElseThrow(() -> ReadStatusNotFoundException.withId(readStatusId));
 
         readStatus.update(request.newLastReadAt());
 
@@ -86,7 +91,7 @@ public class BasicReadStatusService implements ReadStatusService {
     @Transactional
     public void delete(UUID readStatusId) {
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-                .orElseThrow(() -> new NoSuchElementException("해당 ReadStatus를 찾을 수 없습니다: " + readStatusId));
+                .orElseThrow(() -> ReadStatusNotFoundException.withId(readStatusId));
 
         readStatusRepository.delete(readStatus);
     }

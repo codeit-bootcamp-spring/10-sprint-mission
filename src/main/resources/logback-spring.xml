@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <!-- 로그 파일이 저장될 경로 -->
+  <property name="LOG_PATH" value="./.logs" />
+
+  <!-- 로그 민감 정보 마스킹 -->
+  <conversionRule conversionWord="maskMsg"
+    converterClass="com.sprint.mission.discodeit.logging.MaskingMessageConverter" />
+
+  <!-- 로그 출력 포맷 정의
+       %d : 날짜
+       %thread : 스레드명
+       %-5level : 로그 레벨 (INFO, DEBUG 등)
+       %logger{36} : 로거 이름 (최대 36자)
+       %maskMsg : 실제 로그 메시지(민감 정보 마스킹)
+       %traceId : 로그 추적 ID
+       %userId : 유저 ID
+       %n : 줄바꿈 -->
+  <property name="LOG_PATTERN" value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId} | %X{requestMethod} | %X{requestUri}] - %maskMsg%n" />
+
+  <!-- 콘솔 출력용 Appender -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <!-- 위에서 정의한 로그 포맷 사용 -->
+      <pattern>${LOG_PATTERN}</pattern>
+    </encoder>
+  </appender>
+
+  <!-- 파일 출력용 Appender -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+    <!-- 실제 로그 파일 -->
+    <file>${LOG_PATH}/discodeit.log</file>
+
+    <!-- 롤링 정책 (날짜 기준으로 파일 분리) -->
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+
+      <!-- 날짜별 로그 파일 생성 -->
+      <fileNamePattern>${LOG_PATH}/discodeit.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+      <!-- 최대 30일치 로그만 보관 -->
+      <maxHistory>30</maxHistory>
+
+      <!-- 최대 10GB의 로그만 보관 -->
+      <totalSizeCap>10GB</totalSizeCap>
+
+      <!-- 어플리케이션 시작할 때 로그 파일 유지 -->
+      <cleanHistoryOnStart>false</cleanHistoryOnStart>
+    </rollingPolicy>
+
+    <encoder>
+      <!-- 동일한 로그 포맷 사용 -->
+      <pattern>${LOG_PATTERN}</pattern>
+    </encoder>
+  </appender>
+
+  <!-- 루트 로거 설정 (전체 기본 설정) -->
+  <root>
+    <!-- 콘솔 출력 -->
+    <appender-ref ref="CONSOLE" />
+    <!-- 파일 출력 -->
+    <appender-ref ref="FILE" />
+  </root>
+
+</configuration>

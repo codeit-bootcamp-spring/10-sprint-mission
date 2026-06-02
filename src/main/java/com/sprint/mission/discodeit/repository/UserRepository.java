@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -11,16 +12,18 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-    @EntityGraph(attributePaths = {"status", "profile"})
-    Optional<User> findById(@NonNull UUID userId);
+  @EntityGraph(attributePaths = {"status", "profile"})
+  Optional<User> findById(@NonNull UUID userId);
 
-    @EntityGraph(attributePaths = {"status", "profile"})
-    List<User> findAll();
+  @EntityGraph(attributePaths = {"status", "profile"})
+  List<User> findAll();
 
-    @EntityGraph(attributePaths = {"status", "profile"})
-    Optional<User> findByUsername(String username);
+  @EntityGraph(attributePaths = {"status", "profile"})
+  Optional<User> findByUsername(String username);
 
-    boolean existsByUsername(String username);
+  boolean existsByUsername(String username);
 
-    boolean existsByEmail(String email);
+  boolean existsByEmail(String email);
+
+  boolean existsByRole(Role role);
 }

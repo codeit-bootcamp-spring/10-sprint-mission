@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
@@ -12,5 +13,6 @@ public interface UserService {
     List<UserDto.Response> findAll();
     UserDto.Response update(UUID userId, UserDto.UpdateRequest request, UUID newProfileId);
     void delete(UUID userId);
-    UserDto.Response toDto(User user);
+    void createAdmin(String username, String email, String rawPassword);
+    UserDto.Response updateRole(UUID userid, Role newRole);
 }

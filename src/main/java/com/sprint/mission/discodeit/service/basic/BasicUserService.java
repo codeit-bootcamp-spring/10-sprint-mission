@@ -2,23 +2,32 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.exception.etc.DatabaseConflictException;
+import com.sprint.mission.discodeit.exception.etc.InternalServerException;
+import com.sprint.mission.discodeit.exception.user.DuplicationUserException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -30,75 +39,109 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final ChannelRepository channelRepository;
+    private final AuthService authService;
 
     @Override
     @Transactional
     public UserDto.Response create(UserDto.CreateRequest request, UUID profileId) {
-        String username = request.username();
-        String email = request.email();
-        validateUser(null, username, email);
-        String password = passwordEncoder.encode(request.password());
-
-        BinaryContent profile = (profileId == null) ? null :
-                binaryContentRepository.findById(profileId).orElse(null);
-
-        User user = new User(username, email, password, profile);
-
-        user.setStatus(new UserStatus(user, Instant.now()));
-
-        try { // 레이스컨디션으로 발생할 수 있는 DB 예외를 서비스에서 처리
-            return toDto(userRepository.saveAndFlush(user));
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalStateException("서버 측 오류");
-        }
-    }
-
-    @Override
-    public UserDto.Response find(UUID userId) {
-        return userRepository.findById(userId)
-                .map(this::toDto)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + userId));
-    }
-
-    @Override
-    public List<UserDto.Response> findAll() {
-        return userRepository.findAll().stream()
-                .map(this::toDto)
-                .toList();
+        User user = createUser(
+            request.username(),
+            request.email(),
+            request.password(),
+            profileId,
+            Role.USER
+        );
+        return toDto(user);
     }
 
     @Override
     @Transactional
+    public void createAdmin(String username, String email, String rawPassword) {
+        createUser(
+            username,
+            email,
+            rawPassword,
+    null,
+            Role.ADMIN
+        );
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public UserDto.Response updateRole(UUID userId, Role newRole) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> UserNotFoundException.withId(userId));
+
+        user.updateRole(newRole);
+
+        authService.expireUserSessions(userId);
+
+        return toDto(user);
+    }
+
+    @Override
+    public UserDto.Response find(UUID userId) {
+        UserDto.Response response = userRepository.findById(userId)
+                .map(this::toDto)
+                .orElseThrow(() -> UserNotFoundException.withId(userId));
+
+        log.debug("[User Found] ID: {}, Username: {}", userId, response.username());
+
+        return response;
+    }
+
+    @Override
+    public List<UserDto.Response> findAll() {
+        List<UserDto.Response> users = userRepository.findAll().stream()
+                .map(this::toDto)
+                .toList();
+
+        log.debug("[Users Fetched] Total Count: {}", users.size());
+
+        return users;
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or principal.userDto.id == #userId")
+    @Override
+    @Transactional
     public UserDto.Response update(UUID userId, UserDto.UpdateRequest request, UUID newProfileId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + userId));
+                .orElseThrow(() -> UserNotFoundException.withId(userId));
 
         validateUser(user, request.newUsername(), request.newEmail());
+
+        String oldUsername = user.getUsername();
+        String oldEmail = user.getEmail();
+
 
         String encodedPassword = (request.newPassword() != null) // null일 때 암호화해서 null이 아니게 되는 것을 방지
                 ? passwordEncoder.encode(request.newPassword())
                 : null;
 
         BinaryContent newProfile = (newProfileId == null) ? null :
-                binaryContentRepository.findById(newProfileId).orElse(null);
+                binaryContentRepository.findById(newProfileId)
+                        .orElseThrow(() -> BinaryContentNotFoundException.withId(newProfileId));
 
         // password 업데이트는 엔티티 내 메서드를 따로 만들어서 책임 분리로 개선할 여지가 있음
         user.update(request.newUsername(), request.newEmail(), encodedPassword, newProfile);
 
-        try {
-            return toDto(userRepository.saveAndFlush(user));
+        try { // 레이스 컨디션
+            User updatedUser = userRepository.saveAndFlush(user);
+            log.info("[User Updated] ID: {}, Old Username: {} -> New Username: {}, Old Email: {} -> New Email: {}",
+                    userId, oldUsername, updatedUser.getUsername(), oldEmail, updatedUser.getEmail());
+            return toDto(updatedUser);
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalStateException("서버 측 오류");
+            throw DatabaseConflictException.withUser(request.newUsername(), request.newEmail(), e);
         }
-
-
     }
 
+    @PreAuthorize("hasRole('ADMIN') or principal.userDto.id == #userId")
     @Override
     @Transactional
     public void delete(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + userId));
+                .orElseThrow(() -> UserNotFoundException.withId(userId));
 
         List<UUID> myChannelIds = readStatusRepository.findChannelIdsByUserId(userId);
 
@@ -107,6 +150,9 @@ public class BasicUserService implements UserService {
         if (!myChannelIds.isEmpty()) {
             channelRepository.deleteEmptyOrLonelyChannels(myChannelIds);
         }
+
+        log.info("[User Deleted] ID: {}, Username: {}",
+                userId, user.getUsername());
     }
 
     // validation
@@ -116,21 +162,52 @@ public class BasicUserService implements UserService {
         if (email != null
                 && userRepository.existsByEmail(email)
                 && (user == null || !user.getEmail().equals(email))) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + email);
+            throw DuplicationUserException.withEmail(email);
         }
 
         if (username != null
                 && userRepository.existsByUsername(username)
                 && (user == null || !user.getUsername().equals(username))) {
-            throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + username);
+            throw DuplicationUserException.withUserName(username);
         }
     }
 
     // Helper
-    public UserDto.Response toDto(User user) {
+    private UserDto.Response toDto(User user) {
         UserStatus userStatus = Optional.ofNullable(user.getStatus())
-                .orElseThrow(() -> new IllegalStateException("무결성 오류! 해당 유저의 상태를 찾을 수 없음!" + user.getId()));
+                .orElseThrow(() -> InternalServerException.dataIntegrity(
+                        "유저(ID: %s)의 상태 정보가 누락되었습니다.", user.getId()
+                ));
 
         return userMapper.toResponse(user);
+    }
+
+    private User createUser(
+        String username,
+        String email,
+        String rawPassword,
+        UUID profileId,
+        Role role
+    ) {
+        validateUser(null, username, email);
+
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+
+        BinaryContent profile = profileId == null
+            ? null
+            : binaryContentRepository.findById(profileId)
+              .orElseThrow(() -> BinaryContentNotFoundException.withId(profileId));
+
+        User user = new User(username, email, encodedPassword, profile, role);
+        user.setStatus(new UserStatus(user, Instant.now()));
+
+        try {
+            User savedUser = userRepository.saveAndFlush(user);
+            log.info("[User Created] ID: {}, Username: {}, Email: {}, Role: {}",
+                savedUser.getId(), username, email, role);
+            return savedUser;
+        } catch (DataIntegrityViolationException e) {
+            throw DatabaseConflictException.withUser(username, email, e);
+        }
     }
 }

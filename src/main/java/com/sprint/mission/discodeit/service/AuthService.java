@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.LoginDto;
-import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.auth.jwt.JwtInformation;
+import java.util.UUID;
 
 public interface AuthService {
-    UserDto.Response login(LoginDto.LoginRequest request);
+  void expireUserSessions(UUID userId);
+
+  JwtInformation refreshToken(String refreshToken);
 
 }

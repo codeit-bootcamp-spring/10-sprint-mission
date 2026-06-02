@@ -1,46 +1,57 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.LoginDto;
-import com.sprint.mission.discodeit.dto.UserDto;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.auth.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.exception.auth.AuthenticationRequiredException;
 import com.sprint.mission.discodeit.service.AuthService;
-import com.sprint.mission.discodeit.service.UserService;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.sprint.mission.discodeit.auth.jwt.JwtInformation;
+import com.sprint.mission.discodeit.auth.jwt.JwtRegistry;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.NoSuchElementException;
-
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class BasicAuthService implements AuthService {
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    // UserService에 있는 toDto로 userDto를 만들기 위해서 사용
-    private final UserService userService;
+  private final JwtTokenProvider jwtTokenProvider;
+  private final JwtRegistry jwtRegistry;
+  private final UserDetailsService userDetailsService;
 
-    @Override
-    public UserDto.Response login(LoginDto.LoginRequest request) {
-        String username = request.username();
-        String password = request.password();
-
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다:" + username));
-
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
-        }
-
-//        // 실제 운영 환경: 아이디 존재 확인 및 비밀번호 검증을 하나의 흐름으로 처리
-//        User user = userRepository.findByUsername(request.username())
-//                .filter(u -> passwordEncoder.matches(request.password(), u.getPassword()))
-//                .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 잘못되었습니다."));
-
-        return userService.toDto(user);
+  public JwtInformation refreshToken(String refreshToken) {
+    if(!jwtTokenProvider.validateToken(refreshToken) || !jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
+      throw AuthenticationRequiredException.withDetails("유효하지 않거나 만료된 리프레시 토큰입니다.");
     }
+    // 토큰에서 사용자 아이디(username) 추출
+    String username = jwtTokenProvider.getUsername(refreshToken);
+
+    // DB에서 최신 회원 정보 및 권한(Role) 조회
+    DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailsService.loadUserByUsername(username);
+    String role = userDetails.getAuthorities().iterator().next().getAuthority();
+
+    // 새로운 엑세스 토큰 및 리프레시 토큰 발급
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("roles", role);
+    String newAccessToken = jwtTokenProvider.generateAccessToken(claims, username);
+    String newRefreshToken = jwtTokenProvider.generateRefreshToken(username);
+
+    // 2. 새로운 토큰 생성 및 Registry 갱신 (Rotation)
+    JwtInformation newInfo = JwtInformation.builder()
+        .userDto(userDetails.getUserDto())
+        .accessToken(newAccessToken)
+        .refreshToken(newRefreshToken)
+        .build();
+    jwtRegistry.rotateJwtInformation(refreshToken, newInfo);
+
+    // 3. 생성한 객체 반환
+    return newInfo;
+  }
+
+  public void expireUserSessions(UUID userId) {
+    // JwtRegistry에서 해당 사용자의 모든 토큰 정보를 삭제하여 세션 무효화
+    jwtRegistry.invalidateJwtInformationByUserId(userId);
+  }
 }

@@ -1,0 +1,34 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  h2:
+    console:
+      enabled: true      # H2 콘솔 활성화
+      path: /h2-console  # 접속 주소 설정
+
+  datasource:
+    url: jdbc:h2:mem:discodeit;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update # 개발 편의를 위해 테이블 자동 생성/수정
+    show-sql: false
+    properties:
+      hibernate:
+        highlight_sql: true
+        use_sql_comments: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: info
+    com.sprint.mission.discodeit: debug
+    org.hibernate.orm.queries: debug
+    org.springframework.security: TRACE

@@ -2,10 +2,15 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.0'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'com.sprint.mission'
-version = '0.0.1-SNAPSHOT'
+version = '1.2-M8'
+
+bootJar {
+    archiveBaseName = 'discodeit'
+}
 
 java {
     toolchain {
@@ -18,22 +23,46 @@ repositories {
 }
 
 dependencies {
+    // 1. Spring Boot Core & Web (웹 애플리케이션 기본 설정)
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.security:spring-security-crypto'
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4'
-    compileOnly 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-validation' // 유효성 검사 (Annotaion 기반)
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'   // 애플리케이션 모니터링/상태 체크
+
+    // 2. Database & Persistence (데이터 저장 및 ORM)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'   // JPA/Hibernate
+    runtimeOnly 'org.postgresql:postgresql'                                  // 운영용 DB (PostgreSQL)
+    runtimeOnly 'com.h2database:h2'                                          // 테스트/개발용 인메모리 DB
+
+    // 3. Security & Cloud (보안 및 인프라)
+    implementation 'org.springframework.boot:spring-boot-starter-security'   // 비밀번호 암호화 등
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'                       // JWT 토큰 생성
+    implementation 'software.amazon.awssdk:s3:2.31.7'                        // AWS S3 파일 업로드 관련
+
+    // 4. View & Documentation (화면 구성 및 API 명세)
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'  // 타임리프 템플릿 엔진
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4' // Swagger (API 문서 자동화)
+
+    // 5. Utilities & Mapping (코드 간소화 및 객체 변환)
+    compileOnly 'org.projectlombok:lombok'                                   // Getter, Setter 자동 생성
     annotationProcessor 'org.projectlombok:lombok'
-    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'                     // DTO <-> Entity 변환 최적화
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+    // 6. Test Environment (테스트 관련)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    runtimeOnly 'org.postgresql:postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 test {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }

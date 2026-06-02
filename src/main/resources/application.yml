@@ -1,33 +1,15 @@
-server:
-  port: 8080
-  tomcat:
-    max-swallow-size: 50MB
-
-logging:
-  level:
-    org.hibernate.orm.queries: debug # 실행되는 쿼리 상세 로그
-
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit  # DB?? ?? ??
-    username: discodeit_user
-    password: discodeit1234
-    driver-class-name: org.postgresql.Driver
+  config:
+    import: optional:file:.env[.properties]
 
-  sql:
-    init:
-      mode: embedded #always는 외부 DB일 때도 실행, embedded는 H2같은 내장 메모리 DB일 때 실행
+  profiles:
+    active: dev
 
   jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: true
+    open-in-view: false
     properties:
       hibernate:
         format_sql: true
-        highlight_sql: true   # SQL 키워드 색상 강조 (인텔리제이 콘솔)
-        use_sql_comments: true # 어떤 메서드 때문에 이 쿼리가 나갔는지 주석 표시
-    open-in-view: false
 
   servlet:
     multipart:
@@ -35,12 +17,64 @@ spring:
       max-file-size: 10MB
       max-request-size: 50MB
 
-discodeit:
-  repository:
-    type: file   # jcf | file
-    file-directory: .discodeit
+  sql:
+    init:
+      mode: embedded # H2 같은 내장 DB일 때만 초기화 스크립트 실행
 
+server:
+  tomcat:
+    max-swallow-size: 50MB
+
+# 프로젝트 파일 저장 설정
+discodeit:
   storage:
-    type: local
+    type: ${STORAGE_TYPE:local}  # local | s3 (기본값: local)
     local:
-      root-path: ./discodeit/storage
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
+
+# AWS 설정
+aws:
+  s3:
+    access-key: ${AWS_S3_ACCESS_KEY}
+    secret-key: ${AWS_S3_SECRET_KEY}
+    region: ${AWS_S3_REGION}
+    bucket: ${AWS_S3_BUCKET}
+    presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
+
+#JWT 토큰 설정
+jwt:
+  key: ${JWT_KEY:key1321312312312312312312321321321312321241}
+  access-token-expiration-minutes: ${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES:60}
+  refresh-token-expiration-minutes: ${JWT_REFRESH_TOKEN_EXPIRATION_MINUTES:1440}
+
+
+# Actuator 설정
+management:
+   endpoints:
+     web:
+       exposure:
+         include: "health,info,metrics,loggers"
+   info:
+     env:
+       enabled: true # 환경 변수 정보를 info에 포함하도록 설정
+
+ # Actuator info에 노출될 애플리케이션 정보
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+    java-version: 17
+    spring-boot-version: 3.4.0
+  # 주요 설정 정보
+  config:
+     datasource:
+       url: ${spring.datasource.url}
+       driver-class-name: ${spring.datasource.driver-class-name}
+     jpa:
+       ddl-auto: ${spring.jpa.hibernate.ddl-auto}
+     storage:
+       type: ${discodeit.storage.type:local} # 실제 설정 키값에 맞춰 수정 필요
+       path: ${discodeit.storage.local.path:./discodeit/storage}
+     multipart:
+      max-file-size: ${spring.servlet.multipart.max-file-size}
+      max-request-size: ${spring.servlet.multipart.max-request-size}

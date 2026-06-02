@@ -3,6 +3,10 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelParticipantException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateNotAllowedException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -10,12 +14,15 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -26,10 +33,14 @@ public class BasicChannelService implements ChannelService {
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
 
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Transactional
     public ChannelDto.Response create(ChannelDto.PublicChannelCreateRequest request) {
         Channel channel = new Channel(ChannelType.PUBLIC, request.name(), request.description());
-        return toDto(channelRepository.save(channel));
+        Channel savedChannel = channelRepository.save(channel);
+
+        log.info("[Channel Created] Type: PUBLIC, Name: {}, ID: {}", savedChannel.getName(), savedChannel.getId());
+        return toDto(savedChannel);
     }
 
     @Transactional
@@ -45,11 +56,11 @@ public class BasicChannelService implements ChannelService {
                 .collect(Collectors.toSet());
 
         if (!missingIds.isEmpty()) {
-            throw new NoSuchElementException("존재하지 않는 유저 ID가 포함되어 있습니다: " + missingIds);
+            throw UserNotFoundException.withIds(missingIds);
         }
 
         if (participants.size() < 2) {
-            throw new IllegalArgumentException("비공개 채널은 서로 다른 유저 최소 2명이 참여해야 합니다. (현재 유효 참여자 수: " + participants.size() + "명)");
+            throw PrivateChannelParticipantException.minimumParticipants(participants.size());
         }
 
 
@@ -60,49 +71,68 @@ public class BasicChannelService implements ChannelService {
                 .map(user -> new ReadStatus(user, savedChannel, savedChannel.getCreatedAt()))
                 .forEach(readStatusRepository::save);
 
+        log.info("[Channel Created] Type: PRIVATE, ID: {}, Participants: {} members",
+                savedChannel.getId(), participants.size());
+
         return toDto(savedChannel);
     }
 
     @Override
     public ChannelDto.Response find(UUID channelId) {
-        return channelRepository.findById(channelId)
+        ChannelDto.Response response = channelRepository.findById(channelId)
                 .map(this::toDto)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다: " + channelId));
+                .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
+
+        log.debug("[Channel Found] ID: {}, Name: {}, Type: {}", channelId, response.name(), response.type());
+
+        return response;
     }
 
     @Override
     public List<ChannelDto.Response> findAllByUserId(UUID userId) {
         if (!userRepository.existsById(userId)) {
-            throw new NoSuchElementException("해당 유저를 찾을 수 없습니다." + userId);
+            throw UserNotFoundException.withId(userId);
         }
+        List<Channel> channels = channelRepository.findAllAccessibleByUserId(userId);
 
-        return toDtos(channelRepository.findAllAccessibleByUserId(userId));
+        log.debug("[Channels Fetched] User: {}, Accessible Channels: {}", userId, channels.size());
+
+        return toDtos(channels);
     }
 
     @Override
     public List<ChannelDto.Response> findAll() {
-        return toDtos(channelRepository.findAll());
+        List<Channel> channels = channelRepository.findAll();
+        log.debug("[Channels Fetched] Total Global Channels: {}", channels.size());
+        return toDtos(channels);
     }
 
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
     public ChannelDto.Response update(UUID channelId, ChannelDto.UpdatePublicRequest request) {
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널은 찾을 수 없습니다: " + channelId));
+                .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
 
         if (channel.getType() == ChannelType.PRIVATE) {
-            throw new IllegalArgumentException("비공개 채널은 수정할 수 없습니다:" + channelId);
+            throw PrivateChannelUpdateNotAllowedException.withId(channelId);
         }
+        String oldName = channel.getName();
         channel.update(request.newName(), request.newDescription());
+
+        log.info("[Channel Updated] ID: {}, Name: {} -> {}", channelId, oldName, request.newName());
         return toDto(channel);
     }
 
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
     public void delete(UUID channelId) {
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() ->new NoSuchElementException("해당 채널을 찾을 수 없습니다" + channelId));
+                .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
         channelRepository.delete(channel);
+        log.info("[Channel Deleted] ID: {}, Name: {}, Type: {}", channelId, channel.getName(), channel
+                .getType());
     }
 
     // Helper

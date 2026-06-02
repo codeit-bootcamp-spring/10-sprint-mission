@@ -3,6 +3,10 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.etc.InternalServerException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -31,10 +35,10 @@ public class BasicUserStatusService implements UserStatusService {
         UUID userId = request.userId();
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다:" + userId));
+                .orElseThrow(() -> UserNotFoundException.withId(userId));
 
         if (userStatusRepository.existsByUserId(userId)) {
-            throw new IllegalArgumentException("이미 해당 유저의 UserStatus가 있습니다.");
+            throw UserStatusAlreadyExistsException.withUserId(userId);
         }
 
         UserStatus userStatus = new UserStatus(user, request.lastActiveAt() != null
@@ -43,11 +47,11 @@ public class BasicUserStatusService implements UserStatusService {
 
         user.setStatus(userStatus);
 
-        try{
+        try{ // 레이스 컨디션
             return userStatusMapper.toResponse(userStatusRepository.saveAndFlush(userStatus));
         } catch (DataIntegrityViolationException e) {
             UserStatus existingUserStatus = userStatusRepository.findByUserId(userId)
-                    .orElseThrow(() -> new IllegalStateException("서버 측 오류"));
+                    .orElseThrow(() -> InternalServerException.dataIntegrity("UserStatus 존재해야 함에도 찾을 수 없음: User %s", userId));
             return userStatusMapper.toResponse(existingUserStatus);
         }
     }
@@ -56,18 +60,18 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusDto.Response find(UUID userStatusId) {
         return userStatusRepository.findById(userStatusId)
                 .map(userStatusMapper::toResponse)
-                .orElseThrow(() -> new NoSuchElementException("해당 UserStatus를 찾을 수 없습니다: " + userStatusId));
+                .orElseThrow(() -> UserStatusNotFoundException.withId(userStatusId));
     }
 
     @Override
     public UserStatusDto.Response findByUserId(UUID userId) {
         if (!userRepository.existsById(userId)) {
-            throw new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + userId);
+            throw UserNotFoundException.withId(userId);
         }
 
         return userStatusRepository.findByUserId(userId)
                 .map(userStatusMapper::toResponse)
-                .orElseThrow(() -> new IllegalStateException("(무결성 오류! 해당 유저의 상태 정보가 없습니다: " + userId));
+                .orElseThrow(() -> InternalServerException.dataIntegrity("UserStatus 존재해야 함: User %s", userId));
     }
 
     @Override
@@ -81,7 +85,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Transactional
     public UserStatusDto.Response update(UUID userStatusId, UserStatusDto.UpdateRequest request) {
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
-                .orElseThrow(() -> new NoSuchElementException("해당 UserStatus를 찾을 수 없습니다: " + userStatusId));
+                .orElseThrow(() -> UserStatusNotFoundException.withId(userStatusId));
         userStatus.update(request.newLastActiveAt());
 
         return userStatusMapper.toResponse(userStatusRepository.save(userStatus));
@@ -91,11 +95,11 @@ public class BasicUserStatusService implements UserStatusService {
     @Transactional
     public UserStatusDto.Response updateByUserId(UUID userId, UserStatusDto.UpdateRequest request) {
         if (!userRepository.existsById(userId)) {
-            throw new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + userId);
+            throw UserNotFoundException.withId(userId);
         }
 
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("(무결성 오류) 해당 유저는 존재하지만 UserStatus가 없습니다: " + userId));
+                .orElseThrow(() -> InternalServerException.dataIntegrity("UserStatus 존재해야 함: User %s", userId));
 
         userStatus.update(request.newLastActiveAt());
 
@@ -106,7 +110,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Transactional
     public void delete(UUID userStatusId) {
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
-                .orElseThrow(() -> new NoSuchElementException("해당 UserStatus를 찾을 수 없습니다: " + userStatusId));
+                .orElseThrow(() -> UserStatusNotFoundException.withId(userStatusId));
 
         userStatusRepository.delete(userStatus);
     }

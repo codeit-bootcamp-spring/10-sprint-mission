@@ -1,0 +1,28 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/discodeit
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate # 운영 DB 보호를 위해 검증만 수행
+    show-sql: false      # 성능 및 보안을 위해 콘솔 출력 비활성화
+    properties:
+      hibernate:
+        highlight_sql: false
+        use_sql_comments: false
+
+server:
+  port: 8081
+
+logging:
+  level:
+    root: info
+    com.sprint.mission.discodeit: info
+    org.hibernate.orm.queries: info

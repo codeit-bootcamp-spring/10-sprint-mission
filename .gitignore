@@ -1,14 +1,16 @@
 .gradle
 .discodeit
-.ai
-discodeit
+.logs
+discodeit/storage
+.env
+.dockerignore
+test_output.log
 
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 data/
-src/test/
 
 ### IntelliJ IDEA ###
 .idea

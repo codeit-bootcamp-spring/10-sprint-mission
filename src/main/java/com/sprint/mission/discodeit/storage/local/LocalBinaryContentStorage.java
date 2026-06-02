@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.storage.local;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
+import com.sprint.mission.discodeit.exception.etc.FileProcessingException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Slf4j
@@ -36,10 +36,10 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     public void init() {
         try {
             Files.createDirectories(this.root);
-            log.info("저장소 초기화 성공! 경로: {}", root);
+            log.info("[Storage Init] Success! Root Path: {}", root.toAbsolutePath());
         } catch (IOException e) {
-            log.error("저장소 폴더를 생성하는 도중 에러가 발생했습니다. 경로: {}", root, e);
-            throw new IllegalStateException("저장소 폴더 생성 실패:  경로: {}" + root, e);
+            log.error("[Storage Init] Failed! Path: {}", root, e);
+            throw FileProcessingException.storageInitFailed(root.toString(), e);
         }
     }
 
@@ -49,10 +49,12 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
         try {
             Files.write(path, bytes);
+            log.info("[File Saved] ID: {}, Path: {}, Size: {} bytes",
+                    binaryContentId, path.getFileName(), bytes.length);
             return binaryContentId;
         } catch (IOException e) {
-            log.error("파일 저장 중 오류 발생", e);
-            throw new IllegalStateException("파일 저장 실패", e);
+            log.error("[File Save Failed] ID: {}, Error: {}", binaryContentId, e.getMessage());
+            throw FileProcessingException.writeFailed(binaryContentId, e);
         }
     }
 
@@ -61,15 +63,18 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         Path path = resolvePath(binaryContentId);
 
         if (Files.notExists(path)) {
-            log.warn("파일을 찾을 수 없습니다. ID: {}, 경로: {}", binaryContentId, path.toAbsolutePath());
-            throw new NoSuchElementException("해당 파일을 찾을 수 없습니다.");
+            log.error("[File Read Failed] Not Found on Disk. ID: {}, Path: {}",
+                    binaryContentId, path.toAbsolutePath());
+            throw FileProcessingException.fileMissingOnDisk(binaryContentId);
         }
 
         try {
-            return new BufferedInputStream(Files.newInputStream(path));
+            InputStream inputStream = new BufferedInputStream(Files.newInputStream(path));
+            log.debug("[File Stream Opened] ID: {}, Path: {}", binaryContentId, path.getFileName());
+            return inputStream;
         } catch (IOException e) {
-            log.error("파일을 읽는 도중 오류 발생. ID: {}", binaryContentId, e);
-            throw new IllegalStateException("파일을 읽는 도중 오류가 발생했습니다.", e);
+            log.error("[File Read Error] ID: {}, Error: {}", binaryContentId, e.getMessage());
+            throw FileProcessingException.readFailed(binaryContentId.toString(), e);
         }
     }
 
@@ -83,6 +88,9 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
                 .build()
                 .toString();
 
+        log.info("[File Downloaded] ID: {}, Name: {}, ContentType: {}",
+                response.id(), response.fileName(), response.contentType());
+
         return ResponseEntity.ok()
                 .contentType(response.contentType() != null ?
                         MediaType.parseMediaType(response.contentType()) :
@@ -92,17 +100,17 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
                 .body(resource);
     }
 
-    @Override
     public void delete(UUID binaryContentId) {
         Path path = resolvePath(binaryContentId);
         try {
             if (Files.deleteIfExists(path)) {
-                log.info("파일 삭제 성공: {}", path);
+                log.info("[File Deleted] ID: {}, Path: {}", binaryContentId, path.getFileName());
             } else {
-                log.warn("삭제할 파일이 존재하지 않습니다: {}", path);
+                log.warn("[File Delete Skipped] Not found on Disk. ID: {}", binaryContentId);
             }
         } catch (IOException e) {
-            throw new IllegalStateException("파일 삭제 중 오류가 발생했습니다: " + path, e);
+            log.error("[File Delete Error] ID: {}, Error: {}", binaryContentId, e.getMessage());
+            throw FileProcessingException.deleteFailed(binaryContentId, e);
         }
     }
 

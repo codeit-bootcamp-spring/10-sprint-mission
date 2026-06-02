@@ -2,7 +2,9 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.dto.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.UserStatusDto;
+import com.sprint.mission.discodeit.exception.etc.InvalidFileTypeException;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -40,7 +42,7 @@ public class UserController implements UserApi {
     public ResponseEntity<UserDto.Response> updateUser(
             @PathVariable("userId") UUID userId,
             @RequestPart("userUpdateRequest") @Valid UserDto.UpdateRequest request,
-            @RequestPart (value = "profile", required = false) MultipartFile profile) {
+            @RequestPart(value = "profile", required = false) MultipartFile profile) {
         UserDto.Response response = userService.update(userId, request, uploadProfile(profile));
         return ResponseEntity.ok(response);
     }
@@ -75,11 +77,22 @@ public class UserController implements UserApi {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    @RequestMapping(method = RequestMethod.PUT, value = "/{userId}/role")
+    public ResponseEntity<UserDto.Response> updateUserRole(
+        @PathVariable("userId") UUID userId,
+        @RequestBody @Valid UserRoleUpdateRequest request) {
+        UserDto.Response response = userService.updateRole(userId, request.newRole());
+        return ResponseEntity.ok(response);
+    }
+
     private UUID uploadProfile(MultipartFile file) {
-        if (file == null || file.isEmpty()) return null;
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
 
         if (file.getContentType() == null || !file.getContentType().startsWith("image/")) {
-            throw new IllegalArgumentException("이미지만 업로드 가능합니다.");
+            throw InvalidFileTypeException.imageOnly(file.getContentType());
         }
 
         return binaryContentService.create(binaryContentService.multipartFileToCreateRequest(file))

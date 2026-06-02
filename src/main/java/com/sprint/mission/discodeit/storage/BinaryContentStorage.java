@@ -10,5 +10,4 @@ public interface BinaryContentStorage {
     UUID put (UUID uuid, byte[] bytes);
     InputStream get (UUID uuid);
     ResponseEntity<?> download(BinaryContentDto.Response response);
-    void delete(UUID binaryContentId);
 }

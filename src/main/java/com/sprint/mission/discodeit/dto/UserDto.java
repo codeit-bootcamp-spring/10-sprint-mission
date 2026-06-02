@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
+import com.sprint.mission.discodeit.entity.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
@@ -27,7 +28,8 @@ public class UserDto {
             String username,
             String email,
             BinaryContentDto.Response profile,   // 이미지 ID
-            boolean online
+            boolean online,
+            Role role
     ) {}
 
     @Schema(name = "UserUpdateRequest", description = "수정할 User 정보")
