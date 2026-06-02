@@ -26,8 +26,8 @@ public class BasicNotificationService implements NotificationService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<NotificationDto> findAll() {
-    List<Notification> notifications = notificationRepository.findAll();
+  public List<NotificationDto> findAll(UUID receiverId) {
+    List<Notification> notifications = notificationRepository.findAllByReceiverId(receiverId);
     log.debug("[NOTIFICATION] 알림 목록 조회 완료: notificationCount={}", notifications.size());
     return notifications.stream()
         .map(notificationMapper::toDto)
