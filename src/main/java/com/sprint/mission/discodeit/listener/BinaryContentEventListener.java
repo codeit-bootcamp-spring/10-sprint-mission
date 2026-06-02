@@ -20,17 +20,17 @@ public class BinaryContentEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleBinaryContentCreatedEvent(BinaryContentCreatedEvent event) {
-    log.debug("[BINARY_CONTENT] BinaryContent 생성 이벤트 수신 id={}", event.id());
+    log.debug("[BINARY_CONTENT] BinaryContent 생성 이벤트 수신 id={}", event.binaryContentId());
     try {
-      binaryContentStorage.put(event.id(), event.bytes());
+      binaryContentStorage.put(event.binaryContentId(), event.bytes());
 
-      binaryContentService.updateStatus(event.id(), BinaryContentStatus.SUCCESS);
-      log.info("[BINARY_CONTENT] 바이너리 데이터 업로드 성공: id={}", event.id());
+      binaryContentService.updateStatus(event.binaryContentId(), BinaryContentStatus.SUCCESS);
+      log.info("[BINARY_CONTENT] 바이너리 데이터 업로드 성공: id={}", event.binaryContentId());
 
     } catch (Exception e) {
-      log.error("[BINARY_CONTENT] 바이너리 데이터 업로드 실패: id={}", event.id());
+      log.error("[BINARY_CONTENT] 바이너리 데이터 업로드 실패: id={}", event.binaryContentId());
 
-      binaryContentService.updateStatus(event.id(), BinaryContentStatus.FAIL);
+      binaryContentService.updateStatus(event.binaryContentId(), BinaryContentStatus.FAIL);
     }
   }
 }

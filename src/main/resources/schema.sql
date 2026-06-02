@@ -73,3 +73,12 @@ CREATE TABLE read_statuses
     FOREIGN KEY (channel_id) REFERENCES channels (id) ON DELETE CASCADE,
     CONSTRAINT uk_user_channel UNIQUE (user_id, channel_id)
 );
+
+CREATE TABLE notifications
+(
+    id          UUID PRIMARY KEY,
+    created_at  timestamp with time zone NOT NULL,
+    receiver_id UUID                     NOT NULL,
+    title       VARCHAR(100)             NOT NULL,
+    content     VARCHAR(500)             NOT NULL
+);
