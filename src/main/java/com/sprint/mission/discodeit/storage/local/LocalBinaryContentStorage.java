@@ -56,9 +56,12 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     Path path = resolvePath(id);
     try {
       Files.write(path, bytes);
+      Thread.sleep(3000);
       return id;
     } catch (IOException e) {
       throw new BinaryContentUploadException();
+    } catch (InterruptedException e) {
+      throw new RuntimeException("Thread interrupted while simulating delay", e);
     }
   }
 
