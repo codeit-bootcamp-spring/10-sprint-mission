@@ -136,7 +136,7 @@ public class BasicUserService implements UserService {
                         profile.getOriginalFilename(),
                         profile.getContentType());
                 newBinaryContent = binaryContentRepository.save(newBinaryContent);
-                binaryContentStorage.put(newBinaryContent.getId(), profile.getBytes());
+                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(newBinaryContent.getId(), profile.getBytes()));
 
                 user.updateProfileImg(newBinaryContent);
             } catch (Exception e) {
