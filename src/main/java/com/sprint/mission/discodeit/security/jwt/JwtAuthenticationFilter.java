@@ -21,9 +21,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private static final String AUTHORIZATION_HEADER = "Authorization";
   private static final String BEARER_PREFIX = "Bearer ";
-
   private final JwtTokenProvider jwtTokenProvider;
   private final DiscodeitUserDetailsService discodeitUserDetailsService;
+  private final JwtRegistry jwtRegistry;
 
   @Override
   protected void doFilterInternal(
@@ -44,6 +44,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     try {
       Map<String, Object> claims = jwtTokenProvider.getClaims(accessToken);
+
+      if (!jwtRegistry.hasActiveJwtInformationByAccessToken(accessToken)) {
+        filterChain.doFilter(request, response);
+        return;
+      }
+
       String username = (String) claims.get("sub");
 
       UserDetails userDetails =

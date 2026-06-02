@@ -20,7 +20,7 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
@@ -28,8 +28,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +45,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentMapper binaryContentMapper;
   private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
-  private final SessionRegistry sessionRegistry;
+  private final JwtRegistry jwtRegistry;
 
   @Override
   public UserResponse create(UserCreateRequest request) {
@@ -202,8 +200,7 @@ public class BasicUserService implements UserService {
 
     User savedUser = userRepository.save(user);
 
-    //권한이 변경된 사용자 로그인중이면 세션만료
-    expireUserSessions(savedUser.getId());
+    jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
 
     BinaryContent profileImage = findProfileImageOrNull(savedUser);
     boolean online = isOnline(savedUser.getId());
@@ -247,21 +244,8 @@ public class BasicUserService implements UserService {
     }
   }
 
-  private void expireUserSessions(UUID userId) {
-    sessionRegistry.getAllPrincipals().stream()
-        .filter(DiscodeitUserDetails.class::isInstance)
-        .map(DiscodeitUserDetails.class::cast)
-        .filter(principal -> principal.getUserDto().id().equals(userId))
-        .forEach(principal ->
-            sessionRegistry.getAllSessions(principal, false)
-                .forEach(SessionInformation::expireNow)
-        );
-  }
 
   private boolean isOnline(UUID userId) {
-    return sessionRegistry.getAllPrincipals().stream()
-        .filter(DiscodeitUserDetails.class::isInstance)
-        .map(DiscodeitUserDetails.class::cast)
-        .anyMatch(principal -> principal.getUserDto().id().equals(userId));
+    return jwtRegistry.hasActiveJwtInformationByUserId(userId);
   }
 }

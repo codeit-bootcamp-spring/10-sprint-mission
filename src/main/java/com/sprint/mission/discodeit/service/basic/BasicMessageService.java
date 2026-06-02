@@ -23,7 +23,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.time.Instant;
@@ -38,7 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,7 +55,7 @@ public class BasicMessageService implements MessageService {
   private final MessageDtoMapper messageDtoMapper;
   private final BinaryContentMapper binaryContentMapper;
   private final UserMapper userMapper;
-  private final SessionRegistry sessionRegistry;
+  private final JwtRegistry jwtRegistry;
 
   @Override
   public MessageDto create(MessageCreateRequest req) {
@@ -230,10 +229,7 @@ public class BasicMessageService implements MessageService {
   }
 
   private boolean isOnline(UUID userId) {
-    return sessionRegistry.getAllPrincipals().stream()
-        .filter(DiscodeitUserDetails.class::isInstance)
-        .map(DiscodeitUserDetails.class::cast)
-        .anyMatch(principal -> principal.getUserDto().id().equals(userId));
+    return jwtRegistry.hasActiveJwtInformationByUserId(userId);
   }
 
   private void findChannelOrThrow(UUID channelId) {

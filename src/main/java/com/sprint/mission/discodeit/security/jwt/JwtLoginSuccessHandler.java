@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.auth.JwtDto;
+import com.sprint.mission.discodeit.dto.auth.JwtInformation;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import jakarta.servlet.http.Cookie;
@@ -24,9 +25,9 @@ import org.springframework.stereotype.Component;
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
   private static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
-
   private final JwtTokenProvider jwtTokenProvider;
   private final ObjectMapper objectMapper;
+  private final JwtRegistry jwtRegistry;
 
   @Override
   public void onAuthenticationSuccess(
@@ -42,6 +43,9 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     UserDto userDto = userDetails.getUserDto();
 
     Map<String, Object> claims = Map.of(
+        "userId", userDto.id().toString(),
+        "email", userDto.email(),
+        "username", userDto.username(),
         "roles", authentication.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
             .toList()
@@ -55,7 +59,17 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     String refreshToken = jwtTokenProvider.generateRefreshToken(
         userDto.email()
     );
-    
+
+    jwtRegistry.registerJwtInformation(
+        new JwtInformation(
+            userDto.id(),
+            accessToken,
+            refreshToken,
+            jwtTokenProvider.getExpiration(accessToken),
+            jwtTokenProvider.getExpiration(refreshToken)
+        )
+    );
+
     Cookie refreshTokenCookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken);
     refreshTokenCookie.setHttpOnly(true);
     refreshTokenCookie.setPath("/");
