@@ -13,6 +13,9 @@ public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
 
   List<ReadStatus> findAllByUserId(UUID userId);
 
+  /// 특정 채널에 알림설정이 돼있는 ReadStatus
+  List<ReadStatus> findAllByChannelIdAndNotificationEnabledTrue(UUID channelId);
+
   @Query("SELECT r FROM ReadStatus r "
       + "JOIN FETCH r.user u "
       + "LEFT JOIN FETCH u.profile "
