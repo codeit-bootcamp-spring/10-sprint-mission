@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.events.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.events.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.FieldNotValidException;
 import com.sprint.mission.discodeit.exception.InternalServiceException;
 import com.sprint.mission.discodeit.exception.RequestNullException;
@@ -103,6 +104,10 @@ public class BasicMessageService implements MessageService {
         message.getId(), message.getChannel().getId(), message.getAuthor().getId());
     Message saved = messageRepository.save(message);
     log.info("메시지 생성 및 영속화 성공: messageId={}", saved.getId());
+
+    eventPublisher.publishEvent(
+        new MessageCreatedEvent(message.getId())
+    );
 
     return messageMapper.toDto(saved);
   }

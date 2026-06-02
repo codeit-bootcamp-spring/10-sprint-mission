@@ -68,6 +68,7 @@ CREATE TABLE read_statuses
     user_id      UUID        NOT NULL,
     channel_id   UUID        NOT NULL,
     last_read_at timestamptz NOT NULL,
+    notification_enabled    boolean  NOT NULL,
     CONSTRAINT uq_read_status_user_channel UNIQUE (user_id, channel_id),
     CONSTRAINT fk_read_status_user
         FOREIGN KEY (user_id)

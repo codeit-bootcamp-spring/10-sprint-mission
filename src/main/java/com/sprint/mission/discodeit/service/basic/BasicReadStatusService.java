@@ -122,7 +122,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
         ReadStatus readStatus = getReadstatus(id);
 
-        readStatus.update(req.newLastReadAt());
+        readStatus.update(req.newLastReadAt(), req.newNotificationEnabled());
 
         ReadStatus saved = readStatusRepository.save(readStatus);
 
@@ -130,7 +130,8 @@ public class BasicReadStatusService implements ReadStatusService {
             readStatus.getId(),
             readStatus.getUser().getId(),
             readStatus.getChannel().getId(),
-            saved.getLastReadAt());
+            saved.getLastReadAt(),
+            saved.isNotificationEnabled());
 
     }
 
