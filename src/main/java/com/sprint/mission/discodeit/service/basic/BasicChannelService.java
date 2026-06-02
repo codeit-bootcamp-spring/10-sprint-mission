@@ -50,7 +50,7 @@ public class BasicChannelService implements ChannelService {
         .map(userId -> userRepository.findById(userId)
             .orElseThrow(UserNotFoundException::new))
         .forEach(user -> readStatusRepository.save(
-            new ReadStatus(user, channel, channel.getCreatedAt())));
+            new ReadStatus(user, channel, channel.getCreatedAt(), true)));
     log.debug("[CHANNEL] ReadStatus 생성 완료: readStatusCount={}",
         request.participantIds().size());
     log.info("[CHANNEL] Private 채널 생성 완료: channelId={}", channel.getId());

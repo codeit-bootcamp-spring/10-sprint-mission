@@ -62,12 +62,13 @@ CREATE TABLE message_attachments
 
 CREATE TABLE read_statuses
 (
-    id           UUID PRIMARY KEY,
-    created_at   timestamp with time zone NOT NULL,
-    updated_at   timestamp with time zone,
-    user_id      UUID                     NOT NULL,
-    channel_id   UUID                     NOT NULL,
-    last_read_at timestamp with time zone NOT NULL,
+    id                   UUID PRIMARY KEY,
+    created_at           timestamp with time zone NOT NULL,
+    updated_at           timestamp with time zone,
+    user_id              UUID                     NOT NULL,
+    channel_id           UUID                     NOT NULL,
+    last_read_at         timestamp with time zone NOT NULL,
+    notification_enabled boolean                  NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (channel_id) REFERENCES channels (id) ON DELETE CASCADE,
     CONSTRAINT uk_user_channel UNIQUE (user_id, channel_id)
