@@ -86,6 +86,7 @@ create table read_statuses
     created_at   timestamp(6) with time zone not null,
     last_read_at timestamp(6) with time zone not null,
     updated_at   timestamp(6) with time zone not null,
+    notification_enabled boolean NOT NULL,
     channel_id   uuid                        not null
         constraint fk_read_statuses_channel
             references channels
@@ -101,4 +102,20 @@ create table read_statuses
 );
 
 alter table read_statuses
+    owner to discodeit_user;
+
+create table notifications
+(
+    created_at  timestamp(6) with time zone not null,
+    id          uuid                        not null
+        primary key,
+    receiver_id uuid                        not null
+        constraint fk_notifications_receiver
+            references users
+            on delete cascade,
+    title       varchar(255)                not null,
+    content     varchar(1000)               not null
+);
+
+alter table notifications
     owner to discodeit_user;

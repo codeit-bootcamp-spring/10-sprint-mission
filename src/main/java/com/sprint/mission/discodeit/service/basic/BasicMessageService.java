@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.global.InvalidInputException;
@@ -50,6 +51,7 @@ public class BasicMessageService implements MessageService {
 
     private final ApplicationEventPublisher eventPublisher;
 
+    @Transactional
     @Override
     public MessageDto createMessage(CreateMessageRequestDTO dto, List<CreateBinaryContentPayloadDTO> attachments) {
         User user = findUserOrThrow(dto.authorId());
@@ -79,6 +81,8 @@ public class BasicMessageService implements MessageService {
                 );
             }
         }
+
+        eventPublisher.publishEvent(new MessageCreatedEvent(savedMessage));
 
         log.info("[MESSAGE_CREATE_SUCCESS] 메시지 생성 성공: messageId={}", message.getId());
         return messageMapper.toDto(savedMessage);
