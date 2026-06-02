@@ -10,7 +10,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 
 public interface UserService {
@@ -26,9 +25,6 @@ public interface UserService {
 	UserDto update(@Param("userId") UUID userId,
 		UserUpdateRequest userUpdateRequest,
 		Optional<BinaryContentCreateRequest> profileCreateRequest);
-
-	@PreAuthorize("hasRole('ADMIN')")
-	UserDto updateRole(UserRoleUpdateRequest request);
 
 	@PreAuthorize("@resourceAuthorizationService.canModifyUser(authentication, #userId)")
 	void delete(@Param("userId") UUID userId);

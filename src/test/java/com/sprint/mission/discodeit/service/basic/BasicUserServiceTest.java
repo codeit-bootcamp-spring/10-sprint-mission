@@ -14,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -27,6 +26,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UsernameAlreadyExistsException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 
 @ExtendWith(MockitoExtension.class)
 class BasicUserServiceTest {
@@ -41,7 +41,7 @@ class BasicUserServiceTest {
 	private PasswordEncoder passwordEncoder;
 
 	@Mock
-	private SessionRegistry sessionRegistry;
+	private JwtRegistry jwtRegistry;
 
 	@InjectMocks
 	private BasicUserService userService;
@@ -180,6 +180,7 @@ class BasicUserServiceTest {
 		userService.delete(userId);
 
 		// then
+		verify(jwtRegistry).invalidateJwtInformationByUserId(eq(userId));
 		verify(userRepository).deleteById(eq(userId));
 	}
 

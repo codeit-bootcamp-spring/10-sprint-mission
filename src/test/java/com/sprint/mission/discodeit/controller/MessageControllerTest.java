@@ -31,6 +31,10 @@ import com.sprint.mission.discodeit.dto.response.MessageDto;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.security.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.security.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.RefreshTokenCookieManager;
 import com.sprint.mission.discodeit.service.MessageService;
 
 @AutoConfigureMockMvc(addFilters = false)
@@ -45,6 +49,18 @@ class MessageControllerTest {
 
 	@MockitoBean
 	private MessageService messageService;
+
+	@MockitoBean
+	private JwtLoginSuccessHandler jwtLoginSuccessHandler;
+
+	@MockitoBean
+	private LoginFailureHandler loginFailureHandler;
+
+	@MockitoBean
+	private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+	@MockitoBean
+	private RefreshTokenCookieManager refreshTokenCookieManager;
 
 	@Test
 	@DisplayName("메시지 생성 성공 테스트")
