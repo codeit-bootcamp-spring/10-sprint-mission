@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -18,6 +19,7 @@ import com.sprint.mission.discodeit.service.AuthService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -34,6 +36,7 @@ public class BasicAuthService implements AuthService {
   private final JwtRegistry jwtRegistry;
   private final JwtTokenProvider tokenProvider;
   private final UserDetailsService userDetailsService;
+  private final ApplicationEventPublisher eventPublisher;
 
   @PreAuthorize("hasRole('ADMIN')")
   @Transactional
@@ -46,13 +49,18 @@ public class BasicAuthService implements AuthService {
   @Override
   public UserDto updateRoleInternal(RoleUpdateRequest request) {
     UUID userId = request.userId();
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> UserNotFoundException.withId(userId));
+    User user =
+        userRepository.findById(userId).orElseThrow(() -> UserNotFoundException.withId(userId));
 
+    Role previousRole = request.newRole();
     Role newRole = request.newRole();
-    user.updateRole(newRole);
 
     jwtRegistry.invalidateJwtInformationByUserId(userId);
+
+    // 실제 권한 변경 시 알림 발행
+    if (previousRole != newRole) {
+      eventPublisher.publishEvent(new RoleUpdatedEvent(userId, previousRole, newRole));
+    }
 
     return userMapper.toDto(user);
   }
@@ -78,15 +86,9 @@ public class BasicAuthService implements AuthService {
       String newRefreshToken = tokenProvider.generateRefreshToken(discodeitUserDetails);
       log.info("Access token refreshed for user: {}", username);
 
-      JwtInformation newJwtInformation = new JwtInformation(
-          discodeitUserDetails.getUserDto(),
-          newAccessToken,
-          newRefreshToken
-      );
-      jwtRegistry.rotateJwtInformation(
-          refreshToken,
-          newJwtInformation
-      );
+      JwtInformation newJwtInformation =
+          new JwtInformation(discodeitUserDetails.getUserDto(), newAccessToken, newRefreshToken);
+      jwtRegistry.rotateJwtInformation(refreshToken, newJwtInformation);
 
       return newJwtInformation;
 
