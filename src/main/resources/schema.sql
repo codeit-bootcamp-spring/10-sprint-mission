@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS user_statuses;
 DROP TABLE IF EXISTS read_statuses;
 DROP TABLE IF EXISTS message_attachments;

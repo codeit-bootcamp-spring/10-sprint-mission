@@ -13,7 +13,9 @@ public record ReadStatusDto(
     @Schema(description = "채널 ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
     UUID channelId,
     @Schema(description = "마지막 수신 시각", example = "2026-02-23T01:30:54Z")
-    Instant lastReadAt
+    Instant lastReadAt,
+    @Schema(description = "알림 수신 여부", example = "true")
+    Boolean notificationEnabled
 ) {
 
 }
