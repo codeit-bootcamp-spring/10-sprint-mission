@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentUploadException;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateUsernameException;
@@ -144,6 +145,7 @@ public class BasicUserService implements UserService {
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", request.userId())));
     user.updateRole(request.newRole());
     authService.expireUserSessions(user.getId());
+    eventPublisher.publishEvent(new RoleUpdatedEvent(user.getId()));
     log.info("[USER] 유저 역할 수정 완료: userId={}", user.getId());
     return userMapper.toDto(user, false);
   }
