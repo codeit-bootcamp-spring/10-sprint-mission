@@ -9,8 +9,6 @@ logging:
     org.springframework.security.web.DefaultSecurityFilterChain: trace
     root: info
 
-
-
 management:
   endpoints:
     web:
@@ -19,6 +17,14 @@ management:
   endpoint:
     health:
       show-details: never
+
+
+jwt:
+  key: ${JWT_SECRET_KEY}
+  access-token-expiration-minutes: 30
+  refresh-token-expiration-minutes: 420
+
+
 
 #discodeit:
 #  storage:

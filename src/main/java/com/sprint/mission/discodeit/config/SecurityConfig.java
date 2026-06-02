@@ -2,7 +2,9 @@ package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.LoginSuccessHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -21,12 +23,15 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 
 @Configuration
 @RequiredArgsConstructor
@@ -36,10 +41,10 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http,
-      LoginSuccessHandler loginSuccessHandler,
+      JwtLoginSuccessHandler jwtLoginSuccessHandler,
       LoginFailureHandler loginFailureHandler,
-      SessionRegistry sessionRegistry,
-      DiscodeitUserDetailsService discodeitUserDetailsService
+      JwtAuthenticationFilter jwtAuthenticationFilter,
+      JwtLogoutHandler jwtLogoutHandler
   ) throws Exception {
     http
         .cors(Customizer.withDefaults()
@@ -54,32 +59,25 @@ public class SecurityConfig {
         // POST /api/auth/login 요청을 Spring Security의 로그인 처리 URL로 지정
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
-            .successHandler(loginSuccessHandler)
+            .successHandler(jwtLoginSuccessHandler)
             .failureHandler(loginFailureHandler)
         )
-
-        // rememberMe 설정
-        .rememberMe(remember -> remember
-            .rememberMeParameter("remember-me")
-            .key("discodeit-remember-me-key")
-            .tokenValiditySeconds(60 * 60 * 24 * 14)
-            .userDetailsService(discodeitUserDetailsService)
+        // JWT 인증 필터 추가
+        .addFilterBefore(
+            jwtAuthenticationFilter,
+            UsernamePasswordAuthenticationFilter.class
         )
-
         // 로그아웃 성공 시 204 반환
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
+            .addLogoutHandler(jwtLogoutHandler)
             .logoutSuccessHandler(
                 new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
             )
         )
-        // 동시 로그인 제한
-        .sessionManagement(management -> management
-            .sessionConcurrency(concurrency -> concurrency
-                .maximumSessions(1)
-                .maxSessionsPreventsLogin(false)
-                .sessionRegistry(sessionRegistry)
-            )
+        // 세션 생성 정책
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         // 예외 반환 (인증 안됨 401 / 권한 없음 403)
         .exceptionHandling(ex -> ex
@@ -111,8 +109,8 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
             // ADMIN권한 사용자만 진행가능
             .requestMatchers(HttpMethod.PUT, "/api/auth/role").hasRole("ADMIN")
-            // 인증된 사용자만 진행 가능
-            .requestMatchers("/api/auth/me").authenticated()
+            // 리프레시 토큰 발행은 인증 필요 없음
+            .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
             // 그 외 모든 요청 인증 필요
             .anyRequest().authenticated()
         );
