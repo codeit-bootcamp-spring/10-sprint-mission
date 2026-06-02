@@ -19,6 +19,7 @@ public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
     public void handle(HttpServletRequest request, HttpServletResponse response, Supplier<CsrfToken> deferredCsrfToken) {
         // 토큰을 마스킹은 xor핸들러에게 위임
         this.delegate.handle(request, response, deferredCsrfToken);
+        deferredCsrfToken.get();
     }
 
     @Override
