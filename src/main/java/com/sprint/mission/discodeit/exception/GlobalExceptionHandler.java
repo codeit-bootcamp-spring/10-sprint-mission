@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
     ErrorResponse response = new ErrorResponse(
         Instant.now(),
         "VALIDATION_ERROR",
-        "요청 데이터 유효성 검사에 실패했습니다",
+        "요청 데이터 유효성 검사에 실패했습니다.",
         validationErrors,
         ex.getClass().getSimpleName(),
         HttpStatus.BAD_REQUEST.value()
@@ -69,7 +69,7 @@ public class GlobalExceptionHandler {
     ErrorResponse response = new ErrorResponse(
         Instant.now(),
         "AUTHORIZATION_DENIED",
-        "요청에 대한 권한이 없습니다",
+        "요청에 대한 권한이 없습니다.",
         null,
         ex.getClass().getSimpleName(),
         HttpStatus.FORBIDDEN.value()
@@ -83,7 +83,7 @@ public class GlobalExceptionHandler {
     ErrorCode errorCode = exception.getErrorCode();
     return switch (errorCode) {
       case USER_NOT_FOUND, CHANNEL_NOT_FOUND, MESSAGE_NOT_FOUND, BINARY_CONTENT_NOT_FOUND,
-           READ_STATUS_NOT_FOUND -> HttpStatus.NOT_FOUND;
+           READ_STATUS_NOT_FOUND, NOTIFICATION_NOT_FOUND -> HttpStatus.NOT_FOUND;
       case DUPLICATE_USER, DUPLICATE_READ_STATUS -> HttpStatus.CONFLICT;
       case INVALID_USER_CREDENTIALS, INVALID_TOKEN, INVALID_USER_DETAILS -> HttpStatus.UNAUTHORIZED;
       case PRIVATE_CHANNEL_UPDATE, INVALID_REQUEST -> HttpStatus.BAD_REQUEST;
