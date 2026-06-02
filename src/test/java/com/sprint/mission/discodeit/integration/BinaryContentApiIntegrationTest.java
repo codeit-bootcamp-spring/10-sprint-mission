@@ -194,6 +194,7 @@ class BinaryContentApiIntegrationTest {
 
     BinaryContentDto binaryContent = binaryContentService.create(createRequest);
     UUID binaryContentId = binaryContent.id();
+    Thread.sleep(3000);
 
     // When & Then
     mockMvc.perform(get("/api/binaryContents/{binaryContentId}/download", binaryContentId))
