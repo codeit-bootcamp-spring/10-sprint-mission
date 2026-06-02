@@ -34,6 +34,7 @@ public enum ErrorCode {
   INVALID_USER_DETAILS("사용자 인증 정보(UserDetails)가 유효하지 않습니다."),
 
   // Notification 관련
+  NOTIFICATION_ACCESS_DENIED("알림에 접근할 권한이 없습니다."),
   NOTIFICATION_NOT_FOUND("알림을 찾을 수 없습니다.");
 
   private final String message;

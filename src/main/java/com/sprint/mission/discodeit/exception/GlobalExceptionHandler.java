@@ -97,6 +97,7 @@ public class GlobalExceptionHandler {
 
       case INTERNAL_SERVER_ERROR, BINARY_CONTENT_PROCESSING_ERROR ->
           HttpStatus.INTERNAL_SERVER_ERROR;
+      case NOTIFICATION_ACCESS_DENIED -> HttpStatus.FORBIDDEN;
     };
   }
 }
