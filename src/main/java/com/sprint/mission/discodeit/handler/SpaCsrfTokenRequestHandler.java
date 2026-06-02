@@ -11,8 +11,10 @@ import org.springframework.util.StringUtils;
 import java.util.function.Supplier;
 
 
-public class SpaCsrfTokenRequestHandler extends CsrfTokenRequestAttributeHandler {
+public class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
+    private final CsrfTokenRequestHandler plain = new CsrfTokenRequestAttributeHandler();
     private final CsrfTokenRequestHandler delegate = new XorCsrfTokenRequestAttributeHandler();
+
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, Supplier<CsrfToken> deferredCsrfToken) {
         // 토큰을 마스킹은 xor핸들러에게 위임
@@ -22,7 +24,7 @@ public class SpaCsrfTokenRequestHandler extends CsrfTokenRequestAttributeHandler
     @Override
     public String resolveCsrfTokenValue(HttpServletRequest request, CsrfToken csrfToken) {
         if(StringUtils.hasText(request.getHeader(csrfToken.getHeaderName()))){
-            return super.resolveCsrfTokenValue(request, csrfToken);
+            return plain.resolveCsrfTokenValue(request, csrfToken);
         }
         return this.delegate.resolveCsrfTokenValue(request, csrfToken);
     }

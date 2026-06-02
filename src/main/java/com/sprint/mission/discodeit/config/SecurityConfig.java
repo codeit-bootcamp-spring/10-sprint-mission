@@ -12,6 +12,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -23,16 +24,18 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
     private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
     private final LoginFailureHandler loginFailureHandler;
     private final DiscodeitAccessDeniedHandler discodeitAccessDeniedHandler;
     private final DiscodeitAuthenticationEntryPoint discodeitAuthenticationEntryPoint;
-    private final DiscodeitUserDetailsService discodeitUserDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtLogoutHandler jwtLogoutHandler;
 
@@ -56,20 +59,14 @@ public class SecurityConfig {
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
                         .addLogoutHandler(jwtLogoutHandler))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers(
-                                "/",
-                                "/index.html",
-                                "/assets/**",
-                                "/favicon.ico",
-                                "/api/auth/csrf-token",
-                                "/api/auth/login",
-                                "/api/auth/logout",
-                                "/api/auth/csrf-token",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/api/auth/refresh",
-                                "/actuator/**").permitAll()
+                                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
+                                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
+                                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
+                                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh"),
+                                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
+                                new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
+                        ).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex

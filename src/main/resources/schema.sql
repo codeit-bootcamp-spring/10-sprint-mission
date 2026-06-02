@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS user_statuses CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS channels CASCADE;
 DROP TABLE IF EXISTS binary_contents CASCADE;
+DROP TABLE IF EXISTS refresh_tokens CASCADE;
 
 -- 2.  바이너리 파일을 관리하는 테이블
 CREATE TABLE binary_contents
