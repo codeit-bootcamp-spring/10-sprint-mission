@@ -1,29 +1,23 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.security.access.prepost.PreAuthorize;
-
-import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.ChannelDto;
-
 public interface ChannelService {
 
-	@PreAuthorize("hasRole('CHANNEL_MANAGER')")
-	ChannelDto create(PublicChannelCreateRequest request);
+  ChannelDto create(PublicChannelCreateRequest request);
 
-	ChannelDto create(PrivateChannelCreateRequest request);
+  ChannelDto create(PrivateChannelCreateRequest request);
 
-	ChannelDto find(UUID channelId);
+  ChannelDto find(UUID channelId);
 
-	List<ChannelDto> findAllByUserId(UUID userId);
+  List<ChannelDto> findAllByUserId(UUID userId);
 
-	@PreAuthorize("hasRole('CHANNEL_MANAGER')")
-	ChannelDto update(UUID channelId, PublicChannelUpdateRequest request);
+  ChannelDto update(UUID channelId, PublicChannelUpdateRequest request);
 
-	@PreAuthorize("hasRole('CHANNEL_MANAGER')")
-	void delete(UUID channelId);
+  void delete(UUID channelId);
 }

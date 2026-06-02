@@ -1,142 +1,129 @@
 package com.sprint.mission.discodeit.security.jwt;
 
-import java.time.Instant;
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-@Component
+
+@RequiredArgsConstructor
 public class InMemoryJwtRegistry implements JwtRegistry {
 
-	private static final int DEFAULT_MAX_ACTIVE_JWT_COUNT = 1;
+  // <userId, Queue<JwtInformation>>
+  private final Map<UUID, Queue<JwtInformation>> origin = new ConcurrentHashMap<>();
+  private final Set<String> accessTokenIndexes = ConcurrentHashMap.newKeySet();
+  private final Set<String> refreshTokenIndexes = ConcurrentHashMap.newKeySet();
 
-	private final Map<UUID, Queue<JwtInformation>> origin = new ConcurrentHashMap<>();
-	private final int maxActiveJwtCount = DEFAULT_MAX_ACTIVE_JWT_COUNT;
+  private final int maxActiveJwtCount;
+  private final JwtTokenProvider jwtTokenProvider;
 
-	@Override
-	public void registerJwtInformation(JwtInformation jwtInformation) {
-		if (jwtInformation == null) {
-			return;
-		}
+  @Override
+  public void registerJwtInformation(JwtInformation jwtInformation) {
+    origin.compute(jwtInformation.getUserDto().id(), (key, queue) -> {
+      if (queue == null) {
+        queue = new ConcurrentLinkedQueue<>();
+      }
+      // If the queue exceeds the max size, remove the oldest token
+      if (queue.size() >= maxActiveJwtCount) {
+        JwtInformation deprecatedJwtInformation = queue.poll();// Remove the oldest token
+        if (deprecatedJwtInformation != null) {
+          removeTokenIndex(
+              deprecatedJwtInformation.getAccessToken(),
+              deprecatedJwtInformation.getRefreshToken()
+          );
+        }
+      }
+      queue.add(jwtInformation); // Add the new token
+      addTokenIndex(
+          jwtInformation.getAccessToken(),
+          jwtInformation.getRefreshToken()
+      );
+      return queue;
+    });
+  }
 
-		origin.compute(jwtInformation.userId(), (userId, jwtInformationQueue) -> {
-			Queue<JwtInformation> activeJwtInformationQueue = jwtInformationQueue == null
-				? new ConcurrentLinkedQueue<>()
-				: jwtInformationQueue;
+  @Override
+  public void invalidateJwtInformationByUserId(UUID userId) {
+    origin.computeIfPresent(userId, (key, queue) -> {
+      queue.forEach(jwtInformation -> {
+        removeTokenIndex(
+            jwtInformation.getAccessToken(),
+            jwtInformation.getRefreshToken()
+        );
+      });
+      queue.clear(); // Clear the queue for this user
+      return null; // Remove the user from the registry
+    });
+  }
 
-			clearExpiredJwtInformation(activeJwtInformationQueue, Instant.now());
-			activeJwtInformationQueue.add(jwtInformation);
-			trimJwtInformation(activeJwtInformationQueue);
-			return activeJwtInformationQueue;
-		});
-	}
+  @Override
+  public boolean hasActiveJwtInformationByUserId(UUID userId) {
+    return origin.containsKey(userId);
+  }
 
-	@Override
-	public void invalidateJwtInformationByUserId(UUID userId) {
-		if (userId == null) {
-			return;
-		}
-		origin.remove(userId);
-	}
+  @Override
+  public boolean hasActiveJwtInformationByAccessToken(String accessToken) {
+    return accessTokenIndexes.contains(accessToken);
+  }
 
-	@Override
-	public void invalidateJwtInformationByRefreshToken(String refreshToken) {
-		if (!StringUtils.hasText(refreshToken)) {
-			return;
-		}
+  @Override
+  public boolean hasActiveJwtInformationByRefreshToken(String refreshToken) {
+    return refreshTokenIndexes.contains(refreshToken);
+  }
 
-		origin.forEach((userId, jwtInformationQueue) -> jwtInformationQueue.removeIf(
-			jwtInformation -> jwtInformation.hasRefreshToken(refreshToken)
-		));
-		removeEmptyJwtInformationQueues();
-	}
+  @Override
+  public void rotateJwtInformation(String refreshToken, JwtInformation newJwtInformation) {
+    origin.computeIfPresent(newJwtInformation.getUserDto().id(), (key, queue) -> {
+      queue.stream().filter(jwtInformation -> jwtInformation.getRefreshToken().equals(refreshToken))
+          .findFirst()
+          .ifPresent(jwtInformation -> {
+            removeTokenIndex(jwtInformation.getAccessToken(), jwtInformation.getRefreshToken());
+            jwtInformation.rotate(
+                newJwtInformation.getAccessToken(),
+                newJwtInformation.getRefreshToken()
+            );
+            addTokenIndex(
+                newJwtInformation.getAccessToken(),
+                newJwtInformation.getRefreshToken()
+            );
+          });
+      return queue;
+    });
+  }
 
-	@Override
-	public boolean hasActiveJwtInformationByUserId(UUID userId) {
-		if (userId == null) {
-			return false;
-		}
+  @Scheduled(fixedDelay = 1000 * 60 * 5)
+  @Override
+  public void clearExpiredJwtInformation() {
+    origin.entrySet().removeIf(entry -> {
+      Queue<JwtInformation> queue = entry.getValue();
+      queue.removeIf(jwtInformation -> {
+        boolean isExpired =
+            !jwtTokenProvider.validateAccessToken(jwtInformation.getAccessToken()) ||
+                !jwtTokenProvider.validateRefreshToken(jwtInformation.getRefreshToken());
+        if (isExpired) {
+          removeTokenIndex(
+              jwtInformation.getAccessToken(),
+              jwtInformation.getRefreshToken()
+          );
+        }
+        return isExpired;
+      });
+      return queue.isEmpty(); // Remove the entry if the queue is empty
+    });
+  }
 
-		clearExpiredJwtInformation();
-		Queue<JwtInformation> jwtInformationQueue = origin.get(userId);
-		return jwtInformationQueue != null && jwtInformationQueue.stream()
-			.anyMatch(jwtInformation -> !jwtInformation.isRefreshTokenExpired());
-	}
+  private void addTokenIndex(String accessToken, String refreshToken) {
+    accessTokenIndexes.add(accessToken);
+    refreshTokenIndexes.add(refreshToken);
+  }
 
-	@Override
-	public boolean hasActiveJwtInformationByAccessToken(String accessToken) {
-		if (!StringUtils.hasText(accessToken)) {
-			return false;
-		}
-
-		clearExpiredJwtInformation();
-		return origin.values().stream()
-			.flatMap(Queue::stream)
-			.anyMatch(jwtInformation -> jwtInformation.hasAccessToken(accessToken)
-				&& !jwtInformation.isAccessTokenExpired());
-	}
-
-	@Override
-	public boolean hasActiveJwtInformationByRefreshToken(String refreshToken) {
-		if (!StringUtils.hasText(refreshToken)) {
-			return false;
-		}
-
-		clearExpiredJwtInformation();
-		return origin.values().stream()
-			.flatMap(Queue::stream)
-			.anyMatch(jwtInformation -> jwtInformation.hasRefreshToken(refreshToken)
-				&& !jwtInformation.isRefreshTokenExpired());
-	}
-
-	@Override
-	public boolean rotateJwtInformation(String refreshToken, JwtInformation jwtInformation) {
-		if (!StringUtils.hasText(refreshToken) || jwtInformation == null) {
-			return false;
-		}
-
-		clearExpiredJwtInformation();
-		AtomicBoolean rotated = new AtomicBoolean(false);
-		origin.computeIfPresent(jwtInformation.userId(), (userId, jwtInformationQueue) -> {
-			boolean removed = jwtInformationQueue.removeIf(storedJwtInformation ->
-				storedJwtInformation.hasRefreshToken(refreshToken) && !storedJwtInformation.isRefreshTokenExpired()
-			);
-			if (removed) {
-				jwtInformationQueue.add(jwtInformation);
-				trimJwtInformation(jwtInformationQueue);
-				rotated.set(true);
-			}
-			return jwtInformationQueue.isEmpty() ? null : jwtInformationQueue;
-		});
-		return rotated.get();
-	}
-
-	@Scheduled(fixedDelay = 1000 * 60 * 5)
-	@Override
-	public void clearExpiredJwtInformation() {
-		Instant now = Instant.now();
-		origin.forEach((userId, jwtInformationQueue) -> clearExpiredJwtInformation(jwtInformationQueue, now));
-		removeEmptyJwtInformationQueues();
-	}
-
-	private void clearExpiredJwtInformation(Queue<JwtInformation> jwtInformationQueue, Instant now) {
-		jwtInformationQueue.removeIf(jwtInformation -> jwtInformation.isExpired(now));
-	}
-
-	private void trimJwtInformation(Queue<JwtInformation> jwtInformationQueue) {
-		while (jwtInformationQueue.size() > maxActiveJwtCount) {
-			jwtInformationQueue.poll();
-		}
-	}
-
-	private void removeEmptyJwtInformationQueues() {
-		origin.entrySet().removeIf(entry -> entry.getValue().isEmpty());
-	}
+  private void removeTokenIndex(String accessToken, String refreshToken) {
+    accessTokenIndexes.remove(accessToken);
+    refreshTokenIndexes.remove(refreshToken);
+  }
 }
