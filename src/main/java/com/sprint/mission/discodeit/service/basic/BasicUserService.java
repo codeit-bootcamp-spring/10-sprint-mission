@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.entity.enums.Role;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.file.FileUploadFailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -15,6 +16,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     @Transactional
@@ -59,7 +62,7 @@ public class BasicUserService implements UserService {
                 user.addProfileImage(binaryContent);
                 // 연관성 주입
                 binaryContent = binaryContentRepository.save(binaryContent);
-                binaryContentStorage.put(binaryContent.getId(), profile.getBytes());
+                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), profile.getBytes()));
                 log.info("파일 업로드 성공: 유저 email = {}, 파일 id = {}, 파일 이름 = {}",
                         request.getEmail(), binaryContent.getId(), binaryContent.getFileName());
 
