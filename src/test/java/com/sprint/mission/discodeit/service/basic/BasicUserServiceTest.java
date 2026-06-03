@@ -13,6 +13,8 @@ import com.sprint.mission.discodeit.exception.user.DuplicateUsernameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.security.jwt.provider.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.jwt.registry.JwtRegistry;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,9 +62,17 @@ public class BasicUserServiceTest {
     @Mock
     private SessionRegistry sessionRegistry;
 
-    @Mock private UserMapper userMapper;
+    @Mock
+    private UserMapper userMapper;
 
-    @InjectMocks private BasicUserService basicUserService;
+    @Mock
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Mock
+    private JwtRegistry jwtRegistry;
+
+    @InjectMocks
+    private BasicUserService basicUserService;
 
     /*
         사용자 등록 테스트
@@ -123,7 +133,6 @@ public class BasicUserServiceTest {
                 .profile(expectedBinaryContentDto)
                 .online(true)
                 .build();
-        given(sessionRegistry.getAllPrincipals()).willReturn(Collections.emptyList());
         given(userMapper.toDto(any(UserEntity.class), anyBoolean())).willReturn(expectedDto);
 
         // when | 테스트 실행

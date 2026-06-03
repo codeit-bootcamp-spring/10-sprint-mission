@@ -22,7 +22,7 @@ public enum ErrorCode {
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "You do not have the required permissions to perform this action"),
 
     // Auth
-    WRONG_PASSWORD(HttpStatus.BAD_REQUEST, "Wrong password"),
+    JWT_TOKEN_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Invalid or Expired refresh token"),
 
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User with id not found"),

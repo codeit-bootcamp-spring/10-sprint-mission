@@ -15,13 +15,12 @@ import com.sprint.mission.discodeit.exception.user.DuplicateUsernameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.jwt.registry.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,13 +40,14 @@ public class BasicUserService implements UserService {
     private final MessageRepository messageRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final ReadStatusRepository readStatusRepository;
-    private final SessionRegistry sessionRegistry;
 
     private final UserMapper userMapper;
 
     private final BinaryContentStorage binaryContentStorage;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final JwtRegistry jwtRegistry;
 
     // 사용자 생성
     @Override
@@ -71,7 +71,7 @@ public class BasicUserService implements UserService {
         newUser.updateProfile(newProfileImage);
 
         // 사용자 접속 여부 조회
-        boolean isOnline = isUserOnline(newUser.getUsername());
+        boolean isOnline = jwtRegistry.hasActiveJwtInformationByUserId(newUser.getId());
 
         log.info("[USER_CREATE] 사용자 생성 완료: id={}, profileId={}",
                 newUser.getId(),
@@ -105,7 +105,7 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto findById(UUID userId) {
         UserEntity targetUser = getUserEntityOrThrow(userId);
-        boolean isOnline = isUserOnline(targetUser.getUsername());
+        boolean isOnline = jwtRegistry.hasActiveJwtInformationByUserId(targetUser.getId());
 
         return userMapper.toDto(targetUser, isOnline);
     }
@@ -114,7 +114,7 @@ public class BasicUserService implements UserService {
     @Override
     public List<UserDto> findAll() {
         return userRepository.findAll().stream()
-                .map(user -> userMapper.toDto(user, isUserOnline(user.getUsername())))
+                .map(user -> userMapper.toDto(user, jwtRegistry.hasActiveJwtInformationByUserId(user.getId())))
                 .toList();
     }
 
@@ -131,17 +131,17 @@ public class BasicUserService implements UserService {
 
         return readStatusRepository.findAllByChannel(targetChannel).stream()
                 .map(ReadStatusEntity::getUser)
-                .map(user -> userMapper.toDto(user, isUserOnline(user.getUsername())))
+                .map(user -> userMapper.toDto(user, jwtRegistry.hasActiveJwtInformationByUserId(user.getId())))
                 .toList();
     }
 
     // 사용자 정보 수정
     @Override
-    @PreAuthorize("#userId == principal.userDto.id")        // 파라미터 값과 현재 로그인 한 사용자의 ID 일치 여부 확인
+    @PreAuthorize("@authValidator.isSelf(#userId, authentication.name)")        // 파라미터 값과 현재 로그인 한 사용자의 ID 일치 여부 확인
     @Transactional
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest, MultipartFile profile) {
         UserEntity targetUser = getUserEntityOrThrow(userId);
-        boolean isOnline = isUserOnline(targetUser.getUsername());
+        boolean isOnline = jwtRegistry.hasActiveJwtInformationByUserId(targetUser.getId());
 
         // 닉네임 필드 변경: 필드 값이 변경되지 않았을 경우, 프론트엔드에서 null 전송
         Optional.ofNullable(userUpdateRequest.newUsername())
@@ -180,7 +180,7 @@ public class BasicUserService implements UserService {
 
     // 사용자 삭제
     @Override
-    @PreAuthorize("#userId == principal.userDto.id")
+    @PreAuthorize("@authValidator.isSelf(#userId, authentication.name)")
     @Transactional
     public void delete(UUID userId) {
         UserEntity targetUser = getUserEntityOrThrow(userId);
@@ -211,18 +211,6 @@ public class BasicUserService implements UserService {
     private ChannelEntity getChannelEntityOrThrow(UUID channelId){
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> new ChannelNotFoundException(channelId));
-    }
-
-    // 사용자 접속 여부 반환: 세션을 기반으로 사용자 접속 여부 반환
-    private boolean isUserOnline(String username) {
-        return sessionRegistry.getAllPrincipals().stream()
-                // 인증된 사용자만 필터링
-                .filter(principal -> principal instanceof DiscodeitUserDetails)
-                .map(principal -> (DiscodeitUserDetails) principal)
-                // 특정 사용자의 세션 정보 필터링
-                .filter(userDetails -> userDetails.getUsername().equals(username))
-                // 특정 사용자의 만료되지 않은 세션 유무 확인
-                .anyMatch(userDetails -> sessionRegistry.getAllSessions(userDetails, false).isEmpty());
     }
 
     // 유효성 검사 (이메일 중복)

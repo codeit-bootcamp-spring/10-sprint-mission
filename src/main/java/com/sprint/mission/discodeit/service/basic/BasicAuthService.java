@@ -1,22 +1,27 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.auth.RoleUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.auth.JwtDto;
 import com.sprint.mission.discodeit.dto.response.UserDto;
+import com.sprint.mission.discodeit.dto.response.auth.TokenDto;
 import com.sprint.mission.discodeit.entity.UserEntity;
+import com.sprint.mission.discodeit.exception.auth.JwtTokenUnauthorizedException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.AuthMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.jwt.provider.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.auth.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.jwt.registry.JwtRegistry;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.UUID;
 
@@ -26,9 +31,38 @@ import java.util.UUID;
 public class BasicAuthService implements AuthService {
 
     private final UserRepository userRepository;
-    private final SessionRegistry sessionRegistry;
 
     private final UserMapper userMapper;
+    private final AuthMapper authMapper;
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtRegistry jwtRegistry;
+
+    private final UserDetailsService userDetailsService;
+
+    // refreshToken 재발급
+    @Override
+    public TokenDto reissueRefreshToken(String refreshToken) {
+        // JWT 토큰 검증
+        if (!StringUtils.hasText(refreshToken) || !jwtTokenProvider.validateToken(refreshToken)) {
+            throw new JwtTokenUnauthorizedException();
+        }
+
+        // 토큰을 재발급 받는 사용자 정보 조회
+        Authentication authentication = jwtTokenProvider.getAuthentication(refreshToken);
+        String userIdStr = jwtTokenProvider.getUserId(refreshToken);
+        DiscodeitUserDetails userDetails =
+                (DiscodeitUserDetails) ((DiscodeitUserDetailsService) userDetailsService).loadUserById(userIdStr);
+
+        // 토큰 재발급
+        Authentication newAuthentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        String newAccessToken = jwtTokenProvider.generateAccessToken(newAuthentication);
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(newAuthentication);
+
+        JwtDto jwtDto = authMapper.toJwtDto(newAccessToken, userDetails.getUserDto());
+
+        return authMapper.toTokenDto(jwtDto, newRefreshToken);
+    }
 
     // 사용자 권한 변경
     @Override
@@ -36,41 +70,13 @@ public class BasicAuthService implements AuthService {
     @Transactional
     public UserDto updateUserRole(RoleUpdateRequest roleUpdateRequest) {
         UserEntity targetUser = getUserEntityOrThrow(roleUpdateRequest.userId());
-        boolean isOnline = isUserOnline(targetUser.getUsername());
 
         targetUser.updateRole(roleUpdateRequest.newRole());
 
-        // 세션 무효화
-        expireUserSession(targetUser.getUsername());
+        // 권한이 변경된, 특정 사용자 강제 로그아웃
+        jwtRegistry.invalidateJwtInformationByUserId(targetUser.getId());
 
-        return userMapper.toDto(targetUser, isOnline);
-    }
-
-    // 사용자 접속 여부 반환: 세션을 기반으로 사용자 접속 여부 반환
-    private boolean isUserOnline(String username) {
-        return sessionRegistry.getAllPrincipals().stream()
-                // 인증된 사용자만 필터링
-                .filter(principal -> principal instanceof DiscodeitUserDetails)
-                .map(principal -> (DiscodeitUserDetails) principal)
-                // 특정 사용자의 세션 정보 필터링
-                .filter(userDetails -> userDetails.getUsername().equals(username))
-                // 특정 사용자의 만료되지 않은 세션 유무 확인
-                .anyMatch(userDetails -> sessionRegistry.getAllSessions(userDetails, false).isEmpty());
-    }
-
-    // 세션 무효화
-    private void expireUserSession(String username) {
-        sessionRegistry.getAllPrincipals().stream()
-                // 현재 접속한 사용자 중 인증된 사용자만 필터링
-                .filter(principal -> principal instanceof DiscodeitUserDetails)
-                // 로그인 한 사용자 객체를 인증된 사용자 객체로 형 변환
-                .map(principal -> (DiscodeitUserDetails) principal)
-                // 특정 사용자 객체만 필터링
-                .filter(userDetails -> userDetails.getUsername().equals(username))
-                // 특정 사용자의 모든 세션 정보
-                .flatMap(userDetails -> sessionRegistry.getAllSessions(userDetails, false).stream())
-                // 세션 무효화
-                .forEach(SessionInformation::expireNow);
+        return userMapper.toDto(targetUser, false);
     }
 
     // 사용자 반환 (userId)

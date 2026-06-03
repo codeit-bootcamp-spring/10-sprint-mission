@@ -12,10 +12,6 @@ import java.util.UUID;
  */
 public class ReadStatusNotFoundException extends ReadStatusException {
 
-    public ReadStatusNotFoundException(ErrorCode errorCode) {
-        super(errorCode);
-    }
-
     public ReadStatusNotFoundException(UUID readStatusId) {
         super(
                 ErrorCode.READ_STATUS_NOT_FOUND,

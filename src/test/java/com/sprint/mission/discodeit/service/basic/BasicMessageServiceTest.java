@@ -2,11 +2,10 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.message.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.MessageDto;
-import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.dto.response.message.MessageDto;
+import com.sprint.mission.discodeit.dto.response.message.PageResponse;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentFileProcessingErrorException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -18,6 +17,8 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.provider.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.jwt.registry.JwtRegistry;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,15 +46,32 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class BasicMessageServiceTest {
 
-    @Mock private MessageRepository messageRepository;
-    @Mock private UserRepository userRepository;
-    @Mock private ChannelRepository channelRepository;
-    @Mock private BinaryContentRepository binaryContentRepository;
+    @Mock
+    private MessageRepository messageRepository;
 
-    @Mock private MessageMapper messageMapper;
-    @Mock private PageResponseMapper pageResponseMapper;
+    @Mock
+    private UserRepository userRepository;
 
-    @InjectMocks private BasicMessageService basicMessageService;
+    @Mock
+    private ChannelRepository channelRepository;
+
+    @Mock
+    private BinaryContentRepository binaryContentRepository;
+
+    @Mock
+    private MessageMapper messageMapper;
+
+    @Mock
+    private PageResponseMapper pageResponseMapper;
+
+    @Mock
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Mock
+    private JwtRegistry jwtRegistry;
+
+    @InjectMocks
+    private BasicMessageService basicMessageService;
 
     /*
         메시지 생성

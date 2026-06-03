@@ -62,7 +62,7 @@ public class BasicChannelService implements ChannelService {
         List<UserEntity> members = userRepository.findAllById(privateChannelCreateRequest.participantIds());
 
         if (members.size() != privateChannelCreateRequest.participantIds().size()) {
-            throw new UserNotFoundException(ErrorCode.USER_NOT_FOUND);
+            throw new UserNotFoundException();
         }
 
         members.forEach(member -> {

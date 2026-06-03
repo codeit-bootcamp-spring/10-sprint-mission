@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.dto.response.message.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

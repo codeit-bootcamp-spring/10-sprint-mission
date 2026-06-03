@@ -11,9 +11,6 @@ import java.util.UUID;
     특정 채널에 해당 사용자가 이미 존재할 때 발생하는 예외 클래스
  */
 public class ChannelParticipantAlreadyExistsException extends ChannelException {
-    public ChannelParticipantAlreadyExistsException(ErrorCode errorCode) {
-        super(errorCode);
-    }
 
     public ChannelParticipantAlreadyExistsException(UUID userId, UUID channelId) {
         super(

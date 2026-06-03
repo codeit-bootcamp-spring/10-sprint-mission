@@ -12,6 +12,12 @@ spring:
         instance:
           name: discodeit
 
+# JWT 설정
+jwt:
+  key: ${JWT_SECRET_KEY}
+  access-token-expiration-minutes: 30
+  refresh-token-expiration-minutes: 420
+
 ## 로깅 설정 값
 #logging:
 #  level:
@@ -36,7 +42,7 @@ springdoc:
 management:
   endpoints:
     web:
-      exposure:                                           # 웹에 노출시킬 Endpoint 지정
+      exposure: # 웹에 노출시킬 Endpoint 지정
         include: "health, info, metrics, loggers"         # 건강 상태, 앱 정보, 성능 수치, 로그 설정
 
   endpoint:

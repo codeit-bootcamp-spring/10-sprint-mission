@@ -1,5 +1,7 @@
-package com.sprint.mission.discodeit.dto.response;
+package com.sprint.mission.discodeit.dto.response.message;
 
+import com.sprint.mission.discodeit.dto.response.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.response.UserDto;
 import lombok.Builder;
 
 import java.time.Instant;

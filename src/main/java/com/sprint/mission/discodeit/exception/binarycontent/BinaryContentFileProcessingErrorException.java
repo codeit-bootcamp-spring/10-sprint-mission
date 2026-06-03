@@ -11,9 +11,6 @@ import java.util.UUID;
     첨부파일 변환 (MultipartFile -> BinaryContent)이 실패했을 때 발생하는 예외 클래스
  */
 public class BinaryContentFileProcessingErrorException extends BinaryContentException {
-    public BinaryContentFileProcessingErrorException(ErrorCode errorCode) {
-        super(errorCode);
-    }
 
     public BinaryContentFileProcessingErrorException(UUID messageId, String filename) {
         super(ErrorCode.BINARY_CONTENT_FILE_PROCESSING_ERROR,

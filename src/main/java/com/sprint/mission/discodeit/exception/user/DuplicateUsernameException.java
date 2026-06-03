@@ -10,9 +10,6 @@ import java.util.Map;
     사용자 회원가입에서 사용자 닉네임이 중복될 때 발생하는 예외 클래스
  */
 public class DuplicateUsernameException extends UserException {
-    public DuplicateUsernameException(ErrorCode errorCode) {
-        super(errorCode);
-    }
 
     public DuplicateUsernameException(String newUsername) {
         super(

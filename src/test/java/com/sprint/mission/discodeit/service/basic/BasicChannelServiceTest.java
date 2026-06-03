@@ -7,9 +7,7 @@ import com.sprint.mission.discodeit.dto.response.ChannelDto;
 import com.sprint.mission.discodeit.entity.ChannelEntity;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.UserEntity;
-import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
-import com.sprint.mission.discodeit.exception.channel.AccessDeniedPrivateChannelException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelNotUpdatableException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -17,12 +15,15 @@ import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.provider.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.jwt.registry.JwtRegistry;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
@@ -38,13 +39,27 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class BasicChannelServiceTest {
 
-    @Mock private ChannelRepository channelRepository;
-    @Mock private UserRepository userRepository;
-    @Mock private MessageRepository messageRepository;
+    @Mock
+    private ChannelRepository channelRepository;
 
-    @Mock private ChannelMapper channelMapper;
+    @Mock
+    private UserRepository userRepository;
 
-    @InjectMocks private BasicChannelService basicChannelService;
+    @Mock
+    private MessageRepository messageRepository;
+
+    @Mock
+    private ChannelMapper channelMapper;
+
+    @Mock
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Mock
+    private JwtRegistry jwtRegistry;
+
+    @InjectMocks
+    private BasicChannelService basicChannelService;
+
 
     /*
         채널 생성
