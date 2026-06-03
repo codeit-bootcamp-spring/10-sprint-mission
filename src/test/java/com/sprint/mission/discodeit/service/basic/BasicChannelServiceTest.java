@@ -22,7 +22,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.session.UserSessionManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -61,9 +60,6 @@ class BasicChannelServiceTest {
 
     @Mock
     private UserMapper userMapper;
-
-    @Mock
-    private UserSessionManager userSessionManager;
 
     @InjectMocks
     private BasicChannelService basicChannelService;
@@ -317,7 +313,6 @@ class BasicChannelServiceTest {
             );
 
             given(messageRepository.findLastMessageAtDtoByChannelIds(channelIds)).willReturn(channelLastMessageAtDtoList);
-            given(userSessionManager.getOnlineUserIds()).willReturn(Set.of());
 
             UUID readStatusId3 = UUID.randomUUID();
             UUID readStatusId4 = UUID.randomUUID();
@@ -358,7 +353,7 @@ class BasicChannelServiceTest {
             verify(channelRepository).findChannelByUserId(ChannelType.PUBLIC, userId);
             verify(messageRepository).findLastMessageAtDtoByChannelIds(channelIds);
             verify(readStatusRepository).findAllByChannelIdsWithUserAndChannel(privateChannelIds);
-            verify(userMapper, times(2)).toDto(any(User.class), anySet());
+            verify(userMapper, times(2)).toDto(any(User.class));
             verify(channelMapper, times(4)).toListDto(any(Channel.class), anyMap(), anyMap());
         }
 
@@ -374,7 +369,6 @@ class BasicChannelServiceTest {
             given(userRepository.findById(userId)).willReturn(Optional.of(user));
             given(channelRepository.findChannelByUserId(ChannelType.PUBLIC, userId)).willReturn(List.of());
             given(messageRepository.findLastMessageAtDtoByChannelIds(List.of())).willReturn(List.of());
-            given(userSessionManager.getOnlineUserIds()).willReturn(Set.of());
             given(readStatusRepository.findAllByChannelIdsWithUserAndChannel(List.of())).willReturn(List.of());
 
             List<ChannelDto> expectedChannelDtoList = List.of();
@@ -390,7 +384,7 @@ class BasicChannelServiceTest {
             verify(channelRepository).findChannelByUserId(ChannelType.PUBLIC, userId);
             verify(messageRepository).findLastMessageAtDtoByChannelIds(anyList());
             verify(readStatusRepository).findAllByChannelIdsWithUserAndChannel(anyList());
-            verify(userMapper, never()).toDto(any(User.class), anySet());
+            verify(userMapper, never()).toDto(any(User.class));
             verify(channelMapper, never()).toListDto(any(Channel.class), anyMap(), anyMap());
         }
 

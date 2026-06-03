@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.security.filter.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -66,6 +67,9 @@ class MessageControllerTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     // `@EnableJpaAuditing`이 애플리케이션 시작 클래스에 설정되어 있어서 JPA Auditing가 활성화됨
     // `jpaAuditingHandler`는 `jpaMappingContext`를 필요로 함

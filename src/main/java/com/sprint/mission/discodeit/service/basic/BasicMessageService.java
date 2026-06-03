@@ -20,7 +20,6 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.session.UserSessionManager;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +35,6 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -51,8 +49,6 @@ public class BasicMessageService implements MessageService {
     private final MessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
     private final PageResponseMapper pageResponseMapper;
-
-    private final UserSessionManager userSessionManager;
 
     @Override
     public MessageDto create(MessageCreateRequest request, List<MultipartFile> attachments) {
@@ -125,13 +121,11 @@ public class BasicMessageService implements MessageService {
         // Channel ID null & channel 객체 존재 확인
         validateAndGetChannelByChannelId(channelId);
 
-        Set<UUID> onlineUserIds = userSessionManager.getOnlineUserIds();
-
         Instant createdAt = Optional.ofNullable(cursor)
                 .orElse(Instant.now());
 
         Slice<MessageDto> slice = messageRepository.findAllByChannelId(channelId, createdAt, pageable)
-                .map(message -> messageMapper.toDto(message, onlineUserIds));
+                .map(message -> messageMapper.toDto(message));
 
         Instant nextCursor = !slice.getContent().isEmpty() ? slice.getContent().get(slice.getContent().size() - 1).createdAt() : null;
 
@@ -178,7 +172,7 @@ public class BasicMessageService implements MessageService {
     // 로그인 되어있는 user ID null & user 객체 존재 확인
     private User validateAndGetUserByUserId(UUID userId) {
         if (userId == null) {
-            throw new InvalidInputException("userId", userId);
+            throw new InvalidInputException("userId", null);
         }
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
@@ -187,7 +181,7 @@ public class BasicMessageService implements MessageService {
     // Channel ID null & channel 객체 존재 확인
     private Channel validateAndGetChannelByChannelId(UUID channelId) {
         if (channelId == null) {
-            throw new InvalidInputException("channelId", channelId);
+            throw new InvalidInputException("channelId", null);
         }
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> new ChannelNotFoundException(channelId));
@@ -196,7 +190,7 @@ public class BasicMessageService implements MessageService {
     // Message ID null & Message 객체 존재 확인
     private Message validateAndGetMessageByMessageId(UUID messageId) {
         if (messageId == null) {
-            throw new InvalidInputException("messageId", messageId);
+            throw new InvalidInputException("messageId", null);
         }
         return messageRepository.findByIdWithAuthorAndChannel(messageId)
                 .orElseThrow(() -> new MessageNotFoundException(messageId));

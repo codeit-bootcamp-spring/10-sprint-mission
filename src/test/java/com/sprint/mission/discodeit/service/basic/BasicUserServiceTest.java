@@ -13,7 +13,6 @@ import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.session.UserSessionManager;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,9 +55,6 @@ class BasicUserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private UserSessionManager userSessionManager;
 
     @InjectMocks
     private BasicUserService basicUserService;
@@ -296,9 +291,8 @@ class BasicUserServiceTest {
             UserDto expectedUserDto2 = new UserDto(user2.getId(), user2.getUsername(), user2.getEmail(), null, true, Role.USER);
 
             given(userRepository.findAllWithProfile()).willReturn(List.of(user1, user2));
-            given(userSessionManager.getOnlineUserIds()).willReturn(Set.of(user1.getId(), user2.getId()));
-            given(userMapper.toDto(eq(user1), anySet())).willReturn(expectedUserDto1);
-            given(userMapper.toDto(eq(user2), anySet())).willReturn(expectedUserDto2);
+            given(userMapper.toDto(eq(user1))).willReturn(expectedUserDto1);
+            given(userMapper.toDto(eq(user2))).willReturn(expectedUserDto2);
 
             // when(실행)
             List<UserDto> result = basicUserService.findAll();
@@ -308,7 +302,7 @@ class BasicUserServiceTest {
             assertEquals(expectedUserDto1, result.get(0));
             assertEquals(expectedUserDto2, result.get(1));
 
-            verify(userMapper, times(2)).toDto(any(User.class), anySet());
+            verify(userMapper, times(2)).toDto(any(User.class));
             verify(userRepository).findAllWithProfile();
         }
 
@@ -325,7 +319,7 @@ class BasicUserServiceTest {
             assertEquals(0, result.size());
 
             verify(userRepository).findAllWithProfile();
-            verify(userMapper, never()).toDto(any(User.class), anySet());
+            verify(userMapper, never()).toDto(any(User.class));
         }
     }
 

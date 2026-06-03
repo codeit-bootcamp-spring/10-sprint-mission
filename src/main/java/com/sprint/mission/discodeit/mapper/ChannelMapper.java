@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.security.session.UserSessionManager;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +24,6 @@ public abstract class ChannelMapper {
 
     @Autowired
     private UserMapper userMapper;
-
-    @Autowired
-    private UserSessionManager userSessionManager;
 
     @Mapping(target = "participants", expression = "java(assignParticipants(channel))")
     @Mapping(target = "lastMessageAt", expression = "java(assignLastMessageAt(channel))")
@@ -52,13 +48,11 @@ public abstract class ChannelMapper {
     }
 
     protected List<UserDto> assignParticipants(Channel channel) {
-        Set<UUID> onlineUserIds = userSessionManager.getOnlineUserIds();
-
         List<UserDto> participants = new ArrayList<>();
         if (channel.getType().equals(ChannelType.PRIVATE)) {
             readStatusRepository.findAllByChannelIdWithUserAndChannel(channel.getId()).stream()
                     .map(readStatus ->
-                            userMapper.toDto(readStatus.getUser(), onlineUserIds)
+                            userMapper.toDto(readStatus.getUser())
                     )
                     .forEach(userDto -> participants.add(userDto));
         }

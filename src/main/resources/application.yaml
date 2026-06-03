@@ -29,7 +29,10 @@ discodeit:
       bucket: ${AWS_S3_BUCKET:}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
   security:
-    remember-me-key: ${REMEMBER_ME_KEY:rememberMeKey}
+    jwt:
+      jwt_secret_key: ${JWT_SECRET_KEY:}
+      access-token_expiration-time: ${JWT_ACCESS_TOKEN_EXPIRATION_TIME:}
+      refresh-token_expiration-time: ${JWT_REFRESH_TOKEN_EXPIRATION_TIME:}
 
 logging:
   level:

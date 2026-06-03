@@ -11,7 +11,6 @@ import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.session.UserSessionManager;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +36,6 @@ public class BasicUserService implements UserService {
     private final BinaryContentStorage binaryContentStorage;
 
     private final PasswordEncoder passwordEncoder;
-    private final UserSessionManager userSessionManager;
 
     @Override
     public UserDto create(UserCreateRequest request, MultipartFile profile) {
@@ -102,12 +100,8 @@ public class BasicUserService implements UserService {
     public List<UserDto> findAll() {
         log.debug("[USER_LIST_FIND] 사용자 목록 조회 시작");
 
-        Set<UUID> onlineUserIds = userSessionManager.getOnlineUserIds();
-
-        // userMapper 사용 => n명의 사용자 x 전체 로그인 principal 순회(SessionRegistry 순회)
-        // 그래서 직접 UserDto 구현 => n 명 사용자 + SessionRegistry 1회 순회
         List<UserDto> userDtoList = userRepository.findAllWithProfile().stream()
-                .map(user -> userMapper.toDto(user, onlineUserIds))
+                .map(user -> userMapper.toDto(user))
                 .toList();
 
         log.debug("[USER_LIST_FIND] 사용자 목록 조회 완료: count={}", userDtoList.size());

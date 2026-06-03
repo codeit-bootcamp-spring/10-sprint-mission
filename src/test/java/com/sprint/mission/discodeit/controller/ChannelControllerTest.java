@@ -13,6 +13,7 @@ import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelCannotBeUpdatedException;
+import com.sprint.mission.discodeit.security.filter.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +56,9 @@ class ChannelControllerTest {
 
     @MockitoBean
     private ChannelService channelService;
+
+    @MockitoBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     // `@EnableJpaAuditing`이 애플리케이션 시작 클래스에 설정되어 있어서 JPA Auditing가 활성화됨
     // `jpaAuditingHandler`는 `jpaMappingContext`를 필요로 함

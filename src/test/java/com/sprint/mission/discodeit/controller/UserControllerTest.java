@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.exception.user.DuplicatedEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicatedUsernameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.security.filter.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,6 +52,12 @@ class UserControllerTest {
     @MockitoBean
     private UserService userService;
 
+    @MockitoBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    // `@EnableJpaAuditing`이 애플리케이션 시작 클래스에 설정되어 있어서 JPA Auditing가 활성화됨
+    // `jpaAuditingHandler`는 `jpaMappingContext`를 필요로 함
+    // 근데 API 슬라이스 테스트에는 Entity 메타 모델이 없어서 오류가 남
     @MockitoBean
     private JpaMetamodelMappingContext  jpaMetamodelMappingContext;
 

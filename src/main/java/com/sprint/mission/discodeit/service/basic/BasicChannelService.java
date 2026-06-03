@@ -15,7 +15,6 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
-import com.sprint.mission.discodeit.security.session.UserSessionManager;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +38,6 @@ public class BasicChannelService implements ChannelService {
     private final MessageRepository messageRepository;
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
-    private final UserSessionManager userSessionManager;
 
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
@@ -132,8 +130,6 @@ public class BasicChannelService implements ChannelService {
                         )
                 );
 
-        Set<UUID> onlineUserIds = userSessionManager.getOnlineUserIds();
-
         // 채널별 참가자 목록 조회
         Map<UUID, List<UserDto>> participantMap =
                 readStatusRepository.findAllByChannelIdsWithUserAndChannel(privateChannelIds).stream()
@@ -141,7 +137,7 @@ public class BasicChannelService implements ChannelService {
                                 Collectors.groupingBy(readStatus ->
                                                 readStatus.getChannel().getId(),
                                         Collectors.mapping(readStatus ->
-                                                userMapper.toDto(readStatus.getUser(), onlineUserIds),
+                                                userMapper.toDto(readStatus.getUser()),
                                         Collectors.toList()
                                         )
                                 )

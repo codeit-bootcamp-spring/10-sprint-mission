@@ -38,6 +38,9 @@ public enum ErrorCode {
     DUPLICATED_READ_STATUS("이미 존재하는 마지막 메시지 읽음 상태 정보가 있습니다."),
     READ_STATUS_NOT_FOUND("마지막 메시지 읽음 상태 정보를 찾을 수 없습니다."),
 
+    // Security - Token
+    INVALID_REFRESH_TOKEN("유효하지 않은 Refresh Token입니다."),
+
     // Server
     INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."); // 커스텀 예외로 처리하지 못하는 예외 코드
 

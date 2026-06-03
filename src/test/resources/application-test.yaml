@@ -20,10 +20,6 @@ spring:
       hibernate:
         format_sql: true
 
-discodeit:
-  security:
-    remember-me-key: test-remember-me-key
-
 logging:
   level:
     com.sprint.mission.discodeit: info # 애플리케이션 패키지에서 발생하는 로그
