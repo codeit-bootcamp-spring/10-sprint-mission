@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.common.config;
 
-import com.sprint.mission.discodeit.auth.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.auth.LoginFailureHandler;
-import com.sprint.mission.discodeit.auth.LoginSuccessHandler;
+import com.sprint.mission.discodeit.jwt.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.jwt.JwtLogoutHandler;
+import com.sprint.mission.discodeit.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.jwt.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,14 +17,14 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 
 @Configuration
@@ -35,9 +38,12 @@ public class SecurityConfig {
   }
 
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler,
-      LoginFailureHandler loginFailureHandler, SessionRegistry sessionRegistry,
-      DiscodeitUserDetailsService discodeitUserDetailsService)
+  public SecurityFilterChain filterChain(HttpSecurity http,
+      JwtLoginSuccessHandler jwtloginSuccessHandler,
+      LoginFailureHandler loginFailureHandler,
+      /*DiscodeitUserDetailsService discodeitUserDetailsService,*/
+      JwtLogoutHandler jwtLogoutHandler,
+      JwtAuthenticationFilter jwtAuthenticationFilter)
       throws Exception {
     http
         .csrf(csrf -> csrf
@@ -46,11 +52,12 @@ public class SecurityConfig {
         )
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
-            .successHandler(loginSuccessHandler)
+            .successHandler(jwtloginSuccessHandler)
             .failureHandler(loginFailureHandler)
         )
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
+            .addLogoutHandler(jwtLogoutHandler)
             .logoutSuccessHandler(
                 new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
         )
@@ -60,6 +67,7 @@ public class SecurityConfig {
                 "/api/users",
                 "/api/auth/login",
                 "/api/auth/logout",
+                "/api/auth/refresh",
                 "/v3/api-docs/**",
                 "/actuator/**",
                 "/",
@@ -83,19 +91,17 @@ public class SecurityConfig {
               response.sendError(HttpServletResponse.SC_FORBIDDEN);
             })
         )
-        .sessionManagement(management -> management
-            .sessionConcurrency(concurrency -> concurrency
-                .maximumSessions(1)
-                .sessionRegistry(sessionRegistry)
-            )
-
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
-        .rememberMe(remember -> remember
-            .key("my-remember-key")
-            .tokenValiditySeconds(7 * 24 * 60 * 60)
-            .rememberMeParameter("remember-me")
-            .userDetailsService(discodeitUserDetailsService)
-        );
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+    ;
+//        .rememberMe(remember -> remember
+//            .key("my-remember-key")
+//            .tokenValiditySeconds(7 * 24 * 60 * 60)
+//            .rememberMeParameter("remember-me")
+//            .userDetailsService(discodeitUserDetailsService)
+//        )
 
     return http.build();
   }
@@ -117,12 +123,20 @@ public class SecurityConfig {
   }
 
   @Bean
-  public SessionRegistry sessionRegistry() {
-    return new SessionRegistryImpl();
+  public JwtAuthenticationFilter jwtAuthenticationFilter(
+      JwtTokenProvider jwtTokenProvider,
+      UserDetailsService userDetailsService,
+      JwtRegistry jwtRegistry) {
+    return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService, jwtRegistry);
   }
 
-  @Bean
-  public HttpSessionEventPublisher httpSessionEventPublisher() {
-    return new HttpSessionEventPublisher();
-  }
+//  @Bean
+//  public SessionRegistry sessionRegistry() {
+//    return new SessionRegistryImpl();
+//  }
+//
+//  @Bean
+//  public HttpSessionEventPublisher httpSessionEventPublisher() {
+//    return new HttpSessionEventPublisher();
+//  }
 }

@@ -41,6 +41,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
     runtimeOnly 'com.h2database:h2'
     implementation 'software.amazon.awssdk:s3:2.31.7'
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
 
 
 }

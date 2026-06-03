@@ -85,3 +85,8 @@ aws:
     secret-key: dummy
   s3:
     bucket: dummy
+
+jwt:
+  key: mysecretkeytokentest1234567891012345678910
+  access-token-expiration: 30
+  refresh-token-expiration: 420

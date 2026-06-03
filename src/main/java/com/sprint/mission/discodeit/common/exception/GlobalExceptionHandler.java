@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.common.exception;
 
+import com.sprint.mission.discodeit.common.exception.auth.TokenInvalidException;
 import java.nio.file.AccessDeniedException;
 import java.util.Map;
 import java.util.Optional;
@@ -123,6 +124,20 @@ public class GlobalExceptionHandler {
     log.error("❌ Runtime error: {}", e.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(e.getMessage() != null ? e.getMessage() : "잘못된 요청입니다.");
+  }
+
+  @ExceptionHandler(TokenInvalidException.class)
+  public ResponseEntity<ErrorResponse> handleTokenInvalid(TokenInvalidException e) {
+    log.warn("토큰 오류: {}", e.getMessage());
+    return ResponseEntity
+        .status(HttpStatus.UNAUTHORIZED)
+        .body(new ErrorResponse(
+            401,
+            e.getClass().getSimpleName(),
+            "INVALID_TOKEN",
+            e.getMessage(),
+            Map.of()
+        ));
   }
 
 

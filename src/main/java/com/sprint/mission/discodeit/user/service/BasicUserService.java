@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.binarycontent.entity.BinaryContent;
 import com.sprint.mission.discodeit.binarycontent.repository.JPABinaryContentRepository;
 import com.sprint.mission.discodeit.common.exception.user.UserAlreadyExistException;
 import com.sprint.mission.discodeit.common.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.user.Role;
 import com.sprint.mission.discodeit.user.dto.UserCreateRequest;
@@ -33,6 +34,7 @@ public class BasicUserService implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final UserMapper userMapper;
   private final BinaryContentStorage binaryContentStorage;
+  private final JwtRegistry jwtRegistry;
 
 
   @Override
@@ -163,6 +165,7 @@ public class BasicUserService implements UserService {
     User user = jpaUserRepository.findById(request.userId())
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", request.userId())));
     user.updateRole(request.newRole());
+    jwtRegistry.invalidateJwtInformation(request.userId());
     return userMapper.toDto(user);
   }
 }
