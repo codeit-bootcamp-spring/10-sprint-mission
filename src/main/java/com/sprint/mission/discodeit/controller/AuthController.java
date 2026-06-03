@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
+import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
@@ -8,6 +9,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.details.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
 import io.swagger.v3.oas.annotations.headers.Header;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -49,6 +51,7 @@ public class AuthController implements AuthApi {
             .build();
   }
 
+  /*
   @GetMapping("/me")
   public ResponseEntity<UserDto> getUserDtoFromSessionId(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
     if (userDetails == null) {
@@ -57,10 +60,18 @@ public class AuthController implements AuthApi {
 
     return ResponseEntity.status(HttpStatus.OK).body(userDetails.getUserDto());
   }
+   */
 
   @PutMapping("/role")
   public ResponseEntity<UserDto> updateUserRole(@RequestBody RoleUpdateRequest userRoleUpdateRequest) {
     UserDto userDto = authService.updateUserRole(userRoleUpdateRequest);
     return ResponseEntity.status(HttpStatus.OK).body(userDto);
+  }
+
+  @PostMapping("/refresh")
+  public ResponseEntity<JwtDto> refreshAccessToken(@CookieValue(name = "REFRESH_TOKEN") String refreshToken,
+                                   HttpServletResponse response) {
+    JwtDto jwtDto = authService.refresh(refreshToken, response);
+    return ResponseEntity.status(HttpStatus.OK).body(jwtDto);
   }
 }
