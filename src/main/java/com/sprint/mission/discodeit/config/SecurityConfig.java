@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
-import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
-import com.sprint.mission.discodeit.security.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.LoginSuccessHandler;
-import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.security.*;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -17,15 +14,13 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
@@ -33,8 +28,9 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final LoginSuccessHandler loginSuccessHandler;
+    private final JwtLoginSuccessHandler loginSuccessHandler;
     private final LoginFailureHandler loginFailureHandler;
+    private final JwtLogoutHandler jwtLogoutHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, UserDetailsService userDetailsService) throws Exception {
@@ -48,12 +44,6 @@ public class SecurityConfig {
                                 .loginProcessingUrl("/api/auth/login")
                                 .successHandler(loginSuccessHandler)
                                 .failureHandler(loginFailureHandler)
-                )
-                .rememberMe(remember -> remember
-                        .key("uniqueAndSecret")        // 토큰 해싱을 위한 고유 키 (절대 노출 금지)
-                        .tokenValiditySeconds(1800) // 쿠키 유효 기간 (예: 30일)
-                        .userDetailsService(userDetailsService) // 사용자 정보를 다시 조회할 서비스 (필수!)
-                        .rememberMeParameter("remember-me") // 프론트 체크박스의 name 속성값
                 )
                 // 토큰 발급을 위해 모든 요청 허용
                 .authorizeHttpRequests(auth -> auth
@@ -71,8 +61,9 @@ public class SecurityConfig {
                                 "/api/binaryContents/**",
                                 "/api/messages/**",
                                 "/api/readStatuses/**").hasRole("USER")
-                        // 로그인, 로그아웃, Csrf 토큰
-                        .requestMatchers("/api/auth/**").permitAll()
+                        // 로그인, 로그아웃, Csrf 토큰, 토큰 재발급
+                        .requestMatchers("/api/auth/login", "/api/auth/logout",
+                                "/api/auth/refresh", "/api/auth/csrf-token").permitAll()
                         .anyRequest().authenticated()
                 )
                 // 토큰 Repo vs Request가 Handler -> Filter가 비교를 실행
@@ -92,17 +83,11 @@ public class SecurityConfig {
                 // 로그아웃 시 상태코드만 반환 (204 Void)
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
-                        )
+                        .addLogoutHandler(jwtLogoutHandler)
+                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
                 )
-                .sessionManagement(management -> management
-                        .sessionConcurrency(concurrency -> concurrency
-                                .maximumSessions(1)              // 허용 세션 1
-                                .sessionRegistry(sessionRegistry())
-                                .maxSessionsPreventsLogin(false) // 로그인 시 기존 꺼 만료
-                                .expiredSessionStrategy(event ->
-                                        event.getResponse().sendError(HttpServletResponse.SC_UNAUTHORIZED, "세션이 만료되었습니다."))
-                        )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
 
         return http.build();
@@ -129,15 +114,4 @@ public class SecurityConfig {
         handler.setRoleHierarchy(roleHierarchy);
         return handler;
     }
-
-    @Bean
-    public HttpSessionEventPublisher httpSessionEventPublisher() {
-        return new HttpSessionEventPublisher();
-    }
-
-    @Bean
-    public SessionRegistry sessionRegistry() {
-        return new SessionRegistryImpl();
-    }
-
 }

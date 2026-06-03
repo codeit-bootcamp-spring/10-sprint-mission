@@ -10,6 +10,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class DiscodeitUserDetailsService implements UserDetailsService {
@@ -19,9 +21,16 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 이때 Custom 예외 반환 or Security 예외 반환??, Username 중복 허용일 떄는 이때 어떻게 해야하지
         User user = userRepository.findByUsernameWithProfile(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
+
+        UserDTO userDTO = userMapper.toDTO(user);
+        return new DiscodeitUserDetails(userDTO, user.getPassword());
+    }
+
+    public UserDetails loadUserById(UUID userId) {
+        User user = userRepository.findByIdWithProfile(userId)
+                .orElseThrow(() -> new UsernameNotFoundException(userId.toString()));
 
         UserDTO userDTO = userMapper.toDTO(user);
         return new DiscodeitUserDetails(userDTO, user.getPassword());

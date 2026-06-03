@@ -26,9 +26,6 @@ public enum ErrorCode {
     // ReadStatus
     READ_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 ReadStatus입니다."),
 
-    // UserStatus
-    USER_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 UserStatus"),
-
     // Storage
     FILE_STORAGE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일 처리 중 오류가 발생했습니다."),
     DUPLICATE_FILE(HttpStatus.CONFLICT, "이미 존재하는 파일입니다.");

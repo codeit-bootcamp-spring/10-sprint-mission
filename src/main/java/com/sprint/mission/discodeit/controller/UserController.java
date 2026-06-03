@@ -3,8 +3,6 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserDTO;
-import com.sprint.mission.discodeit.dto.userStatus.request.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusDTO;
 import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

@@ -21,6 +21,11 @@ spring:
     password: discodeit1234
     driver-class-name: org.postgresql.Driver
 
+jwt:
+  secret: discodeit-jwt-secret-key-must-be-at-least-32-bytes-long
+  access-token-expiration: 1800000
+  refresh-token-expiration: 604800000
+
 server:
   port: 8080
 
