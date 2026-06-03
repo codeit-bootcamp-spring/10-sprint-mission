@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +30,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
-  private final SessionRegistry sessionRegistry;
+  private final JwtRegistry jwtRegistry;
 
   @Override
   @Transactional
@@ -169,8 +169,8 @@ public class BasicUserService implements UserService {
     // 권한 수정
     user.updateRole(newRole);
 
-    // 권한이 변경된 사용자가 로그인한 상태라면 세션 무효화
-    expireUserSessions(id);
+    // 권한이 변경된 사용자의 모든 토큰을 Registry에서 무효화
+    jwtRegistry.invalidateJwtInformationByUserId(id);
 
     log.info("User ID {} role updated successfully to {}", id, newRole);
     return user;
@@ -194,14 +194,5 @@ public class BasicUserService implements UserService {
   private User getOrThrowUser(UUID id) {
     return userRepository.findByIdWithProfile(id)
         .orElseThrow(() -> new UserNotFoundException(Map.of("requestedUserId", id)));
-  }
-
-  // 특정 유저 세션 강제 만료
-  private void expireUserSessions(UUID userId) {
-    sessionRegistry.getAllPrincipals().stream()
-        .filter(principal -> principal instanceof DiscodeitUserDetails)
-        .filter(principal -> ((DiscodeitUserDetails) principal).getId().equals(userId))
-        .flatMap(principal -> sessionRegistry.getAllSessions(principal, false).stream())
-        .forEach(SessionInformation::expireNow);
   }
 }

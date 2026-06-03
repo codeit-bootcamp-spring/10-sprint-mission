@@ -25,3 +25,9 @@ logging:
     com.sprint.mission.discodeit: debug
     org.hibernate.SQL: debug
     org.springframework.security: TRACE
+
+discodeit:
+  admin:
+    username: ${DISCODEIT_ADMIN_USERNAME:admin}
+    email: ${DISCODEIT_ADMIN_EMAIL:admin@admin.com}
+    password: ${DISCODEIT_ADMIN_PASSWORD:admin1234!}
