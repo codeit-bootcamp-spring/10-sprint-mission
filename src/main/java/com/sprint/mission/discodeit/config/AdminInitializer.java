@@ -9,11 +9,15 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class AdminInitializer implements CommandLineRunner {
+
+    @Value("${discodeit.admin.password:admin1234!}")
+    private String adminPassword;
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -27,7 +31,7 @@ public class AdminInitializer implements CommandLineRunner {
             User admin = new User(
                     adminUsername,
                     "admin@email.com",
-                    passwordEncoder.encode("admin1234!"),
+                    passwordEncoder.encode(adminPassword),
                     null);
             admin.updateRole(Role.ADMIN);
             userRepository.save(admin);

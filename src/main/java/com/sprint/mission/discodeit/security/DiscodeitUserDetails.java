@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
@@ -58,11 +60,15 @@ public class DiscodeitUserDetails implements UserDetails {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         DiscodeitUserDetails that = (DiscodeitUserDetails) obj;
-        return this.userDto.id().equals(that.userDto.id());
+        
+        UUID thisId = this.userDto != null ? this.userDto.id() : null;
+        UUID thatId = that.userDto != null ? that.userDto.id() : null;
+        return Objects.equals(thisId, thatId);
     }
 
     @Override
     public int hashCode() {
-        return this.userDto.id().hashCode();
+        UUID id = this.userDto != null ? this.userDto.id() : null;
+        return Objects.hashCode(id);
     }
 }

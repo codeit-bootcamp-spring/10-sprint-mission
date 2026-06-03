@@ -22,9 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.core.session.SessionRegistry;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
-import org.springframework.security.core.session.SessionInformation;
+import com.sprint.mission.discodeit.security.JwtRegistry;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -37,7 +35,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
-  private final SessionRegistry sessionRegistry;
+  private final JwtRegistry jwtRegistry;
 
   @Transactional
   @Override
@@ -171,11 +169,7 @@ public class BasicUserService implements UserService {
 
     user.updateRole(request.newRole());
 
-    UserDto dummyUserDto = new UserDto(request.userId(), null, null, null, null, null);
-    DiscodeitUserDetails dummyPrincipal = new DiscodeitUserDetails(dummyUserDto, null);
-    for (SessionInformation session : sessionRegistry.getAllSessions(dummyPrincipal, false)) {
-        session.expireNow();
-    }
+    jwtRegistry.invalidateJwtInformationByUserId(request.userId());
 
     log.info("사용자 권한 수정 완료: id={}, newRole={}", request.userId(), request.newRole());
     return userMapper.toDto(user);
