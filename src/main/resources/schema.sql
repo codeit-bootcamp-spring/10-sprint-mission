@@ -80,6 +80,20 @@ CREATE TABLE read_statuses
             ON DELETE CASCADE
 );
 
+DROP TABLE IF EXISTS notifications CASCADE;
+CREATE TABLE notifications
+(
+    id          UUID PRIMARY KEY,
+    created_at  timestamptz  NOT NULL,
+    receiver_id UUID         NOT NULL,
+    title       varchar(255) NOT NULL,
+    content     varchar(1000) NOT NULL,
+    CONSTRAINT fk_notifications_receiver
+        FOREIGN KEY (receiver_id)
+            REFERENCES users (id)
+            ON DELETE CASCADE
+);
+
 DROP TABLE IF EXISTS refresh_tokens CASCADE;
 CREATE TABLE refresh_tokens
 (

@@ -7,6 +7,8 @@ import com.sprint.mission.discodeit.entity.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.entity.JwtInformation;
 import com.sprint.mission.discodeit.entity.RefreshToken;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.enums.Role;
+import com.sprint.mission.discodeit.events.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.registry.JwtRegistry;
@@ -16,6 +18,7 @@ import com.sprint.mission.discodeit.service.AuthService;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -33,7 +36,10 @@ public class BasicAuthService implements AuthService {
   private final JwtTokenProvider jwtTokenProvider;
   private final RefreshTokenRepository refreshTokenRepository;
   private final JwtRegistry jwtRegistry;
+  private final ApplicationEventPublisher eventPublisher;
 
+  // 권한 수정 메서드
+  // 어드민 권한만 수행
   @Transactional
   @PreAuthorize("hasRole('ADMIN')")
   public UserDto updateRole(
@@ -44,8 +50,12 @@ public class BasicAuthService implements AuthService {
     User user = userRepository.findById(req.userId())
         .orElseThrow(() -> new UserNotFoundException(req.userId()));
 
+    Role previousRole = user.getRole();
     user.updateRole(req.newRole());
+    // jwtRegistry에 기존에 존재하던 정보를 삭제
     jwtRegistry.removeJwtInformationByUserId(req.userId());
+    // 권한 업데이트 시 이벤트 생성
+    eventPublisher.publishEvent(new RoleUpdatedEvent(user.getId(), previousRole, req.newRole()));
 
     return userMapper.toDto(user);
   }

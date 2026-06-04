@@ -18,6 +18,7 @@ public enum ErrorCode {
     PRIVATE_CHANNEL_UPDATE(HttpStatus.FORBIDDEN, "사설 채널을 업데이트 할 수 없습니다."),
     READ_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "Read Status를 찾을 수 없습니다."),
     MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "메시지를 찾을 수 없습니다."),
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
     BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "첨부 파일을 찾을 수 없습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 서버 내부 문제입니다."),
     NO_SUCH_ELEMENT(HttpStatus.NOT_FOUND, "찾으려는 항목을 찾을 수 없습니다."),
