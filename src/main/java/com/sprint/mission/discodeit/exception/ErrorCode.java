@@ -31,7 +31,12 @@ public enum ErrorCode {
   // Security 관련 에러 코드
   INVALID_TOKEN("토큰이 유효하지 않습니다."),
   INVALID_USER_DETAILS("사용자 인증 정보(UserDetails)가 유효하지 않습니다."),
+
+  // Storage
+  S3_UPLOAD_FAILED("S3 파일 업로드에 실패했습니다."),
   ;
+
+
 
   private final String message;
 

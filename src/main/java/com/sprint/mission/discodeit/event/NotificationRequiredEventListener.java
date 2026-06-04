@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.event;
 
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.Notification;
-import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -14,8 +11,10 @@ import java.util.List;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -78,6 +77,32 @@ public class NotificationRequiredEventListener {
       notificationRepository.save(notification);
       log.debug("권한 변경 알림 저장 완료: userId={}, previousRole={}, newRole={}",
               event.getUserId(), event.getPreviousRole(), event.getNewRole());
+    }
+
+    @Transactional
+    @EventListener
+    public void on(BinaryContentUploadFailedEvent event) {
+      List<User> admins = userRepository.findAllByRole(Role.ADMIN);
+
+      String title = "S3 바이너리 데이터 업로드 실패";
+      String content = """
+      Task: %s
+      RequestId: %s
+      BinaryContentId: %s
+      Error: %s
+      """.formatted(
+              event.getTaskName(),
+              event.getRequestId(),
+              event.getBinaryContentId(),
+              event.getErrorMessage()
+        );
+
+      List<Notification> notifications = admins.stream()
+              .map(admin -> new Notification(admin, title, content))
+              .toList();
+      notificationRepository.saveAll(notifications);
+      log.error("S3업로드 실패로 관리자에게 알림. binaryContentId={}, adminCount={}",
+              event.getBinaryContentId(), admins.size());
     }
 
 }

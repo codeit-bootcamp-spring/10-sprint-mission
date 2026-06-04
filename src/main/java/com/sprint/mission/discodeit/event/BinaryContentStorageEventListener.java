@@ -32,34 +32,50 @@ public class BinaryContentStorageEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async("ioTaskExecutor")
     public void handleBinaryContentStorage(BinaryContentCreatedEvent event) {
+        UUID binaryContentId = event.getBinaryContentId();
+
+        /// Thread-1의 MDC와 SecurityContext 정보를 Thread-2에 복사했고,
+        /// SecurityContext에 있는 인증정보를 꺼냄.
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        /// auth NOT NULL
+        /// auth가 인증된 객체인지?
+        /// auth내 principal이 DiscodeitUserDetails타입이라면 userDetails 변수로 바로 꺼내서 사용.
+        if (auth != null && auth.isAuthenticated()
+                && auth.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
+
+            UserDto currentUser = userDetails.getUserDto();
+
+            UUID userId = currentUser.id();
+            String username = currentUser.username();
+
+            log.info("[userId={}, username={}] 파일 저장 시작: {}", userId, username, event.getBinaryContentId());
+        }
         try {
-            /// Thread-1의 MDC와 SecurityContext 정보를 Thread-2에 복사했고,
-            /// SecurityContext에 있는 인증정보를 꺼냄.
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-            /// auth NOT NULL
-            /// auth가 인증된 객체인지?
-            /// auth내 principal이 DiscodeitUserDetails타입이라면 userDetails 변수로 바로 꺼내서 사용.
-            if (auth != null && auth.isAuthenticated()
-                    && auth.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
-
-                UserDto currentUser = userDetails.getUserDto();
-
-                UUID userId = currentUser.id();
-                String username = currentUser.username();
-
-                log.info("[userId={}, username={}] 파일 저장 시작: {}", userId, username, event.getBinaryContentId());
-            }
             /// BinaryCOntentStorage를 통해 바이너리 데이터를 저장.
             binaryContentStorage.put(event.getBinaryContentId(), event.getBytes());
         } catch (Exception e) {
+            /// put()실패시 상태 FAIL로 시도하고 바로 종료.
             log.error("S3 업로드 실패");
-            binaryContentService.updateStatus(event.getBinaryContentId(), BinaryContentStatus.FAIL);
+            updateStatusSafely(binaryContentId, BinaryContentStatus.FAIL);
+            return;
         }
+        updateStatusSafely(event.binaryContentId, BinaryContentStatus.SUCCESS);
+    }
 
-        /// put이 끝나면 실행.
-        /// s3 업로드 완료시 status = SUCCESS
-        binaryContentService.updateStatus(event.binaryContentId, BinaryContentStatus.SUCCESS);
+    /// 상태변경중 예외발생을 위한 메서드 분리.
+    /// ex)S3 업로드는 성공했지만, status=SUCCESS로 변경중 예외 발생할경우 FAIL 대비
+    private void updateStatusSafely(UUID binaryContentId, BinaryContentStatus status) {
+        try {
+            binaryContentService.updateStatus(binaryContentId, status);
+        }catch (Exception e) {
+            log.error(
+                    "BinaryContent 상태 업데이트 실패. binaryContentId={}, status={}",
+                    binaryContentId,
+                    status,
+                    e
+            );
+        }
     }
 
 

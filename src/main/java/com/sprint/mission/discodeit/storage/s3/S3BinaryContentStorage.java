@@ -1,6 +1,10 @@
 package com.sprint.mission.discodeit.storage.s3;
 
+import com.sprint.mission.discodeit.config.MDCLoggingInterceptor;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.event.BinaryContentUploadFailedEvent;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.storage.S3UploadException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -8,12 +12,15 @@ import java.time.Duration;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -39,6 +46,8 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   private final String region;
   private final String bucket;
 
+  private final ApplicationEventPublisher eventPublisher;
+
   @Value("${discodeit.storage.s3.presigned-url-expiration:600}") // 기본값 10분
   private long presignedUrlExpirationSeconds;
 
@@ -46,18 +55,25 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
       @Value("${discodeit.storage.s3.access-key}") String accessKey,
       @Value("${discodeit.storage.s3.secret-key}") String secretKey,
       @Value("${discodeit.storage.s3.region}") String region,
-      @Value("${discodeit.storage.s3.bucket}") String bucket
+      @Value("${discodeit.storage.s3.bucket}") String bucket,
+      ApplicationEventPublisher eventPublisher
   ) {
     this.accessKey = accessKey;
     this.secretKey = secretKey;
     this.region = region;
     this.bucket = bucket;
+    this.eventPublisher = eventPublisher;
   }
 
   @Override
   @Retryable(
           /// RuntimeException 발생시 재시도.
-          retryFor = {RuntimeException.class},
+          retryFor = {
+                  RuntimeException.class,
+                  S3UploadException.class,
+                  S3Exception.class,
+                  InterruptedException.class
+          },
           /// 재시도 정책: 최초 실행 1회 + 재시도 2회 = 총 3회
           maxAttempts = 3,
           /// 실패 후 1초 대기
@@ -83,8 +99,23 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
       return binaryContentId;
     } catch (S3Exception | InterruptedException e) {
       log.error("S3에 파일 업로드 실패: {}", e.getMessage());
-      throw new RuntimeException("S3에 파일 업로드 실패: " + key, e);
+      throw new S3UploadException(ErrorCode.S3_UPLOAD_FAILED, e);
     }
+  }
+
+  @Recover
+  public UUID recover(S3UploadException e, UUID binaryContentId, byte[] bytes) {
+    String requestId = MDC.get(MDCLoggingInterceptor.REQUEST_ID);
+
+    eventPublisher.publishEvent(new BinaryContentUploadFailedEvent(
+            "S3_BINARY_CONTENT_UPLOAD",   //작업내용
+            requestId,  //requestId
+            binaryContentId,
+            e.getMessage()  //실패이유.
+    ));
+
+    /// 기존 이벤트 리스너의 catch가 실행되어 BinaryContentStatus.FAIL로 변경.
+    throw e;
   }
 
   @Override
