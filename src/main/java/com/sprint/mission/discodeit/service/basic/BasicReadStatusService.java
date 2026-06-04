@@ -87,15 +87,15 @@ public class BasicReadStatusService implements ReadStatusService {
             );
         }
 
-        if (dto.newLastReadAt() == null) {
-            log.warn("[READSTATUS_UPDATE_FAIL_BY_LAST_READ_AT] lastReadAt이 null값으로 읽음 상태 수정 실패: readStatusId={}", statusId);
-            throw new InvalidInputException(
-                    ErrorCode.LAST_READ_AT_IS_NULL, Map.of("readStatusId", statusId)
-            );
+        ReadStatus status = findReadStatusOrThrow(statusId);
+
+        if (dto.newLastReadAt() != null) {
+            status.updateLastReadAt(dto.newLastReadAt());
         }
 
-        ReadStatus status = findReadStatusOrThrow(statusId);
-        status.updateLastReadAt(dto.newLastReadAt());
+        if (dto.newNotificationEnabled() != null) {
+            status.updateNotificationEnabled(dto.newNotificationEnabled());
+        }
 
         log.info("[READSTATUS_UPDATE_SUCCESS] 읽음 상태 수정 성공: readStatusId={}", statusId);
         return readStatusMapper.toDto(status);

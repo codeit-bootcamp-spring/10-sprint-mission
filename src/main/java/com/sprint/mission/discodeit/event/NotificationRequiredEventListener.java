@@ -28,9 +28,6 @@ public class NotificationRequiredEventListener {
         List<ReadStatus> readStatuses =
                 readStatusRepository.findByChannelAndNotificationEnabledTrue(channel);
 
-        log.info("[NOTIFICATION_EVENT] channelId={}, senderId={}, targetCount={}",
-                channel.getId(), sender.getId(), readStatuses.size());
-
         String title = sender.getUsername() + " (#" + channel.getName() + ")";
         String content = message.getContent();
 
@@ -47,5 +44,21 @@ public class NotificationRequiredEventListener {
             log.info("[NOTIFICATION_CREATED] notificationId={}, receiverId={}, title={}",
                     notification.getId(), receiver.getId(), title);
         }
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void on(RoleUpdatedEvent event) {
+        String title = "권한이 변경되었습니다.";
+        String content = event.oldRole() + " -> " + event.newRole();
+
+        Notification notification = new Notification(
+                event.user(),
+                title,
+                content
+        );
+
+        notificationRepository.save(notification);
+        log.info("[NOTIFICATION_CREATED] notificationId={}, receiverId={}, title={}",
+                notification.getId(), event.user().getId(), title);
     }
 }

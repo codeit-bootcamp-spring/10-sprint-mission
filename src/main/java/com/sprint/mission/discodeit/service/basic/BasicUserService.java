@@ -6,8 +6,10 @@ import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UpdateUserRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.global.DuplicateResourceException;
 import com.sprint.mission.discodeit.exception.global.InvalidInputException;
@@ -128,8 +130,19 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto updateRole(UserRoleUpdateRequest dto) {
         User user = findUserOrThrow(dto.userId());
+        Role oldRole = user.getRole();
+
+        if (oldRole == dto.newRole()) {
+            throw new UnchangedValueException(
+                    ErrorCode.ROLE_UNCHANGED,
+                    Map.of("role", dto.newRole())
+            );
+        }
 
         user.updateRole(dto.newRole());
+        eventPublisher.publishEvent(
+                new RoleUpdatedEvent(user, oldRole, dto.newRole())
+        );
         jwtRegistry.invalidateJwtInformationByUserId(user.getId());
 
         log.info("[USER_ROLE_UPDATE_SUCCESS] 유저 역할 수정 성공: userId={}, role={}", user.getId(), user.getRole());

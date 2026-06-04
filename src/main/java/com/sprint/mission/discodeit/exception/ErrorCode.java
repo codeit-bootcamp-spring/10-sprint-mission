@@ -19,6 +19,7 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXISTS(409, "U202", "이미 사용중인 email입니다."),
     USERNAME_UNCHANGED(400, "U301", "현재 사용중인 username과 동일합니다."),
     EMAIL_UNCHANGED(400, "U302", "현재 사용중인 email과 동일합니다."),
+    ROLE_UNCHANGED(400, "U303", "현재 부여된 Role과 동일합니다."),
 
     // Channel
     CHANNEL_NOT_FOUND(404, "C100", "채널을 찾을 수 없습니다."),
