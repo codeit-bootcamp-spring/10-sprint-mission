@@ -13,6 +13,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -53,6 +55,16 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   }
 
   @Override
+  @Retryable(
+          /// RuntimeException 발생시 재시도.
+          retryFor = {RuntimeException.class},
+          /// 재시도 정책: 최초 실행 1회 + 재시도 2회 = 총 3회
+          maxAttempts = 3,
+          /// 실패 후 1초 대기
+          /// multiplier = 2: 재시도할수록 대기시간 증가
+          /// 1차 실패후 1초대기, 2차 실패후 2초 대기.
+          backoff = @Backoff(delay = 1000, multiplier = 2)
+  )
   public UUID put(UUID binaryContentId, byte[] bytes) throws S3Exception {
     String key = binaryContentId.toString();
     try {
