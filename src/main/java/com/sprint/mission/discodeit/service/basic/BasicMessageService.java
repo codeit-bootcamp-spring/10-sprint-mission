@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.*;
 import com.sprint.mission.discodeit.exception.channel.*;
 import com.sprint.mission.discodeit.exception.message.*;
@@ -81,6 +82,16 @@ public class BasicMessageService implements MessageService {
 
     Message newMessage = new Message(content, author, channel, binaryContents);
     Message savedMessage = messageRepository.save(newMessage);
+
+    // 메시지 생성 후 이벤트 발행
+    eventPublisher.publishEvent(new MessageCreatedEvent(
+        savedMessage.getId(),
+        channelId,
+        authorId,
+        author.getUsername(),
+        channel.getName(),
+        content
+    ));
 
     log.info("Message created successfully. ID: {}", savedMessage.getId()); // 메시지 생성 성공 로그
     return getOrThrowMessage(savedMessage.getId());

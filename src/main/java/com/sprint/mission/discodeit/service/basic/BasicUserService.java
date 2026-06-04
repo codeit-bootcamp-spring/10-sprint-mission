@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.FileUploadException;
 import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -169,11 +170,17 @@ public class BasicUserService implements UserService {
     // 유저 검증
     User user = getOrThrowUser(id);
 
+    // 권한 변경 알림을 위해 권한 수정 전 현재 권한을 변수에 할당
+    Role oldRole = user.getRole();
+
     // 권한 수정
     user.updateRole(newRole);
 
     // 권한이 변경된 사용자의 모든 토큰을 Registry에서 무효화
     jwtRegistry.invalidateJwtInformationByUserId(id);
+
+    // 역할 변경 후 이벤트 발행
+    eventPublisher.publishEvent(new RoleUpdatedEvent(id, oldRole, newRole));
 
     log.info("User ID {} role updated successfully to {}", id, newRole);
     return user;
