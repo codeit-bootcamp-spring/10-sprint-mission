@@ -1,17 +1,15 @@
 package com.sprint.mission.discodeit.listener;
 
 import com.sprint.mission.discodeit.entity.Notification;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.event.BinaryContentUploadFailedEvent;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -77,7 +75,7 @@ public class NotificationRequiredEventListener {
   @Async("asyncExecutor")
   @EventListener
   @Transactional
-  public void handleBinaryContentUploadFailedEvent(BinaryContentUploadFailedEvent event) {
+  public void on(S3UploadFailedEvent event) {
     log.debug("[NOTIFICATION] S3 파일 업로드 실패 이벤트 수신: binaryContentId={}", event.binaryContentId());
     String title = "S3 파일 업로드 실패";
     String content = String.format("RequestId: %s %nBinaryContentId: %s%n Error: %s",

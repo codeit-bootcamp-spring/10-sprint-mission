@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.config.S3Properties;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
-import com.sprint.mission.discodeit.event.BinaryContentUploadFailedEvent;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentDownloadException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentUploadException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -16,13 +16,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.UUID;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
@@ -174,7 +171,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     log.info("[BINARY_CONTENT] S3 파일 업로드 Recover 메서드 진입");
     String requestId = MDC.get("request_id");
     String errorMessage = (e.getCause() != null) ? e.getCause().getMessage() : e.getMessage();
-    eventPublisher.publishEvent(new BinaryContentUploadFailedEvent(requestId, id, errorMessage));
+    eventPublisher.publishEvent(new S3UploadFailedEvent(requestId, id, errorMessage));
     log.error("[BINARY_CONTENT] S3 파일 업로드 실패");
     throw e;
   }
