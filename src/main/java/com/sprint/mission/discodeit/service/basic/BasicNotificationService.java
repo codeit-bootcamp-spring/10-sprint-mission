@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.notification.NotificationDto;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.exception.notification.NotificationException;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
@@ -45,5 +46,13 @@ public class BasicNotificationService implements NotificationService {
             () -> new NotificationNotFoundException(Map.of("notificationId", notificationId)));
     notificationRepository.delete(notification);
     log.debug("[NOTIFICATION] 알림 확인 완료: notificationId={}", notificationId);
+  }
+
+  @Transactional(readOnly = true)
+  public boolean isNotificationReceiver(UUID notificationId, UUID userId) {
+    return notificationRepository.findById(notificationId)
+        .map(Notification::getReceiver)
+        .map(receiver -> receiver.getId().equals(userId))
+        .orElse(false);
   }
 }

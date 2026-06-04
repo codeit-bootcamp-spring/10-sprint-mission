@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -89,5 +90,13 @@ public class BasicReadStatusService implements ReadStatusService {
         .orElseThrow(() -> new ReadStatusNotFoundException(Map.of("readStatusId", readStatusId)));
     readStatusRepository.delete(readStatus);
     log.info("[READ_STATUS] ReadStatus 삭제 완료: readStatusId={}", readStatusId);
+  }
+
+  @Transactional(readOnly = true)
+  public boolean isReadStatusUser(UUID readStatusId, UUID userId) {
+    return readStatusRepository.findById(readStatusId)
+        .map(ReadStatus::getUser)
+        .map(user -> user.getId().equals(userId))
+        .orElse(false);
   }
 }
