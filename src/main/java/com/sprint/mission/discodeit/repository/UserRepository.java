@@ -15,6 +15,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
   @EntityGraph(attributePaths = "profile")
   List<User> findAll();
 
+  @EntityGraph(attributePaths = "profile")
+  List<User> findAllByRole(Role role);
+
   boolean existsByUsername(String username);
 
   boolean existsByEmail(String email);

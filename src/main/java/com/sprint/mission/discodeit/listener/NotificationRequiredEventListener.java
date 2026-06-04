@@ -2,7 +2,9 @@ package com.sprint.mission.discodeit.listener;
 
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentUploadFailedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -48,7 +51,6 @@ public class NotificationRequiredEventListener {
         ))
         .toList();
     notificationRepository.saveAll(notifications);
-    log.debug("[NOTIFICATION] 메시지 알림 발송 완료: 발송 수={}", notifications.size());
   }
 
   @Async("asyncExecutor")
@@ -66,6 +68,24 @@ public class NotificationRequiredEventListener {
         content
     );
     notificationRepository.save(notification);
-    log.debug("[NOTIFICATION] 권한 변경 알림 발송 완료");
+  }
+
+  @Async("asyncExecutor")
+  @EventListener
+  @Transactional
+  public void handleBinaryContentUploadFailedEvent(BinaryContentUploadFailedEvent event) {
+    log.debug("[NOTIFICATION] S3 파일 업로드 실패 이벤트 수신: binaryContentId={}", event.binaryContentId());
+    String title = "S3 파일 업로드 실패";
+    String content = String.format("RequestId: %s %nBinaryContentId: %s%n Error: %s",
+        event.requestId(), event.binaryContentId(), event.errorMessage());
+    List<Notification> notifications = userRepository.findAllByRole(Role.ADMIN)
+        .stream()
+        .map(user -> new Notification(
+            user,
+            title,
+            content
+        ))
+        .toList();
+    notificationRepository.saveAll(notifications);
   }
 }
