@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.mapper;
 
+import com.sprint.mission.discodeit.config.GlobalMapperConfig;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring")
-public abstract class BinaryContentMapper {
+@Mapper(config = GlobalMapperConfig.class)
+public interface BinaryContentMapper {
 
-  public abstract BinaryContentDto toDto(BinaryContent binaryContent);
+  BinaryContentDto toDto(BinaryContent binaryContent);
 }
