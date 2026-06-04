@@ -14,6 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -28,6 +31,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final JwtTokenProvider jwtTokenProvider;
   private final ObjectMapper objectMapper;
   private final JwtRegistry jwtRegistry;
+  private final CacheManager cacheManager;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -56,7 +60,11 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
           .sameSite("Strict")
           .build();
       response.addHeader(HttpHeaders.SET_COOKIE, expiredCookie.toString());
-
+      Cache usersCache = cacheManager.getCache("users");
+      if (usersCache != null) {
+        usersCache.clear();
+        log.debug("[CACHE] 유저 로그인 성공 users 캐시 초기화 완료");
+      }
       log.debug("[LOGIN] 로그인 성공: username={}", userDetails.getUsername());
     } else {
       Object principal = authentication.getPrincipal();

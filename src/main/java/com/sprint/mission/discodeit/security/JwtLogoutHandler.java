@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -20,6 +23,7 @@ public class JwtLogoutHandler implements LogoutHandler {
 
   private final JwtRegistry jwtRegistry;
   private final JwtTokenProvider jwtTokenProvider;
+  private final CacheManager cacheManager;
 
   @Override
   public void logout(HttpServletRequest request, HttpServletResponse response,
@@ -52,5 +56,10 @@ public class JwtLogoutHandler implements LogoutHandler {
             log.warn("[LOGOUT] 만료되거나 유효하지 않은 Refresh Token의 접근");
           }
         });
+    Cache usersCache = cacheManager.getCache("users");
+    if (usersCache != null) {
+      usersCache.clear();
+      log.debug("[CACHE] 유저 로그아웃 성공 users 캐시 초기화 완료");
+    }
   }
 }

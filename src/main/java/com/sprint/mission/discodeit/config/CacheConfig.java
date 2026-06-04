@@ -14,7 +14,8 @@ public class CacheConfig {
 
   @Bean
   public CacheManager caffeineCacheManager() {
-    CaffeineCacheManager cacheManager = new CaffeineCacheManager();
+    CaffeineCacheManager cacheManager = new CaffeineCacheManager("users", "channels",
+        "notifications");
     cacheManager.setCaffeine(Caffeine.newBuilder()
         .maximumSize(1000)                // 최대 1000개 항목 저장
         .expireAfterWrite(10, TimeUnit.MINUTES)  // 쓰기 후 10분 만료

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,6 +45,7 @@ public class BasicUserService implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final ApplicationEventPublisher eventPublisher;
 
+  @CacheEvict(value = "users", allEntries = true)
   @Override
   public UserDto create(UserCreateRequest request, MultipartFile file) {
     existsByUsername(request.username());
@@ -106,6 +108,7 @@ public class BasicUserService implements UserService {
         .toList();
   }
 
+  @CacheEvict(value = "users", allEntries = true)
   @Override
   public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile file) {
     User user = userRepository.findById(userId)
@@ -142,6 +145,7 @@ public class BasicUserService implements UserService {
     return userMapper.toDto(user, isOnline);
   }
 
+  @CacheEvict(value = "users", allEntries = true)
   @Override
   public UserDto updateRole(RoleUpdateRequest request) {
     User user = userRepository.findById(request.userId())
@@ -155,6 +159,7 @@ public class BasicUserService implements UserService {
     return userMapper.toDto(user, false);
   }
 
+  @CacheEvict(value = "users", allEntries = true)
   @Override
   public void delete(UUID userId) {
     User user = userRepository.findById(userId)

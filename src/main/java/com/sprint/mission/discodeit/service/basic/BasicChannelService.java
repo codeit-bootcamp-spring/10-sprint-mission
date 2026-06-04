@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +37,7 @@ public class BasicChannelService implements ChannelService {
   private final UserRepository userRepository;
   private final ChannelMapper channelMapper;
 
+  @CacheEvict(value = "channels", allEntries = true)
   @Override
   public ChannelDto createPublic(PublicChannelCreateRequest request) {
     Channel channel = channelMapper.toEntity(request);
@@ -43,6 +46,7 @@ public class BasicChannelService implements ChannelService {
     return channelMapper.toDto(channel);
   }
 
+  @CacheEvict(value = "channels", allEntries = true)
   @Override
   public ChannelDto createPrivate(PrivateChannelCreateRequest request) {
     Channel channel = channelMapper.toEntity(request);
@@ -79,6 +83,7 @@ public class BasicChannelService implements ChannelService {
         .toList();
   }
 
+  @CacheEvict(value = "channels", allEntries = true)
   @Override
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
     Channel channel = channelRepository.findById(channelId)
@@ -92,6 +97,7 @@ public class BasicChannelService implements ChannelService {
     return channelMapper.toDto(channel);
   }
 
+  @CacheEvict(value = "channels", allEntries = true)
   @Override
   public void delete(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -33,6 +34,7 @@ public class NotificationRequiredEventListener {
   private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
 
+  @CacheEvict(value = "notifications", allEntries = true)
   @Async("asyncExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -53,6 +55,7 @@ public class NotificationRequiredEventListener {
     notificationRepository.saveAll(notifications);
   }
 
+  @CacheEvict(value = "notifications", allEntries = true)
   @Async("asyncExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -70,6 +73,7 @@ public class NotificationRequiredEventListener {
     notificationRepository.save(notification);
   }
 
+  @CacheEvict(value = "notifications", allEntries = true)
   @Async("asyncExecutor")
   @EventListener
   @Transactional
