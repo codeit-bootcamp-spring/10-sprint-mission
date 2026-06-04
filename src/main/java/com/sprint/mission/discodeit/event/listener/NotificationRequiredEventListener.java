@@ -11,19 +11,16 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
-@EnableAsync
 @Component
 public class NotificationRequiredEventListener {
     private final NotificationRepository notificationRepository;
@@ -31,7 +28,7 @@ public class NotificationRequiredEventListener {
     private final ReadStatusRepository readStatusRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Async
+    @Async("ioTaskExecutor")
     public void handleMessageCreate(MessageCreatedEvent event){
         try{
             List<ReadStatus> activeStatus = readStatusRepository.findAllByChannelIdAndNotificationEnabledTrue(event.getChannelId());
@@ -57,7 +54,7 @@ public class NotificationRequiredEventListener {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Async
+    @Async("ioTaskExecutor")
     public void handleRoleUpdate(RoleUpdatedEvent event){
         try {
             String content = String.format("%s -> %s", event.getOldRole(), event.getNewRole());
