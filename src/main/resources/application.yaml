@@ -16,7 +16,7 @@ discodeit:
 
 spring:
   profiles:
-    active: dev
+    active: prod
 
   jpa:
     hibernate:
@@ -36,6 +36,10 @@ management:
   endpoint:
     health:
       show-details: always
+
+  observations:
+    annotations:
+      enabled: true
 
 
 

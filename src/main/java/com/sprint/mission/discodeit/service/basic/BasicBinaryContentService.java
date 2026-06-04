@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentCreateRequ
 import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.enums.binarycontents.BinaryContentStatus;
+import com.sprint.mission.discodeit.events.AdminBinaryContentUploadFailedEvent;
 import com.sprint.mission.discodeit.events.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.FieldNotValidException;
 import com.sprint.mission.discodeit.exception.RequestNullException;
@@ -17,6 +18,9 @@ import java.io.InputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +29,7 @@ import java.util.UUID;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.core.exception.SdkException;
 
 @Slf4j
 @Service
@@ -36,6 +41,12 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final ApplicationEventPublisher eventPublisher;
   private final BinaryContentStorage binaryContentStorage;
 
+  // 바이너리 컨텐츠 생성 시도 및 Retry 정책 명시
+  @Retryable(
+      retryFor = {IOException.class, IllegalStateException.class, SdkException.class},
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 1000, multiplier = 2)
+  )
   @Transactional
   @Override
   public BinaryContent create(BinaryContentCreateRequestDTO req) {
@@ -60,6 +71,17 @@ public class BasicBinaryContentService implements BinaryContentService {
     );
 
     return binaryContent;
+  }
+
+  @Recover
+  public void recover(Exception e, UUID binaryContentId) {
+    AdminBinaryContentUploadFailedEvent event = new AdminBinaryContentUploadFailedEvent(
+        Thread.currentThread().getId(),
+        binaryContentId,
+        e.getMessage()
+    );
+
+    eventPublisher.publishEvent(event);
   }
 
   @Transactional
