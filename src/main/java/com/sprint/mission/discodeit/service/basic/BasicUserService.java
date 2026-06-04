@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -91,6 +92,7 @@ public class BasicUserService implements UserService {
     return userMapper.toDto(user, isLoggedIn);
   }
 
+  @Cacheable("users")
   @Override
   @Transactional(readOnly = true)
   public List<UserDto> findAll() {
