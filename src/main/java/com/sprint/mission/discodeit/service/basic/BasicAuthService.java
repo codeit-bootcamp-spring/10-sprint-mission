@@ -4,12 +4,14 @@ import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.authDto.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
@@ -25,6 +27,7 @@ public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final SessionRegistry sessionRegistry;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -34,6 +37,7 @@ public class BasicAuthService implements AuthService {
         User user = userRepository.findById(request.getUserId())
                         .orElseThrow(() -> new UserNotFoundException(request.getUserId()));
         user.updateRole(request.getNewRole());
+        eventPublisher.publishEvent(new RoleUpdatedEvent(user.getId(), user.getRole(), request.getNewRole()));
         UserDto dto = userMapper.toDto(user, true);
         // 권한 변경 시 세션 만료되도록 함
         expireUserSessions(dto);
@@ -49,7 +53,6 @@ public class BasicAuthService implements AuthService {
         List<SessionInformation> sessions = sessionRegistry.getAllSessions(principal, false);
 
         return !sessions.isEmpty();
-
     }
 
     private void expireUserSessions(UserDto dto){

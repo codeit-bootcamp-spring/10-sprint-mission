@@ -43,6 +43,13 @@ public class BasicChannelService implements ChannelService {
         channel.setType(ChannelType.PUBLIC);
         // 채널 저장
         channelRepository.save(channel);
+
+        // 모든 유저가 공용채널의 읽음 상태를 갖도록함
+        List<User> users = userRepository.findAll();
+        for(User user : users){
+            readStatusRepository.save(new ReadStatus(user, channel, false));
+        }
+
         log.info("공용 채널 생성 성공: 채널 id = {}", channel.getId());
         return channelMapper.toDto(channel);
     }
@@ -61,7 +68,7 @@ public class BasicChannelService implements ChannelService {
         // n+1 수정해야함
         request.getParticipantIds().stream()
                 .map(id -> userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id)))
-                .forEach(user -> readStatusRepository.save(new ReadStatus(user, channel)));
+                .forEach(user -> readStatusRepository.save(new ReadStatus(user, channel, true)));
         log.info("개인 채널 생성 성공: 채널 id = {}", channel.getId());
         return channelMapper.toDto(channel);
     }

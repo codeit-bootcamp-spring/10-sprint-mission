@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.file.FileUploadFailException;
@@ -20,7 +21,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -45,7 +45,6 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final MessageMapper messageMapper;
     private final PageResponseMapper pageResponseMapper;
-    private final BinaryContentStorage binaryContentStorage;
     private final BinaryContentRepository binaryContentRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -80,7 +79,13 @@ public class BasicMessageService implements MessageService {
         });
 
         // 데이터에 정보 저장
-        messageRepository.save(message);
+        Message savedMessage = messageRepository.save(message);
+        applicationEventPublisher.publishEvent(new MessageCreatedEvent(savedMessage.getId(),
+                channel.getId(),
+                channel.getName(),
+                user.getId(),
+                user.getUsername(),
+                savedMessage.getContent()));
         return messageMapper.toDto(message);
     }
 

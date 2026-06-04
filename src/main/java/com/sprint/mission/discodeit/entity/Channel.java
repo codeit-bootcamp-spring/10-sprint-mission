@@ -40,4 +40,8 @@ public class Channel extends BaseUpdatableEntity {
     public void updateChannelDescription(String newDescription){
         this.description = newDescription;
     }
+
+    public boolean isPrivate(){
+        return this.type.equals(ChannelType.PRIVATE);
+    }
 }

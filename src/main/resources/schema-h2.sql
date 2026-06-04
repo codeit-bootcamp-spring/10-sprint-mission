@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS channels CASCADE;
 DROP TABLE IF EXISTS binary_contents CASCADE;
 DROP TABLE IF EXISTS refresh_tokens CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
 
 -- 2.  바이너리 파일을 관리하는 테이블
 CREATE TABLE binary_contents
@@ -70,6 +71,7 @@ CREATE TABLE read_statuses
     last_read_at TIMESTAMP WITH TIME ZONE NOT NULL,
     user_id      UUID        NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     channel_id   UUID        NOT NULL REFERENCES channels (id) ON DELETE CASCADE,
+    notification_enabled boolean NOT NULL,
     created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at   TIMESTAMP WITH TIME ZONE,
     CONSTRAINT unique_user_channel UNIQUE (user_id, channel_id)
@@ -86,4 +88,15 @@ CREATE TABLE refresh_tokens
 
     CONSTRAINT uk_refresh_tokens_token UNIQUE (token),
     CONSTRAINT uk_refresh_tokens_email UNIQUE (email)
+);
+
+-- 10. Notifications 관리 테이블
+
+CREATE TABLE notifications
+(
+    id    UUID PRIMARY KEY,
+    receiver_id UUID   NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    title   VARCHAR(50) NOT NULL,
+    content VARCHAR(200) NOT NULL,
+    created_at   TIMESTAMP WITH TIME ZONE NOT NULL
 );

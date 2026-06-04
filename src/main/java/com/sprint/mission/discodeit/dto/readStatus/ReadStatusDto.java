@@ -15,4 +15,5 @@ public class ReadStatusDto {
     private UUID userId;
     private UUID channelId;
     private Instant lastReadAt;
+    private Boolean notificationEnabled;
 }
