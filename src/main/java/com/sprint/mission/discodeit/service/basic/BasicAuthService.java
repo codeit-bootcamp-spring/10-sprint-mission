@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.authDto.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -36,10 +37,14 @@ public class BasicAuthService implements AuthService {
 
         User user = userRepository.findById(request.getUserId())
                         .orElseThrow(() -> new UserNotFoundException(request.getUserId()));
+        // 과거 권한
+        Role oldRole = user.getRole();
         user.updateRole(request.getNewRole());
-        eventPublisher.publishEvent(new RoleUpdatedEvent(user.getId(), user.getRole(), request.getNewRole()));
+        if(!oldRole.equals(user.getRole())){
+            eventPublisher.publishEvent(new RoleUpdatedEvent(user.getId(), oldRole, request.getNewRole()));
+        }
         UserDto dto = userMapper.toDto(user, true);
-        // 권한 변경 시 세션 만료되도록 함
+        // 권한 변경 시 세션 만료되도록 함 -> 토큰 기반으로 바뀌었기 때문에 수정
         expireUserSessions(dto);
         log.info("권한 수정으로 세션 만료!");
         return dto;
