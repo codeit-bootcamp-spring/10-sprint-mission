@@ -52,12 +52,17 @@ public class BasicAuthService implements AuthService {
     User user =
         userRepository.findById(userId).orElseThrow(() -> UserNotFoundException.withId(userId));
 
-    Role previousRole = request.newRole();
+    // 변경 전 권한은 DB에서 조회한 User 엔티티에서
+    Role previousRole = user.getRole();
     Role newRole = request.newRole();
 
+    // 권한변경
+    user.updateRole(newRole);
+
+    // 권한이 바뀐기존 JWT는 x
     jwtRegistry.invalidateJwtInformationByUserId(userId);
 
-    // 실제 권한 변경 시 알림 발행
+    // 실제로 권한이 변경된 경우에만 알림 이벤트를 발행합니다.
     if (previousRole != newRole) {
       eventPublisher.publishEvent(new RoleUpdatedEvent(userId, previousRole, newRole));
     }

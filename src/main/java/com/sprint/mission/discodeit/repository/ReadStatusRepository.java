@@ -10,16 +10,26 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
 
-
   List<ReadStatus> findAllByUserId(UUID userId);
 
-  @Query("SELECT r FROM ReadStatus r "
-      + "JOIN FETCH r.user u "
-      + "LEFT JOIN FETCH u.profile "
-      + "WHERE r.channel.id = :channelId")
+  @Query(
+      "SELECT r FROM ReadStatus r "
+          + "JOIN FETCH r.user u "
+          + "LEFT JOIN FETCH u.profile "
+          + "WHERE r.channel.id = :channelId")
   List<ReadStatus> findAllByChannelIdWithUser(@Param("channelId") UUID channelId);
 
   Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId);
 
   void deleteAllByChannelId(UUID channelId);
+
+  // 알림 관련
+  @Query(
+      """
+    SELECT r FROM ReadStatus r
+    JOIN FETCH r.user u
+    WHERE r.channel.id = :channelId
+      AND r.notificationEnabled = true
+    """)
+  List<ReadStatus> findAllNotificationEnabledByChannelId(@Param("channelId") UUID channelId);
 }
