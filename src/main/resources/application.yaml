@@ -21,7 +21,7 @@ discodeit:
   admin:
     username: ${ADMIN_USERNAME:admin}
     email: ${ADMIN_EMAIL:admin@gmail.com}
-    password: ${ADMIN_PASSWORD:admin1234}
+    password: ${ADMIN_PASSWORD:1111}
 
 spring:
   profiles:
