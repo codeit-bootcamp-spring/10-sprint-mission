@@ -38,6 +38,7 @@ public class JwtLogoutHandler implements LogoutHandler {
               .httpOnly(true)
               .path("/")
               .maxAge(0)
+              .sameSite("Strict")
               .build();
           response.addHeader(HttpHeaders.SET_COOKIE, expiredCookie.toString());
           log.debug("[LOGOUT] 브라우저 쿠키 정상 삭제 완료");

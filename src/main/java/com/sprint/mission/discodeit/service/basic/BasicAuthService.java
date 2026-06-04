@@ -44,8 +44,8 @@ public class BasicAuthService implements AuthService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
     UserDto userDto = userMapper.toDto(user, false);
-    String newAccessToken = delegateAccessToken(userDto);
-    String newRefreshToken = delegateRefreshToken(userDto);
+    String newAccessToken = jwtTokenProvider.delegateAccessToken(userDto);
+    String newRefreshToken = jwtTokenProvider.delegateRefreshToken(userDto);
     JwtInformation newJwtInformation = new JwtInformation(
         userDto,
         newAccessToken,
@@ -53,23 +53,5 @@ public class BasicAuthService implements AuthService {
     );
     jwtRegistry.rotateJwtInformation(oldRefreshToken, newJwtInformation);
     return newJwtInformation;
-  }
-
-  private String delegateAccessToken(UserDto userDto) {
-    Map<String, Object> claims = new HashMap<>();
-    claims.put("username", userDto.username());
-    claims.put("email", userDto.email());
-    claims.put("roles", userDto.role().getDbKey());
-    claims.put("userId", userDto.id());
-
-    String subject = userDto.id().toString();
-
-    return jwtTokenProvider.generateAccessToken(
-        claims, subject);
-  }
-
-  private String delegateRefreshToken(UserDto userDto) {
-    String subject = userDto.id().toString();
-    return jwtTokenProvider.generateRefreshToken(subject);
   }
 }

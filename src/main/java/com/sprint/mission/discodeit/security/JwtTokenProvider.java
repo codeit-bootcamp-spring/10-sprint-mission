@@ -8,8 +8,10 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +20,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenProvider {
 
-  public static String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
+  public static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
 
   @Getter
   @Value("${discodeit.jwt.key}")
@@ -86,20 +88,9 @@ public class JwtTokenProvider {
 
   public Map<String, Object> getClaims(String token) {
     try {
-      SignedJWT signedJWT = SignedJWT.parse(token);
-      JWSVerifier verifier = new MACVerifier(secretKey.getBytes(StandardCharsets.UTF_8));
+      SignedJWT signedJWT = verifyAndParse(token);
 
-      if (!signedJWT.verify(verifier)) {
-        throw new RuntimeException("[JWT] JWT 검증 실패");
-      }
-
-      Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-      if (expirationTime != null && expirationTime.before(new Date())) {
-        throw new RuntimeException("[JWT] JWT 토큰이 만료되었습니다.");
-      }
-
-      JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
-      return claimsSet.getClaims();
+      return signedJWT.getJWTClaimsSet().getClaims();
     } catch (Exception e) {
       throw new RuntimeException("[JWT] JWT 파싱 실패", e);
     }
@@ -107,17 +98,7 @@ public class JwtTokenProvider {
 
   public String getSubject(String token) {
     try {
-      SignedJWT signedJWT = SignedJWT.parse(token);
-      JWSVerifier verifier = new MACVerifier(secretKey.getBytes(StandardCharsets.UTF_8));
-
-      if (!signedJWT.verify(verifier)) {
-        throw new RuntimeException("[JWT] JWT 검증 실패");
-      }
-
-      Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-      if (expirationTime != null && expirationTime.before(new Date())) {
-        throw new RuntimeException("[JWT] JWT 토큰이 만료되었습니다.");
-      }
+      SignedJWT signedJWT = verifyAndParse(token);
 
       return signedJWT.getJWTClaimsSet().getSubject();
     } catch (Exception e) {
@@ -134,5 +115,35 @@ public class JwtTokenProvider {
       // 파싱 실패 시에도 유효하지 않음으로 삭제
       return true;
     }
+  }
+
+  public String delegateAccessToken(UserDto userDto) {
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("username", userDto.username());
+    claims.put("email", userDto.email());
+    claims.put("roles", userDto.role().getDbKey());
+    claims.put("userId", userDto.id());
+
+    String subject = userDto.id().toString();
+
+    return generateAccessToken(claims, subject);
+  }
+
+  public String delegateRefreshToken(UserDto userDto) {
+    String subject = userDto.id().toString();
+    return generateRefreshToken(subject);
+  }
+
+  private SignedJWT verifyAndParse(String token) throws Exception {
+    SignedJWT signedJWT = SignedJWT.parse(token);
+    JWSVerifier verifier = new MACVerifier(secretKey.getBytes(StandardCharsets.UTF_8));
+    if (!signedJWT.verify(verifier)) {
+      throw new RuntimeException("[JWT] JWT 검증 실패");
+    }
+    Date expiry = signedJWT.getJWTClaimsSet().getExpirationTime();
+    if (expiry != null && expiry.before(new Date())) {
+      throw new RuntimeException("[JWT] JWT 토큰이 만료되었습니다.");
+    }
+    return signedJWT;
   }
 }

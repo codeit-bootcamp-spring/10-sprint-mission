@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -36,8 +38,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         authentication.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
       response.setStatus(200);
       UserDto userDto = userDetails.getUserDto();
-      String accessToken = delegateAccessToken(userDto);
-      String refreshToken = delegateRefreshToken(userDto);
+      String accessToken = jwtTokenProvider.delegateAccessToken(userDto);
+      String refreshToken = jwtTokenProvider.delegateRefreshToken(userDto);
 
       JwtDto jwtDto = new JwtDto(userDto, accessToken);
       String json = objectMapper.writeValueAsString(jwtDto);
@@ -46,12 +48,14 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
       JwtInformation jwtInformation = new JwtInformation(userDto, accessToken, refreshToken);
       jwtRegistry.registerJwtInformation(jwtInformation);
 
-      Cookie refreshTokenCookie = new Cookie(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME,
-          refreshToken);
-      refreshTokenCookie.setHttpOnly(true);
-      refreshTokenCookie.setPath("/");
-      refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);
-      response.addCookie(refreshTokenCookie);
+      ResponseCookie expiredCookie = ResponseCookie.from(
+              JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, refreshToken)
+          .httpOnly(true)
+          .path("/")
+          .maxAge(60 * 60 * 24 * 7)
+          .sameSite("Strict")
+          .build();
+      response.addHeader(HttpHeaders.SET_COOKIE, expiredCookie.toString());
 
       log.debug("[LOGIN] 로그인 성공: username={}", userDetails.getUsername());
     } else {
@@ -60,23 +64,5 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
       log.error("[LOGIN] 인증 객체 타입이 불일치: class={}", principalType);
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "인증 시스템 내부 오류");
     }
-  }
-
-  private String delegateAccessToken(UserDto userDto) {
-    Map<String, Object> claims = new HashMap<>();
-    claims.put("username", userDto.username());
-    claims.put("email", userDto.email());
-    claims.put("roles", userDto.role().getDbKey());
-    claims.put("userId", userDto.id());
-
-    String subject = userDto.id().toString();
-
-    return jwtTokenProvider.generateAccessToken(
-        claims, subject);
-  }
-
-  private String delegateRefreshToken(UserDto userDto) {
-    String subject = userDto.id().toString();
-    return jwtTokenProvider.generateRefreshToken(subject);
   }
 }
