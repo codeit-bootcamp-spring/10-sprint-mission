@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ public class NotificationRequiredEventListener {
   private final UserRepository userRepository;
 
   // 메시지 생성 이벤트가 발행했을 때 처리하는 메서드
+  @Async("eventTaskExecutor")
   @TransactionalEventListener
   @Transactional(propagation = Propagation.REQUIRES_NEW) // 전파 단계 = 새로운 스레드를 생성해서 진행
   public void on(MessageCreatedEvent event) {
@@ -61,7 +63,8 @@ public class NotificationRequiredEventListener {
       ));
     }
   }
-
+  
+  @Async("eventTaskExecutor")
   @TransactionalEventListener
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void on(RoleUpdatedEvent event) {
