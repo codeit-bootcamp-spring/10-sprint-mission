@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.security.Http401UnauthorizedAuthenticationEntryPoint;
 import com.sprint.mission.discodeit.security.Http403ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
@@ -36,6 +37,7 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 
 @Slf4j
 @Configuration
@@ -81,6 +83,13 @@ public class SecurityConfig {
             .anyRequest().authenticated()
         )
         .exceptionHandling(ex -> ex
+            .defaultAuthenticationEntryPointFor(
+                new Http401UnauthorizedAuthenticationEntryPoint(objectMapper),
+                new OrRequestMatcher(
+                    AntPathRequestMatcher.antMatcher("/api/notifications"),
+                    AntPathRequestMatcher.antMatcher("/api/notifications/**")
+                )
+            )
             .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
             .accessDeniedHandler(new Http403ForbiddenAccessDeniedHandler(objectMapper))
         )
