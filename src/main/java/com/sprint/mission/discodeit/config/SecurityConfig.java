@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.controller.dto.ErrorResponseDTO;
 import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.filter.RequestFilter;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
@@ -37,6 +38,7 @@ public class SecurityConfig {
     private final LoginFailureHandler loginFailureHandler;
     private final JwtLogoutHandler jwtLogoutHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RequestFilter requestFilter;
 
     private final ObjectMapper objectMapper;
 
@@ -128,8 +130,12 @@ public class SecurityConfig {
                         .failureHandler(loginFailureHandler)
                 )
                 .addFilterBefore(
-                        jwtAuthenticationFilter,
+                        requestFilter,
                         UsernamePasswordAuthenticationFilter.class
+                )
+                .addFilterAfter(
+                        jwtAuthenticationFilter,
+                        RequestFilter.class
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
