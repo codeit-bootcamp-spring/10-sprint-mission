@@ -25,6 +25,9 @@ management:
   endpoint:
     health:
       show-details: always
+  observations:
+    annotations:
+      enabled: true   #@Timed 어노테이션 활성화.
 
 info:
   name: Discodeit

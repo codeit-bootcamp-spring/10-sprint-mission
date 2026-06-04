@@ -1,15 +1,21 @@
 package com.sprint.mission.discodeit.event;
 
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.basic.BasicBinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -24,10 +30,26 @@ public class BinaryContentStorageEventListener {
     /// BinaryContentCreatedEvent타입 기준으로 매칭
     /// Thread-1은 BinaryContentService.create()를 commit 시키고 Thread-2에게 이 리스너 위임한다.
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Async
+    @Async("ioTaskExecutor")
     public void handleBinaryContentStorage(BinaryContentCreatedEvent event) {
         try {
-            log.info("프로필 저장ID: {}", event.getBinaryContentId());
+            /// Thread-1의 MDC와 SecurityContext 정보를 Thread-2에 복사했고,
+            /// SecurityContext에 있는 인증정보를 꺼냄.
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+            /// auth NOT NULL
+            /// auth가 인증된 객체인지?
+            /// auth내 principal이 DiscodeitUserDetails타입이라면 userDetails 변수로 바로 꺼내서 사용.
+            if (auth != null && auth.isAuthenticated()
+                    && auth.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
+
+                UserDto currentUser = userDetails.getUserDto();
+
+                UUID userId = currentUser.id();
+                String username = currentUser.username();
+
+                log.info("[userId={}, username={}] 파일 저장 시작: {}", userId, username, event.getBinaryContentId());
+            }
             /// BinaryCOntentStorage를 통해 바이너리 데이터를 저장.
             binaryContentStorage.put(event.getBinaryContentId(), event.getBytes());
         } catch (Exception e) {
