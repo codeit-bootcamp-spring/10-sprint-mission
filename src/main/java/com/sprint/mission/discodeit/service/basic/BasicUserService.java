@@ -19,6 +19,9 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,6 +41,7 @@ public class BasicUserService implements UserService {
 
   private final ApplicationEventPublisher eventPublisher;
 
+    @CacheEvict(cacheNames = "users", key = "'all'")
   @Transactional
   @Override
   public UserDto create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
@@ -81,6 +85,7 @@ public class BasicUserService implements UserService {
     return userMapper.toDto(user);
   }
 
+  /// 단일 사용자 조회도 캐시를 적용하려면 findAll()에 해당하는 캐시와 분리를 하는게 맞다.
   @Transactional(readOnly = true)
   @Override
   public UserDto find(UUID userId) {
@@ -92,6 +97,9 @@ public class BasicUserService implements UserService {
     return userDto;
   }
 
+  /// 사용자 목록 조회.
+  /// all - List<UserDto> 형태로 캐시에 저장.
+  @Cacheable(cacheNames = "users", key = "'all'")
   @Transactional(readOnly = true)
   @Override
   public List<UserDto> findAll() {
@@ -104,6 +112,8 @@ public class BasicUserService implements UserService {
     return userDtos;
   }
 
+  /// 사용자 업데이트시 캐시 삭제
+  @CacheEvict(value = "users", key = "'all'")
   @PreAuthorize("principal.userDto.id == #userId")
   @Transactional
   @Override
@@ -153,6 +163,7 @@ public class BasicUserService implements UserService {
     return userMapper.toDto(user);
   }
 
+  @CacheEvict(value = "users", key = "'all'")
   @PreAuthorize("principal.userDto.id == #userId")
   @Transactional
   @Override

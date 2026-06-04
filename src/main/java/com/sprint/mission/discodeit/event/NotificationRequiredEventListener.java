@@ -11,6 +11,8 @@ import java.util.List;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -28,11 +30,15 @@ public class NotificationRequiredEventListener {
   private final NotificationRepository notificationRepository;
   private final UserRepository userRepository;
 
+  private final CacheManager cacheManager;
+
   /// 특정 채널에 메시지가 생성됐을때 알림 생성
   /// 특정 채널에서 메시지가 생성되고 DB에 저장후 실행
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   @Async
   public void on(MessageCreatedEvent event) {
+    Cache cache = cacheManager.getCache("userNotifications");
+
     /// 해당 채널의 알림 여부를 활성화한 ReadStatus를 조회합니다.
     List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelIdAndNotificationEnabledTrue(event.getChannelId());
 
@@ -54,6 +60,14 @@ public class NotificationRequiredEventListener {
             .toList();
 
     notificationRepository.saveAll(notifications);
+
+    /// 알림이 발생한 사용자의 알림을 캐시에서 삭제
+    if (cache != null) {
+      notifications.stream()
+              .map(notification -> notification.getReceiver().getId())
+              .distinct()
+              .forEach(cache::evict);
+    }
     log.debug("메시지 생성 알림 저장 완료: messageId={}, channelId={}, count={}",
             event.getMessageId(), event.getChannelId(), notifications.size());
 
@@ -64,6 +78,7 @@ public class NotificationRequiredEventListener {
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   @Async
   public void on(RoleUpdatedEvent event) {
+    Cache cache = cacheManager.getCache("userNotifications");
 
       User receiver = userRepository.findById(event.getUserId())
               .orElseThrow(() -> UserNotFoundException.withId(event.getUserId()));
@@ -75,6 +90,10 @@ public class NotificationRequiredEventListener {
       );
 
       notificationRepository.save(notification);
+
+      if (cache != null) {
+        cache.evict(event.getUserId());
+      }
       log.debug("권한 변경 알림 저장 완료: userId={}, previousRole={}, newRole={}",
               event.getUserId(), event.getPreviousRole(), event.getNewRole());
     }
@@ -82,6 +101,7 @@ public class NotificationRequiredEventListener {
     @Transactional
     @EventListener
     public void on(BinaryContentUploadFailedEvent event) {
+      Cache cache = cacheManager.getCache("userNotifications");
       List<User> admins = userRepository.findAllByRole(Role.ADMIN);
 
       String title = "S3 바이너리 데이터 업로드 실패";
@@ -101,6 +121,12 @@ public class NotificationRequiredEventListener {
               .map(admin -> new Notification(admin, title, content))
               .toList();
       notificationRepository.saveAll(notifications);
+      if (cache != null) {
+        admins.stream()
+                .map(User::getId)
+                .distinct()
+                .forEach(cache::evict);
+      }
       log.error("S3업로드 실패로 관리자에게 알림. binaryContentId={}, adminCount={}",
               event.getBinaryContentId(), admins.size());
     }

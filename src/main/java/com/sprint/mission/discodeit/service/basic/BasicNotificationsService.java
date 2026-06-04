@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,9 @@ public class BasicNotificationsService {
 
   private final NotificationRepository notificationRepository;
 
+  /// 사용자별 알림 목록 조회
+  /// userId - List<NotificationDto> 형태로 캐시에 담긴다.
+  @Cacheable(cacheNames = "userNotifications", key = "#userId")
   @Transactional(readOnly = true)
   public List<NotificationDto> findAllByUserId(UUID userId) {
     log.debug("Find notifications: userId={}", userId);
@@ -25,6 +30,10 @@ public class BasicNotificationsService {
     return notifications;
   }
 
+  /// userId에 해당하는걸 모두 지워버림
+  /// 즉 1 - 알림3을 지웠다고 하면 1-알림3만 캐시에서 삭제되는게 아니라
+  /// 1이 가지는 알림을 전부 삭제.
+  @CacheEvict(value = "userNotifications", key = "#userId")
   @Transactional
   public void delete(UUID userId, UUID notificationId) {
     if (!notificationRepository.existsByIdAndReceiverId(notificationId, userId)) {
