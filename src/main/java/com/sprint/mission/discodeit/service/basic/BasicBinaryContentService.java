@@ -1,12 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.*;
-import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
@@ -66,6 +65,17 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Override
   public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
     return binaryContentRepository.findAllById(ids);
+  }
+
+  @Override
+  @Transactional
+  public BinaryContent updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+    BinaryContent binaryContent = getOrThrowBinaryContent(binaryContentId);
+
+    // 업로드 상태값 업데이트
+    binaryContent.updateStatus(status);
+
+    return binaryContent;
   }
 
   @Override
