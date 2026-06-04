@@ -78,7 +78,11 @@ public class ReadStatusController implements ReadStatusApi {
       @RequestBody ReadStatusUpdateRequest request) {
     log.debug("Received PATCH /api/readStatuses/{} request", readStatusId); // 읽음 상태 업데이트 요청 로그
 
-    ReadStatus readStatus = readStatusService.update(readStatusId, request.newLastReadAt());
+    ReadStatus readStatus = readStatusService.update(
+        readStatusId,
+        request.newLastReadAt(),
+        request.newNotificationEnabled()
+    );
 
     return ResponseEntity.ok(readStatusMapper.toDto(readStatus));
   }
