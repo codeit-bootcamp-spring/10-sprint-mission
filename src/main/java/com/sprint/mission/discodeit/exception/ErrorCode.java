@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCode {
 
     PRIVATE_CHANNEL_UPDATE(400, "PRIVATE_CHANNEL_UPDATE", "개인 채널은 수정할 수 없습니다."),
-    FILE_UPLOAD_FAIL(400, "FILE_UPLOAD_FAIL", "파일 업로드가 실패했습니다."),
+    FILE_UPLOAD_FAIL(500, "FILE_UPLOAD_FAIL", "파일 업로드가 실패했습니다."),
     FILE_SAVE_FAIL(400, "FILE_SAVE_FAIL", "파일 저장에 실패했습니다."),
     FILE_READ_FAIL(400, "FILE_READ_FAIL", "파일 읽기에 실패했습니다."),
     STORAGE_INIT_FAIL(400, "STORAGE_INIT_FAIL", "저장소 초기화가 실패했습니다."),

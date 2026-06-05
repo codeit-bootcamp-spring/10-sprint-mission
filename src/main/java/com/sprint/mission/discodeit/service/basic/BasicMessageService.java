@@ -70,7 +70,7 @@ public class BasicMessageService implements MessageService {
                         bc.getOriginalFilename(),
                         bc.getContentType());
                 binaryContent = binaryContentRepository.save(binaryContent);
-                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bc.getBytes()));
+                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bc.getBytes(), user.getId()));
             } catch (IOException e) {
                 throw new FileUploadFailException();
             }

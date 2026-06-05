@@ -4,11 +4,13 @@ import com.sprint.mission.discodeit.decorator.MdcTaskDecorator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 @EnableAsync
+@EnableRetry
 public class AsyncConfig {
 
     @Bean(name = "ioTaskExecutor")

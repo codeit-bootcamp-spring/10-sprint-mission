@@ -34,7 +34,6 @@ public class BasicBinaryContentService implements BinaryContentService {
                 dto.getContentType());
 
         binaryContentRepository.save(binaryContent);
-        applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), dto.getFileData()));
 
         return binaryContentMapper.toDto(binaryContent);
     }

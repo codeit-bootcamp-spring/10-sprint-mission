@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,13 +43,14 @@ public class BasicUserService implements UserService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateEmailFoundException(request.getEmail());
         }
-
         // 유저 객체 생성
         User user = new User(request.getUsername(),
                 request.getEmail(),
                 passwordEncoder.encode(request.getPassword()),
                 Role.USER);
 
+        // 유저 저장
+        userRepository.save(user);
         // 프로필 등록 여부 & binaryContent객체 생성
         if(profile != null) {
             try {
@@ -60,14 +62,13 @@ public class BasicUserService implements UserService {
                 user.addProfileImage(binaryContent);
                 // 연관성 주입
                 binaryContent = binaryContentRepository.save(binaryContent);
-                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), profile.getBytes()));
+                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), profile.getBytes(), user.getId()));
 
             } catch (Exception e) {
                 throw new FileUploadFailException();
             }
         }
-        // 유저 저장
-        userRepository.save(user);
+
 
         return userMapper.toDto(user,true);
     }
@@ -132,7 +133,7 @@ public class BasicUserService implements UserService {
                         profile.getOriginalFilename(),
                         profile.getContentType());
                 newBinaryContent = binaryContentRepository.save(newBinaryContent);
-                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(newBinaryContent.getId(), profile.getBytes()));
+                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(newBinaryContent.getId(), profile.getBytes(), user.getId()));
 
                 user.updateProfileImg(newBinaryContent);
             } catch (Exception e) {
