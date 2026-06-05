@@ -13,4 +13,7 @@ public record BinaryContentDto(
 
 ) {
 
+  public BinaryContentDto(UUID id, String fileName, Long size, String contentType) {
+    this(id, fileName, size, contentType, BinaryContentStatus.SUCCESS);
+  }
 }

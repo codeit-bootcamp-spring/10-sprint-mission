@@ -37,7 +37,7 @@ public class BasicChannelService implements ChannelService {
   private final UserRepository userRepository;
   private final ChannelMapper channelMapper;
 
-  @CacheEvict(cacheNames = "userChannels", allEntries = true)
+  @CacheEvict(cacheManager = "redisCacheManager", cacheNames = "userChannels", allEntries = true)
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override
@@ -52,7 +52,7 @@ public class BasicChannelService implements ChannelService {
     return channelMapper.toDto(channel);
   }
 
-  @CacheEvict(cacheNames = "userChannels", allEntries = true)
+  @CacheEvict(cacheManager = "redisCacheManager", cacheNames = "userChannels", allEntries = true)
   @Transactional
   @Override
   public ChannelDto create(PrivateChannelCreateRequest request) {
@@ -91,7 +91,7 @@ public class BasicChannelService implements ChannelService {
    로컬캐시에 이런식으로 저장된다.
    Map<UUID, List<ChannelDto> 형태로 저장된다고 이해.
    **/
-  @Cacheable(cacheNames = "userChannels", key = "#userId")
+  @Cacheable(cacheManager = "redisCacheManager", cacheNames = "userChannels", key = "#userId")
   @Transactional(readOnly = true)
   @Override
   public List<ChannelDto> findAllByUserId(UUID userId) {
@@ -107,7 +107,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   /// 채널 수정되면 userChannels 캐시의 전체를 비운다.
-  @CacheEvict(cacheNames = "userChannels", allEntries = true)
+  @CacheEvict(cacheManager = "redisCacheManager", cacheNames = "userChannels", allEntries = true)
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override
@@ -125,7 +125,7 @@ public class BasicChannelService implements ChannelService {
     return channelMapper.toDto(channel);
   }
 
-  @CacheEvict(cacheNames = "userChannels", allEntries = true)
+  @CacheEvict(cacheManager = "redisCacheManager", cacheNames = "userChannels", allEntries = true)
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override

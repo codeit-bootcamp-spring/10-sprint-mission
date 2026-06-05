@@ -41,7 +41,7 @@ public class BasicUserService implements UserService {
 
   private final ApplicationEventPublisher eventPublisher;
 
-    @CacheEvict(cacheNames = "users", key = "'all'")
+  @CacheEvict(cacheManager = "redisCacheManager", cacheNames = "users", key = "'all'")
   @Transactional
   @Override
   public UserDto create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
@@ -99,7 +99,7 @@ public class BasicUserService implements UserService {
 
   /// 사용자 목록 조회.
   /// all - List<UserDto> 형태로 캐시에 저장.
-  @Cacheable(cacheNames = "users", key = "'all'")
+  @Cacheable(cacheManager = "redisCacheManager", cacheNames = "users", key = "'all'")
   @Transactional(readOnly = true)
   @Override
   public List<UserDto> findAll() {
@@ -113,7 +113,7 @@ public class BasicUserService implements UserService {
   }
 
   /// 사용자 업데이트시 캐시 삭제
-  @CacheEvict(value = "users", key = "'all'")
+  @CacheEvict(cacheManager = "redisCacheManager", value = "users", key = "'all'")
   @PreAuthorize("principal.userDto.id == #userId")
   @Transactional
   @Override
@@ -163,7 +163,7 @@ public class BasicUserService implements UserService {
     return userMapper.toDto(user);
   }
 
-  @CacheEvict(value = "users", key = "'all'")
+  @CacheEvict(cacheManager = "redisCacheManager", value = "users", key = "'all'")
   @PreAuthorize("principal.userDto.id == #userId")
   @Transactional
   @Override
