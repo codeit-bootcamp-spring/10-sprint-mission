@@ -31,6 +31,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -52,6 +54,7 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER') or hasRole('ADMIN')")
+  @CacheEvict(cacheNames = "channelsByUser", allEntries = true)
   public ChannelDto createPublicChannel(PublicChannelCreateDTO req) {
 
     if (req == null) {
@@ -83,6 +86,7 @@ public class BasicChannelService implements ChannelService {
 
   @Transactional
   @Override
+  @CacheEvict(cacheNames = "channelsByUser", allEntries = true)
   public ChannelDto createPrivateChannel(PrivateChannelCreateDTO req) {
     // 사설 채널 생성 메서드 시작 로그
     log.trace("[Channel] 사설 채널 생성 메서드 시작");
@@ -152,6 +156,7 @@ public class BasicChannelService implements ChannelService {
 
   @Transactional(readOnly = true)
   @Override
+  @Cacheable(cacheNames = "channelsByUser", key = "#userId")
   public List<ChannelDto> findAllByUserId(UUID userId) {
 
     if (userId == null) {
@@ -194,6 +199,7 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER') or hasRole('ADMIN')")
+  @CacheEvict(cacheNames = "channelsByUser", allEntries = true)
   public ChannelDto updatePublicChannel(UUID channelId, PublicChannelUpdateRequestDTO req) {
     if (channelId == null) {
       throw new FieldNotValidException("channelId");
@@ -227,6 +233,8 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
+  @CacheEvict(cacheNames = "channelsByUser", allEntries = true)
+
   public ChannelDto updatePrivateChannel(UUID channelId, PublicChannelUpdateRequestDTO req) {
     if (channelId == null) {
       throw new FieldNotValidException("channelId");
@@ -272,6 +280,7 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   @Override
   @PreAuthorize("hasRole('CHANNEL_MANAGER') or hasRole('ADMIN')")
+  @CacheEvict(cacheNames = "channelsByUser", allEntries = true)
   public void deletePublicChannel(UUID channelId) {
     // 채널 삭제 메서드 시작 로그
     log.trace("공개 채널 삭제 메서드 시작: channelId={}", channelId);
@@ -292,6 +301,7 @@ public class BasicChannelService implements ChannelService {
 
   @Transactional
   @Override
+  @CacheEvict(cacheNames = "channelsByUser")
   public void deletePrivateChannel(UUID channelId) {
     log.trace("비공개 채널 삭제 메서드 시작: channelId={}", channelId);
 

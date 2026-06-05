@@ -41,12 +41,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final ApplicationEventPublisher eventPublisher;
   private final BinaryContentStorage binaryContentStorage;
 
-  // 바이너리 컨텐츠 생성 시도 및 Retry 정책 명시
-  @Retryable(
-      retryFor = {IOException.class, IllegalStateException.class, SdkException.class},
-      maxAttempts = 3,
-      backoff = @Backoff(delay = 1000, multiplier = 2)
-  )
+  // 바이너리 컨텐츠 생성 시도
   @Transactional
   @Override
   public BinaryContent create(BinaryContentCreateRequestDTO req) {
@@ -72,18 +67,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     return binaryContent;
   }
-
-  @Recover
-  public void recover(Exception e, UUID binaryContentId) {
-    AdminBinaryContentUploadFailedEvent event = new AdminBinaryContentUploadFailedEvent(
-        Thread.currentThread().getId(),
-        binaryContentId,
-        e.getMessage()
-    );
-
-    eventPublisher.publishEvent(event);
-  }
-
+  
   @Transactional
   @Override
   public BinaryContentDto find(UUID id) {

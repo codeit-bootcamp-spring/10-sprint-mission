@@ -27,7 +27,7 @@ import software.amazon.awssdk.core.exception.SdkException;
 @Slf4j
 public class BinaryContentUploadService {
 
-  private static final String TASK_NAME = "binary-content-upload";
+  private static final String TASK_NAME = "파일 업로드 실패";
 
   private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentService binaryContentService;

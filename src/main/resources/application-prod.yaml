@@ -31,6 +31,8 @@ logging:
     root: INFO
     com.sprint.mission.discodeit: INFO
     org.springframework.transaction: OFF
+    org.springframework.cache: TRACE
+    org.springframework.cache.interceptor: TRACE
     org.hibernate: WARN
-    org.hibernate.SQL: OFF
+    org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: OFF

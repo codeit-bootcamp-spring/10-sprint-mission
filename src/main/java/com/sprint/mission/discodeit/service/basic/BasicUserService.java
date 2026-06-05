@@ -19,6 +19,8 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,6 +44,7 @@ public class BasicUserService implements UserService {
 
   // 유저 생성 요청 DTO를 받아 유저 도메인 객체를 생성하고, 해당 객체 정보를 바탕으로 UserResponseDTO를 만들어 반환한다.
   @Override
+  @CacheEvict(cacheNames = "users", allEntries = true)
   public UserDto create(UserCreateRequestDTO req, BinaryContentDto profileDto) {
 
     if (req == null) {
@@ -127,6 +130,7 @@ public class BasicUserService implements UserService {
   // 유저 레포지토리 내에 있는 모든 유저를 찾고 정보를 추출해서 UserResponseDTO를 반환하는 메소드
   @Override
   @Transactional(readOnly = true)
+  @Cacheable(cacheNames = "users")
   public List<UserDto> findAll() {
     // 메서드 시작 trace 로그
     log.trace("findAll 메서드 시작");
@@ -147,6 +151,7 @@ public class BasicUserService implements UserService {
   // 유저 업데이트 DTO를 받아 해당 객체를 업데이트하고 UserResponseDTO를 반환하는 메소드
   @Override
   @PreAuthorize("isAuthenticated() and principal.getUserDto().id().equals(#p0)")
+  @CacheEvict(cacheNames = "users", allEntries = true)
   public UserDto update(UUID userId, UserUpdateDTO req, BinaryContentDto profileDto) {
 
     if (userId == null) {
@@ -219,6 +224,7 @@ public class BasicUserService implements UserService {
   @Override
   @Transactional
   @PreAuthorize("isAuthenticated() and principal.getUserDto().id().equals(#p0)")
+  @CacheEvict(cacheNames = "users", allEntries = true)
   public void delete(UUID userId) {
 
     if (userId == null) {

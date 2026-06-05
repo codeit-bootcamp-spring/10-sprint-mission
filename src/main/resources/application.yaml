@@ -27,11 +27,17 @@ spring:
 
     open-in-view: false
 
+  cache:
+    type: caffeine
+    cache-names: channelsByUser, notificationsByUser, users
+    caffeine:
+      spec: maximumSize=1000, expireAfterWrite=600s, recordStats
+
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,loggers
+        include: health,info,metrics,loggers,caches
 
   endpoint:
     health:

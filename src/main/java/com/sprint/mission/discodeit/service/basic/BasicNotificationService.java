@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.service.NotificationService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
@@ -25,6 +27,8 @@ public class BasicNotificationService implements NotificationService {
   // 알림 레포지토리에서 현재 유저가 가진 알림들을 List 형태로 가져오는 메서드
   @Override
   @Transactional(readOnly = true)
+  @Cacheable(cacheNames = "notificationsByUser", key = "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().name"
+  )
   public List<NotificationDto> findAllByCurrentUser() {
     UUID currentUserId = currentUserId(); // SecurityContextHolder를 통해 현재 로그인 된 User Id를 추출
     return notificationRepository.findAllByReceiverIdOrderByCreatedAtDesc(currentUserId).stream()
@@ -35,6 +39,7 @@ public class BasicNotificationService implements NotificationService {
   // 알림 ID를 통해 알림을 삭제하는 메서드
   @Override
   @Transactional
+  @CacheEvict(cacheNames = "notificationsByUser", allEntries = true)
   public void delete(UUID notificationId) {
     UUID currentUserId = currentUserId(); // 현재 유저 id 추출
 
