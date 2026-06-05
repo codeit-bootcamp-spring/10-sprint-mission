@@ -6,7 +6,7 @@ spring:
     name: discodeit
 
   cache:
-    type: caffeine #caffeine | redis
+    type: redis #caffeine | redis
     cache-names:
       - users
       - channels
@@ -16,6 +16,12 @@ spring:
         maximumSize=100,
         expireAfterWrite=600s,
         recordStats
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
   kafka:
     bootstrap-servers: localhost:9092
