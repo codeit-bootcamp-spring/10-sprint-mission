@@ -48,9 +48,9 @@ public class BasicNotificationService implements NotificationService {
 
   @Transactional(readOnly = true)
   public boolean isNotificationReceiver(UUID notificationId, UUID userId) {
-    return notificationRepository.findById(notificationId)
-        .map(Notification::getReceiver)
-        .map(receiver -> receiver.getId().equals(userId))
-        .orElse(false);
+    Notification notification = notificationRepository.findById(notificationId)
+        .orElseThrow(
+            () -> new NotificationNotFoundException(Map.of("notificationId", notificationId)));
+    return notification.getReceiver().getId().equals(userId);
   }
 }
