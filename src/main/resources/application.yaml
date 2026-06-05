@@ -1,6 +1,17 @@
 spring:
   application:
     name: discodeit
+  cache:
+    type: caffeine
+    cache-names:
+      - channelsByUser
+      - notificationsByUser
+      - users
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
   servlet:
     multipart:
       maxFileSize: 10MB # 파일 하나의 최대 크기
@@ -25,6 +36,9 @@ management:
   endpoint:
     health:
       show-details: always
+  observations:
+    annotations:
+      enabled: true
 
 info:
   name: Discodeit

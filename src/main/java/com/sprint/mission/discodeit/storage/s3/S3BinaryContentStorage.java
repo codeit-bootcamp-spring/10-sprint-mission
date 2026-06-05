@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.NotificationService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -8,11 +11,15 @@ import java.time.Duration;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -35,6 +42,8 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   private final String secretKey;
   private final String region;
   private final String bucket;
+  private final NotificationService notificationService;
+  private final UserRepository userRepository;
 
   @Value("${discodeit.storage.s3.presigned-url-expiration:600}") // 기본값 10분
   private long presignedUrlExpirationSeconds;
@@ -43,24 +52,28 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
       @Value("${discodeit.storage.s3.access-key}") String accessKey,
       @Value("${discodeit.storage.s3.secret-key}") String secretKey,
       @Value("${discodeit.storage.s3.region}") String region,
-      @Value("${discodeit.storage.s3.bucket}") String bucket
-  ) {
+      @Value("${discodeit.storage.s3.bucket}") String bucket,
+      NotificationService notificationService,
+      UserRepository userRepository) {
     this.accessKey = accessKey;
     this.secretKey = secretKey;
     this.region = region;
     this.bucket = bucket;
+    this.notificationService = notificationService;
+    this.userRepository = userRepository;
   }
 
   @Override
+  @Retryable(
+      retryFor = RuntimeException.class,
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 1000, multiplier = 2.0))
   public UUID put(UUID binaryContentId, byte[] bytes) {
     String key = binaryContentId.toString();
     try {
       S3Client s3Client = getS3Client();
 
-      PutObjectRequest request = PutObjectRequest.builder()
-          .bucket(bucket)
-          .key(key)
-          .build();
+      PutObjectRequest request = PutObjectRequest.builder().bucket(bucket).key(key).build();
 
       s3Client.putObject(request, RequestBody.fromBytes(bytes));
       log.info("S3에 파일 업로드 성공: {}", key);
@@ -72,16 +85,36 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     }
   }
 
+  @Recover
+  public UUID recover(RuntimeException exception, UUID binaryContentId, byte[] bytes) {
+    // Async-3 스레드에 requestId 유지됨
+    String requestId = MDC.get("requestId");
+
+    String title = "S3 업로드 실패";
+    String content =
+        """
+      RequestId: %s
+      BinaryContentId: %s
+      Error: %s
+      """
+            .formatted(requestId, binaryContentId, exception.getMessage());
+    log.error(
+        "S3 파일 업로드 최종 실패: requestId={}, binaryContentId={}", requestId, binaryContentId, exception);
+
+    userRepository
+        .findAllByRole(Role.ADMIN)
+        .forEach(admin -> notificationService.create(admin.getId(), title, content));
+    // recover에서는 예외를 던저야 이벤트 리스너가 FAIL로 상태 변경
+    throw exception;
+  }
+
   @Override
   public InputStream get(UUID binaryContentId) {
     String key = binaryContentId.toString();
     try {
       S3Client s3Client = getS3Client();
 
-      GetObjectRequest request = GetObjectRequest.builder()
-          .bucket(bucket)
-          .key(key)
-          .build();
+      GetObjectRequest request = GetObjectRequest.builder().bucket(bucket).key(key).build();
 
       byte[] bytes = s3Client.getObjectAsBytes(request).asByteArray();
       return new ByteArrayInputStream(bytes);
@@ -95,10 +128,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     return S3Client.builder()
         .region(Region.of(region))
         .credentialsProvider(
-            StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(accessKey, secretKey)
-            )
-        )
+            StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
         .build();
   }
 
@@ -110,8 +140,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
       log.info("생성된 Presigned URL: {}", presignedUrl);
 
-      return ResponseEntity
-          .status(HttpStatus.FOUND)
+      return ResponseEntity.status(HttpStatus.FOUND)
           .header(HttpHeaders.LOCATION, presignedUrl)
           .build();
     } catch (Exception e) {
@@ -122,16 +151,18 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
   private String generatePresignedUrl(String key, String contentType) {
     try (S3Presigner presigner = getS3Presigner()) {
-      GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-          .bucket(bucket)
-          .key(key)
-          .responseContentType(contentType)
-          .build();
+      GetObjectRequest getObjectRequest =
+          GetObjectRequest.builder()
+              .bucket(bucket)
+              .key(key)
+              .responseContentType(contentType)
+              .build();
 
-      GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-          .signatureDuration(Duration.ofSeconds(presignedUrlExpirationSeconds))
-          .getObjectRequest(getObjectRequest)
-          .build();
+      GetObjectPresignRequest presignRequest =
+          GetObjectPresignRequest.builder()
+              .signatureDuration(Duration.ofSeconds(presignedUrlExpirationSeconds))
+              .getObjectRequest(getObjectRequest)
+              .build();
 
       PresignedGetObjectRequest presignedRequest = presigner.presignGetObject(presignRequest);
       return presignedRequest.url().toString();
@@ -142,10 +173,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     return S3Presigner.builder()
         .region(Region.of(region))
         .credentialsProvider(
-            StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(accessKey, secretKey)
-            )
-        )
+            StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
         .build();
   }
-} 
+}
