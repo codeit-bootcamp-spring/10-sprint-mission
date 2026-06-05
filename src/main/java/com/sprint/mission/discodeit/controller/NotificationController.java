@@ -34,7 +34,7 @@ public class NotificationController {
   }
 
   // 확인
-  @DeleteMapping
+  @DeleteMapping("{notificationId}")
   public ResponseEntity<Void> delete(
       @PathVariable UUID notificationId,
       @AuthenticationPrincipal DiscodeitUserDetails userDetails) {
@@ -43,6 +43,6 @@ public class NotificationController {
     // requesterId , receiverId 비교
     notificationService.delete(notificationId, requesterId);
 
-    return ResponseEntity.status(HttpStatus.OK).build();
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

@@ -50,7 +50,7 @@ public class BasicNotificationService implements NotificationService {
     return notificationMapper.toDto(notification);
   }
 
-  @CacheEvict(cacheNames = "notificationsByUser", key = "#receiverId")
+  @CacheEvict(cacheNames = "notificationsByUser", key = "#requesterId")
   @Transactional
   @Override
   public void delete(UUID notificationId, UUID requesterId) {

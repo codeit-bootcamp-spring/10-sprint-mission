@@ -14,17 +14,18 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @Configuration
 @EnableAsync
 public class AsyncConfig {
+
   @Bean
-  public Executor taskExecutor() {
+  public Executor taskExecutor(TaskDecorator contextCopyingTaskDecorator) {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
     executor.setCorePoolSize(4);
-
     executor.setMaxPoolSize(5);
-
     executor.setQueueCapacity(100);
-
     executor.setThreadNamePrefix("Async-");
+
+    // 요청 스레드의 MDC와 SecurityContext를 비동기 스레드로 복사.
+    executor.setTaskDecorator(contextCopyingTaskDecorator);
 
     executor.initialize();
     return executor;
