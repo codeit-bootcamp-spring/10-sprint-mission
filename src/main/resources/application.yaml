@@ -86,3 +86,5 @@ discodeit:
 logging:
   level:
     root: info
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
