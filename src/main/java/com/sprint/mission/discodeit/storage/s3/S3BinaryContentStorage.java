@@ -5,14 +5,19 @@ import com.sprint.mission.discodeit.exception.file.FileReadFailException;
 import com.sprint.mission.discodeit.exception.file.FileSaveFailException;
 import com.sprint.mission.discodeit.exception.file.FileUploadFailException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -28,12 +33,12 @@ import java.util.UUID;
 
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
 @Component
+@Slf4j
 public class S3BinaryContentStorage implements BinaryContentStorage {
     // s3presigner와 s3client는 생산 비용이 비싸므로 한번만 생성
     private final S3Presigner s3Presigner;
     private final S3Client s3Client;
     private final String bucket;
-
     private final int expireMinutes;
 
     public S3BinaryContentStorage(
@@ -63,21 +68,27 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     }
 
     @Override
+    @Retryable(
+            retryFor = SdkException.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
     public UUID put(UUID id, byte[] bytes) {
-        try{
-            String key = id.toString();
+        String key = id.toString();
 
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(key)
-                    .build();
-            // 로컬 경로로 파일을 찾지말고 바로 s3로 전송
-            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
-            return id;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new FileUploadFailException();
-        }
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build();
+        // 로컬 경로로 파일을 찾지말고 바로 s3로 전송
+        s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
+        return id;
+    }
+
+    @Recover
+    public UUID recoverPut(SdkException e, UUID id, byte[] bytes){
+        log.error("S3 업로드 최종 실패. 재시도 초과: {}", id, e);
+        throw new FileUploadFailException();
     }
 
     @Override

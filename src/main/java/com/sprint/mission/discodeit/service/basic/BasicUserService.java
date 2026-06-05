@@ -62,7 +62,7 @@ public class BasicUserService implements UserService {
                 user.addProfileImage(binaryContent);
                 // 연관성 주입
                 binaryContent = binaryContentRepository.save(binaryContent);
-                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), profile.getBytes(), user.getId()));
+                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), profile.getBytes()));
 
             } catch (Exception e) {
                 throw new FileUploadFailException();
@@ -133,7 +133,7 @@ public class BasicUserService implements UserService {
                         profile.getOriginalFilename(),
                         profile.getContentType());
                 newBinaryContent = binaryContentRepository.save(newBinaryContent);
-                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(newBinaryContent.getId(), profile.getBytes(), user.getId()));
+                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(newBinaryContent.getId(), profile.getBytes()));
 
                 user.updateProfileImg(newBinaryContent);
             } catch (Exception e) {
