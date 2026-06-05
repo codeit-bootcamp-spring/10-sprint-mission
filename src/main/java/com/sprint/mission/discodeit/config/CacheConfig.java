@@ -17,8 +17,15 @@ public class CacheConfig {
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager("users", "userChannels", "userNotifications");
         cacheManager.setCaffeine(Caffeine.newBuilder()
-                .maximumSize(1000)     // 최대 캐시 수 제한
-                .expireAfterWrite(10, TimeUnit.MINUTES)); // TTL(만료시간) 설정
+                .maximumSize(100)     // 최대 캐시 수 제한
+                /// 마지막 접근시점부터 10분후 만료
+                .expireAfterAccess(10, TimeUnit.MINUTES)
+
+                /// 캐시가 통계 정보를 기록하게 켜는 옵션
+                /// 캐시 hit수
+                /// 캐시 miss수
+                /// 등
+                .recordStats()); // TTL(만료시간) 설정
         return cacheManager;
     }
 }
