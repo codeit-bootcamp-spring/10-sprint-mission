@@ -1,0 +1,21 @@
+# 1. 빌드 결과물 및 의존성
+build/
+out/
+bin/
+.gradle/
+
+# 2. IDE 및 OS 설정 파일
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# 3. 버전 관리 및 문서
+.git/
+.gitignore
+*.md
+
+# 4. 환경 변수 및 설정
+.env
+*.pem

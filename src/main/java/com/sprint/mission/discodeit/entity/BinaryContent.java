@@ -1,29 +1,41 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
-
-//불변이여야 하기 때문에 BaseEntity를 상속받을 수 없음
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class BinaryContent implements Serializable {
-    private static final long serialVersionUID = 1L;
+@Entity
+@Table(name = "BINARY_CONTENTS")
+public class BinaryContent extends BaseUpdatableEntity {
 
-    private final UUID id;
-    private final Instant createdAt;
-    private final String fileName;
-    private final String contentType;
-    private final long size;
-    private final byte[] bytes;
+  @Column(nullable = false)
+  private String fileName;
 
-    public BinaryContent(String fileName, String contentType, long size, byte[] bytes) {
-        this.fileName = fileName;
-        this.contentType = contentType;
-        this.size = size;
-        this.bytes = bytes;
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-    }
+  @Column(nullable = false)
+  private long size;
+
+  @Column(nullable = false)
+  private String contentType;
+
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private BinaryContentStatus status = BinaryContentStatus.PROCESSING;
+
+  public BinaryContent(String fileName, long size, String contentType) {
+    this.fileName = fileName;
+    this.size = size;
+    this.contentType = contentType;
+  }
+
+  public void updateStatus(BinaryContentStatus status) {
+    updateIfChanged(this.status, status, val -> this.status = val);
+  }
 }

@@ -1,26 +1,47 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class ReadStatus extends BaseEntity{
+@Entity
+@Table(name = "READ_STATUSES")
+public class ReadStatus extends BaseUpdatableEntity {
 
-    private final UUID userId;
-    private final UUID channelId;
-    private Instant lastReadAt;
+  @ManyToOne
+  @JoinColumn(name = "USER_ID")
+  private User user;
 
-    public ReadStatus(UUID userId, UUID channelId) {
-        this.userId = userId;
-        this.channelId = channelId;
-        this.lastReadAt = Instant.now();
-    }
+  @ManyToOne
+  @JoinColumn(name = "CHANNEL_ID")
+  private Channel channel;
 
-    public void updateLastReadAt() {
-        this.lastReadAt = Instant.now();
-        setUpdatedAt();
-    }
+  @Column(nullable = false)
+  private Instant lastReadAt;
+
+  @Column(nullable = false)
+  private Boolean notificationEnabled;
+
+  public ReadStatus(User user, Channel channel, Instant lastReadAt, Boolean notificationEnabled) {
+    this.user = user;
+    this.channel = channel;
+    this.lastReadAt = lastReadAt;
+    this.notificationEnabled = notificationEnabled;
+  }
+
+  public void update(Instant newLastReadAt, Boolean newNotificationEnabled) {
+    updateIfChanged(this.lastReadAt, newLastReadAt, val -> this.lastReadAt = val);
+    updateIfChanged(this.notificationEnabled, newNotificationEnabled,
+        val -> this.notificationEnabled = val);
+  }
 }
 
