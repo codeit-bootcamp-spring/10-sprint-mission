@@ -55,12 +55,16 @@ public class BasicAuthService implements AuthService {
 
     Role previousRole = user.getRole();
     Role newRole = request.newRole();
-    user.updateRole(newRole);
 
-    /// 사용자 권한이 변경된 경우 이벤트 발행
-    eventPublisher.publishEvent(new RoleUpdatedEvent(user.getId(), previousRole, newRole));
+    /// 기존 Role과 새로운 Role이 다를경우만 update
+    if (previousRole != newRole) {
+      user.updateRole(newRole);
 
-    jwtRegistry.invalidateJwtInformationByUserId(userId);
+      eventPublisher.publishEvent(new RoleUpdatedEvent(user.getId(), previousRole, newRole));
+
+      /// 사용자의 JWT 로그인 정보를 무효화.
+      jwtRegistry.invalidateJwtInformationByUserId(userId);
+    }
 
     return userMapper.toDto(user);
   }

@@ -53,7 +53,7 @@ public class NotificationRequiredEventListener {
                     readStatus.getUser(), // 받는 사람
                     "%s (#%s)".formatted( // 제목
                             message.getAuthor().getUsername(),
-                            "개인메시지"
+                            message.getChannel().getName()
                     ),
                     message.getContent()  // 내용
             ))
