@@ -22,6 +22,13 @@ discodeit:
     username: ${ADMIN_USERNAME:admin}
     email: ${ADMIN_EMAIL:admin@gmail.com}
     password: ${ADMIN_PASSWORD:1111}
+  cache:
+    type: caffeine
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
 
 spring:
   profiles:
