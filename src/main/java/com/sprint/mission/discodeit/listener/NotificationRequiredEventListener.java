@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-@Component
+//@Component
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationRequiredEventListener {
@@ -33,7 +33,7 @@ public class NotificationRequiredEventListener {
   private final NotificationRepository notificationRepository;
 
   @CacheEvict(value = "notifications", allEntries = true)
-  @Async("asyncExecutor")
+  @Async("eventTaskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void on(MessageCreatedEvent event) {
@@ -54,7 +54,7 @@ public class NotificationRequiredEventListener {
   }
 
   @CacheEvict(value = "notifications", allEntries = true)
-  @Async("asyncExecutor")
+  @Async("eventTaskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void on(RoleUpdatedEvent event) {
@@ -72,7 +72,7 @@ public class NotificationRequiredEventListener {
   }
 
   @CacheEvict(value = "notifications", allEntries = true)
-  @Async("asyncExecutor")
+  @Async("eventTaskExecutor")
   @EventListener
   @Transactional
   public void on(S3UploadFailedEvent event) {

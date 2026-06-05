@@ -19,7 +19,7 @@ public class BinaryContentEventListener {
   private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentService binaryContentService;
 
-  @Async("asyncExecutor")
+  @Async("eventTaskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleBinaryContentCreatedEvent(BinaryContentCreatedEvent event) {
     log.debug("[BINARY_CONTENT] BinaryContent 생성 이벤트 수신 id={}", event.binaryContentId());
