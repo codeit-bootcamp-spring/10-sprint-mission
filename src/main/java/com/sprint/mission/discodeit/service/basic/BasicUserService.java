@@ -149,6 +149,9 @@ public class BasicUserService implements UserService {
   public UserDto updateRole(RoleUpdateRequest request) {
     User user = userRepository.findById(request.userId())
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", request.userId())));
+    if (user.getRole() == request.newRole()) {
+      return userMapper.toDto(user, false);
+    }
     String beforeRole = user.getRole().getDbKey();
     String afterRole = request.newRole().getDbKey();
     user.updateRole(request.newRole());
