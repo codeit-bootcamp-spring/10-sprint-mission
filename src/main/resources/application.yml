@@ -5,6 +5,18 @@ spring:
   application:
     name: discodeit
 
+  cache:
+    type: caffeine #caffeine | redis
+    cache-names:
+      - users
+      - channels
+      - notifications
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterWrite=600s,
+        recordStats
+
   kafka:
     bootstrap-servers: localhost:9092
     producer:
