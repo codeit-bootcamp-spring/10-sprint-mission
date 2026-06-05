@@ -86,20 +86,25 @@ public class NotificationRequiredTopicListener {
   }
 
   @CacheEvict(value = "notifications", allEntries = true)
-  @KafkaListener(topics = "discodeit.RoleUpdatedEvent")
+  @KafkaListener(topics = "discodeit.S3UploadFailedEvent")
   @Transactional
   public void onS3UploadFailedEvent(String kafkaEvent) {
     try {
-      RoleUpdatedEvent event = objectMapper.readValue(kafkaEvent, RoleUpdatedEvent.class);
-      log.debug("[KAFKA_CONSUMER] 권한 변경 이벤트 수신: userId={}", event.userId());
-
-      String title = "권한이 변경되었습니다.";
-      String content = String.format("%s -> %s", event.beforeRole(), event.afterRole());
-      User user = userRepository.findById(event.userId())
-          .orElseThrow(() -> new UserNotFoundException(Map.of("userId", event.userId())));
-
-      Notification notification = new Notification(user, title, content);
-      notificationRepository.save(notification);
+      S3UploadFailedEvent event = objectMapper.readValue(kafkaEvent, S3UploadFailedEvent.class);
+      log.debug("[KAFKA_CONSUMER] S3 파일 업로드 실패 이벤트 수신: binaryContentId={}",
+          event.binaryContentId());
+      String title = "S3 파일 업로드 실패";
+      String content = String.format("RequestId: %s %nBinaryContentId: %s%n Error: %s",
+          event.requestId(), event.binaryContentId(), event.errorMessage());
+      List<Notification> notifications = userRepository.findAllByRole(Role.ADMIN)
+          .stream()
+          .map(user -> new Notification(
+              user,
+              title,
+              content
+          ))
+          .toList();
+      notificationRepository.saveAll(notifications);
 
     } catch (JsonProcessingException e) {
       log.error("[KAFKA_CONSUMER] RoleUpdatedEvent 역직렬화 실패", e);
