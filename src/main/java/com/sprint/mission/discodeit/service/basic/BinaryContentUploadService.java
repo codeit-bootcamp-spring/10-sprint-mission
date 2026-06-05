@@ -43,6 +43,7 @@ public class BinaryContentUploadService {
   )
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void upload(UUID binaryContentId, byte[] bytes) {
+
     binaryContentStorage.put(binaryContentId, bytes); // 스토리지에 바이너리 컨텐츠 저장
     binaryContentService.updateStatus(binaryContentId,
         BinaryContentStatus.SUCCESS); // 바이너리 컨텐츠의 상태를 SUCCESS

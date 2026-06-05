@@ -234,7 +234,6 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional
   @CacheEvict(cacheNames = "channelsByUser", allEntries = true)
-
   public ChannelDto updatePrivateChannel(UUID channelId, PublicChannelUpdateRequestDTO req) {
     if (channelId == null) {
       throw new FieldNotValidException("channelId");
@@ -301,7 +300,7 @@ public class BasicChannelService implements ChannelService {
 
   @Transactional
   @Override
-  @CacheEvict(cacheNames = "channelsByUser")
+  @CacheEvict(cacheNames = "channelsByUser", allEntries = true)
   public void deletePrivateChannel(UUID channelId) {
     log.trace("비공개 채널 삭제 메서드 시작: channelId={}", channelId);
 

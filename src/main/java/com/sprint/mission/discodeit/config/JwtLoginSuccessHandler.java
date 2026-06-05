@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -28,6 +29,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final JwtRegistry jwtRegistry;
 
   @Override
+  @CacheEvict(cacheNames = "users", allEntries = true)
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
       Authentication authentication) throws IOException, ServletException {
     // Authentication 객체에서 principal을 가져옴

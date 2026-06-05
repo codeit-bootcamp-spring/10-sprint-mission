@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -35,6 +36,7 @@ public class NotificationRequiredEventListener {
   @Async("eventTaskExecutor")
   @TransactionalEventListener
   @Transactional(propagation = Propagation.REQUIRES_NEW) // 전파 단계 = 새로운 스레드를 생성해서 진행
+  @CacheEvict(cacheNames = "notificationsByUser", allEntries = true)
   public void on(MessageCreatedEvent event) {
     // 메시지 이벤트로부터 메시지 ID 추출 및 메시지 레포지토리에서 메시지 객체 가져옴
     Message message = messageRepository.findById(event.messageId())
@@ -63,10 +65,11 @@ public class NotificationRequiredEventListener {
       ));
     }
   }
-  
+
   @Async("eventTaskExecutor")
   @TransactionalEventListener
   @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @CacheEvict(cacheNames = "notificationsByUser", allEntries = true)
   public void on(RoleUpdatedEvent event) {
     User receiver = userRepository.findById(event.userId())
         .orElseThrow(() -> new UserNotFoundException(event.userId()));
