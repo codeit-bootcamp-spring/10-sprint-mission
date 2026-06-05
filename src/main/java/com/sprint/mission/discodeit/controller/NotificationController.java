@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.notification.NotificationDto;
-import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
