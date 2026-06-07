@@ -31,6 +31,10 @@ discodeit:
       region: ${AWS_S3_REGION}
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (default: 10분)
+  jwt:
+    key: ${JWT_SECRET_KEY}
+    access-token-expiration-minutes: 10                 # 10분
+    refresh-token-expiration-minutes: '#{60 * 24 * 7}'  # 일주일
 
 logging.level:
   root: info
