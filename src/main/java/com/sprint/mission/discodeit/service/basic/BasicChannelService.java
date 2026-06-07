@@ -17,6 +17,9 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,17 +35,20 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
     private final ChannelMapper channelMapper;
+    private final CacheManager cacheManager;
 
     // 공용 채널
     @Override
     @Transactional
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+    @CacheEvict(value = "userPublicChannels", allEntries = true)
     public ChannelDto createPublic(PublicChannelCreateRequest request) {
         // 채널 생성
         Channel channel = new Channel(request.getName(), request.getDescription());
         channel.setType(ChannelType.PUBLIC);
         // 채널 저장
         channelRepository.save(channel);
+
 
         // 모든 유저가 공용채널의 읽음 상태를 갖도록함
         List<User> users = userRepository.findAll();
@@ -69,6 +75,8 @@ public class BasicChannelService implements ChannelService {
         request.getParticipantIds().stream()
                 .map(id -> userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id)))
                 .forEach(user -> readStatusRepository.save(new ReadStatus(user, channel, true)));
+
+        clearPrivateChannelCacheForUsers(request.getParticipantIds());
         log.info("개인 채널 생성 성공: 채널 id = {}", channel.getId());
         return channelMapper.toDto(channel);
     }
@@ -94,17 +102,29 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ChannelDto> findAllChannelsByUserId(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
-
-        List<ReadStatus> readStatusList = readStatusRepository.findAllByUserId(userId);
+    @Cacheable(value = "userPublicChannels")
+    public List<ChannelDto> findAllPublicChannelsByUserId() {
+        log.warn("🚨🚨🚨 [DB 조회 발생] Public 채널 쿼리 나감!!! 🚨🚨🚨");
         // 공용채널 조회
         // n+ 1 문제 수정해야함
         List<ChannelDto> publicList = channelRepository.findAll().stream()
                 .filter(channel -> channel.getType() == ChannelType.PUBLIC)
                 .map(channelMapper::toDto)
                 .toList();
+
+        log.info("특정 유저가 속한 공용 채널 목록 조회 성공: 유저 id = {}, 채널 목록 개수 = {}", publicList.size());
+        return publicList;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "userPrivateChannels", key = "#userId")
+    public List<ChannelDto> findAllPrivateChannelsByUserId(UUID userId) {
+        log.warn("🚨🚨🚨 [DB 조회 발생] Public 채널 쿼리 나감!!! 🚨🚨🚨");
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        List<ReadStatus> readStatusList = readStatusRepository.findAllByUserId(userId);
 
         // 개인채널 조회
         // n+ 1 문제 수정해야함
@@ -117,13 +137,8 @@ public class BasicChannelService implements ChannelService {
                 .map(channelMapper::toDto)
                 .toList();
 
-        // 반환할 리스트
-        List<ChannelDto> channelList = new ArrayList<>();
-        // 합친 후 반환
-        channelList.addAll(publicList);
-        channelList.addAll(privateList);
-        log.info("특정 유저가 속한 채널 목록 조회 성공: 유저 id = {}, 채널 목록 개수 = {}", userId, channelList.size());
-        return channelList;
+        log.info("특정 유저가 속한 개인 채널 목록 조회 성공: 유저 id = {}, 채널 목록 개수 = {}", userId, privateList.size());
+        return privateList;
     }
 
     @Override
@@ -163,5 +178,16 @@ public class BasicChannelService implements ChannelService {
     private Channel getChannel(UUID channelId){
         return channelRepository.findById(channelId)
                 .orElseThrow(()->new ChannelNotFoundException(channelId));
+    }
+
+    private void clearPrivateChannelCacheForUsers(List<UUID> userIds){
+        // 캐시에 해당하는 키들을 가져옴
+        var cache = cacheManager.getCache("userPrivateChannels");
+        if (cache != null) {
+            for(UUID userId : userIds){
+                // 키들 중 userId에 해당하는 삭제
+                cache.evict(userId);
+            }
+        }
     }
 }

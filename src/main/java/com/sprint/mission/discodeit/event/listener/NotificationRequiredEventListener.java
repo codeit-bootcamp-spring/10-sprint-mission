@@ -10,6 +10,9 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -26,6 +29,7 @@ public class NotificationRequiredEventListener {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
+    private final CacheManager cacheManager;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async("ioTaskExecutor")
@@ -33,6 +37,8 @@ public class NotificationRequiredEventListener {
         try{
             List<ReadStatus> activeStatus = readStatusRepository.findAllByChannelIdAndNotificationEnabledTrue(event.getChannelId());
             List<Notification> notifications = new ArrayList<>();
+
+            Cache notificationCache = cacheManager.getCache("userNotifications");
 
             for(ReadStatus status : activeStatus){
                 UUID subscriberId = status.getUser().getId();
@@ -42,6 +48,10 @@ public class NotificationRequiredEventListener {
                 notifications.add(new Notification(receiverProxy,
                         String.format("%s(#%s)", event.getSenderName(), event.getChannelName()),
                         event.getContent()));
+
+                if(notificationCache != null){
+                    notificationCache.evict(subscriberId);
+                }
             }
 
             if(!notifications.isEmpty()){
@@ -55,6 +65,7 @@ public class NotificationRequiredEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async("ioTaskExecutor")
+    @CacheEvict(value = "userNotifications", key = "#event.receiverId")
     public void handleRoleUpdate(RoleUpdatedEvent event){
         try {
             String content = String.format("%s -> %s", event.getOldRole(), event.getNewRole());
@@ -64,6 +75,7 @@ public class NotificationRequiredEventListener {
                     receiverProxy,
                     "권한이 변경되었습니다.",
                     content));
+
             log.info("권한 업데이트 알림 발송 완료");
         } catch (Exception e){
             log.error("알림 전송 실패",e);

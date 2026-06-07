@@ -50,6 +50,9 @@ dependencies {
 	implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
 	implementation 'org.springframework.retry:spring-retry'
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
 }
 
 tasks.named('test') {

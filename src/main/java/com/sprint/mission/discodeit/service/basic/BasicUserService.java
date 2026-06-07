@@ -16,6 +16,8 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,6 +40,7 @@ public class BasicUserService implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto create(UserCreateRequest request, MultipartFile profile) {
         // 이메일 중복 확인
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -86,6 +89,7 @@ public class BasicUserService implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "users")
     public List<UserDto> findAllUsers() {
         List<User> userList = userRepository.findAll();
         if(!userList.isEmpty()){
