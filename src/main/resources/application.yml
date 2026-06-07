@@ -3,6 +3,12 @@ spring:
     name: discodeit
   profiles:
     active: dev
+  cache:
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
 logging:
   level:
     org.springframework.security: DEBUG
