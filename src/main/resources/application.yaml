@@ -55,6 +55,13 @@ discodeit:
       secret-key: ${AWS_CREDENTIALS_SECRET_KEY}
       region: ${AWS_S3_REGION}
       presigned-url-expiration: 600
+  jwt:
+    access-token:
+      secret: ${JWT_ACCESS_SECRET:your-access-token-secret-key-here-make-it-long-and-random}
+      expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:1800000} # 30 minutes
+    refresh-token:
+      secret: ${JWT_REFRESH_SECRET:your-refresh-token-secret-key-here-make-it-different-and-long}
+      expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 days
 
 logging:
   level:

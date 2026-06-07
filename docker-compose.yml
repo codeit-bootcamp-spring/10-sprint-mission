@@ -34,6 +34,8 @@ services:
       AWS_S3_REGION: ${AWS_REGION} # 이름을 application.yml에 맞춤
       AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_PRESIGNED_URL_EXPIRATION}
       STORAGE_TYPE: ${STORAGE_TYPE}
+      JWT_ACCESS_SECRET: bXk2c2VjcmV0a2V5c2VjcmV0a2V5MTIzNDU2Nzg5
+      JWT_REFRESH_SECRET: Se8a6VcMD9coX80wehjJSajotysWhULS/foJ2p/zHMg=
     depends_on:
       postgres:
         condition: service_healthy

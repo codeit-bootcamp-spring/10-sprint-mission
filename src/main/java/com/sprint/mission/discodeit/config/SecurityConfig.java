@@ -1,128 +1,108 @@
 package com.sprint.mission.discodeit.config;
 
-import com.sprint.mission.discodeit.security.CustomAccessDeniedHandler;
-import com.sprint.mission.discodeit.security.CustomAuthenticationEntryPoint;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
-import com.sprint.mission.discodeit.security.HttpStatusReturningLogoutSuccessHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.security.Http403ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.LoginSuccessHandler;
-import lombok.RequiredArgsConstructor;
+import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.security.jwt.InMemoryJwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import java.util.List;
+import java.util.stream.IntStream;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer.SessionFixationConfigurer;
-import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
+@Slf4j
 @Configuration
-@RequiredArgsConstructor
+@EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  private final LoginSuccessHandler loginSuccessHandler;
-  private final LoginFailureHandler loginFailureHandler;
-  private final HttpStatusReturningLogoutSuccessHandler httpStatusReturningLogoutSuccessHandler;
-  private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-  private final CustomAccessDeniedHandler customAccessDeniedHandler;
-  private final DiscodeitUserDetailsService userDetailsService;
-
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
+  public SecurityFilterChain filterChain(
+      HttpSecurity http,
+      JwtLoginSuccessHandler jwtLoginSuccessHandler,
+      LoginFailureHandler loginFailureHandler,
+      ObjectMapper objectMapper,
+      JwtAuthenticationFilter jwtAuthenticationFilter,
+      JwtLogoutHandler jwtLogoutHandler
+  )
+      throws Exception {
     http
         .csrf(csrf -> csrf
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-
         )
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
-            .successHandler(loginSuccessHandler)
+            .successHandler(jwtLoginSuccessHandler)
             .failureHandler(loginFailureHandler)
         )
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
-            .logoutSuccessHandler(httpStatusReturningLogoutSuccessHandler)
+            .addLogoutHandler(jwtLogoutHandler)
+            .logoutSuccessHandler(
+                new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
         )
         .authorizeHttpRequests(auth -> auth
-
-            // 시작 화면
             .requestMatchers(
-                "/",
-                "/index.html",
-                "/assets/**",
-                "/*.js",
-                "/*.css",
-                "/favicon.ico"
-            ).permitAll()
-
-            // CSRF Token 발급
-            .requestMatchers("/api/auth/csrf-token").permitAll()
-
-            // 회원가입
-            .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-
-            // 로그인
-            .requestMatchers("/api/auth/login").permitAll()
-
-            // 로그아웃
-            .requestMatchers("/api/auth/logout").permitAll()
-
-            // Swagger
-            .requestMatchers(
-                "/swagger-ui/**",
-                "/v3/api-docs/**",
-                "/swagger-resources/**",
-                "/webjars/**"
-            ).permitAll()
-
-            .requestMatchers(
-                "/css/**",
-                "/js/**",
-                "/images/**"
-            ).permitAll()
-
-            // Actuator
-            .requestMatchers("/actuator/**").permitAll()
-
-            // API가 아닌 요청 허용
-            .requestMatchers(
-                "/",
-                "/error",
-                "/favicon.ico"
+                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh"),
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
+                new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
             ).permitAll()
             .anyRequest().authenticated()
         )
         .exceptionHandling(ex -> ex
-            .authenticationEntryPoint(customAuthenticationEntryPoint)
-            .accessDeniedHandler(customAccessDeniedHandler)
+            .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
+            .accessDeniedHandler(new Http403ForbiddenAccessDeniedHandler(objectMapper))
         )
-        .sessionManagement(management -> management
-            .sessionConcurrency(concurrency -> concurrency
-                .maximumSessions(1)
-                .maxSessionsPreventsLogin(true)
-                .sessionRegistry(sessionRegistry)
-            )
-            //세션 고정 공격 방지 코드
-            .sessionFixation(SessionFixationConfigurer::changeSessionId)
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
-        .rememberMe(remember -> remember
-            .tokenValiditySeconds(2592000)
-            .key("key")
-            .rememberMeParameter("remember-me")
-            .userDetailsService(userDetailsService)
-        );
-
+        // Add JWT authentication filter
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+    ;
     return http.build();
+  }
+
+  @Bean
+  public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
+    return args -> {
+      int filterSize = filterChain.getFilters().size();
+      List<String> filterNames = IntStream.range(0, filterSize)
+          .mapToObj(idx -> String.format("\t[%s/%s] %s", idx + 1, filterSize,
+              filterChain.getFilters().get(idx).getClass()))
+          .toList();
+      log.debug("Debug Filter Chain...\n{}", String.join(System.lineSeparator(), filterNames));
+    };
   }
 
   @Bean
@@ -132,10 +112,14 @@ public class SecurityConfig {
 
   @Bean
   public RoleHierarchy roleHierarchy() {
-    return RoleHierarchyImpl.fromHierarchy("""
-        ROLE_ADMIN > ROLE_CHANNEL_MANAGER
-        ROLE_CHANNEL_MANAGER > ROLE_USER
-        """);
+    return RoleHierarchyImpl.withDefaultRolePrefix()
+        .role(Role.ADMIN.name())
+        .implies(Role.USER.name(), Role.CHANNEL_MANAGER.name())
+
+        .role(Role.CHANNEL_MANAGER.name())
+        .implies(Role.USER.name())
+
+        .build();
   }
 
   @Bean
@@ -147,8 +131,7 @@ public class SecurityConfig {
   }
 
   @Bean
-  public HttpSessionEventPublisher httpSessionEventPublisher() {
-    return new HttpSessionEventPublisher();
+  public JwtRegistry jwtRegistry(JwtTokenProvider jwtTokenProvider) {
+    return new InMemoryJwtRegistry(1, jwtTokenProvider);
   }
-
 }
