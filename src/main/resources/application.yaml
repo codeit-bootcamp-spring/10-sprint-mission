@@ -27,6 +27,10 @@ discodeit:
     username: ${ADMIN_USERNAME:admin}
     email: ${ADMIN_EMAIL:admin@codeit.kr}
     password: ${ADMIN_PASSWORD:admin1234}
+  jwt:
+    key: ${JWT_KEY:discodeit-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256}
+    access-token-expiration-minutes: ${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES:15}      # 기본값: 15분
+    refresh-token-expiration-minutes: ${JWT_REFRESH_TOKEN_EXPIRATION_MINUTES:10080} # 기본값: 7일(10080분)
 
 springdoc:
   swagger-ui:
