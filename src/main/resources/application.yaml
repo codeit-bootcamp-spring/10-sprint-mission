@@ -61,6 +61,11 @@ discodeit:
     username: ${DISCODEIT_ADMIN_USERNAME:admin}
     email: ${DISCODEIT_ADMIN_EMAIL:admin@discodeit.com}
     password: ${DISCODEIT_ADMIN_PASSWORD:admin1234}
+  jwt:
+    secret-key: ${JWT_SECRET_KEY}
+    access-token-expiry: 1800000 # 30 minutes (ms)
+    refresh-token-expiry: 1209600000 # 14 days (ms)
+    max-active-count: 1 # 최대 동시 로그인 수
 
 logging:
   level:

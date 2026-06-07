@@ -56,6 +56,12 @@ discodeit.env
 CLAUDE.md
 .claude
 
+### FE Code ###
+/frontend-source-code
+
+### log ###
+/logs
+
 # Created by https://www.toptal.com/developers/gitignore/api/windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows
 

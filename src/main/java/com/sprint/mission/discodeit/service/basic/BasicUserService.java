@@ -12,7 +12,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
@@ -21,8 +21,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +35,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
-  private final SessionRegistry sessionRegistry;
+  private final JwtRegistry jwtRegistry;
 
   @Transactional
   @Override
@@ -153,19 +151,12 @@ public class BasicUserService implements UserService {
     log.debug("사용자 권한 수정 시작: id={}, newRole={}", userId, newRole);
 
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> {
-          UserNotFoundException exception = UserNotFoundException.withId(userId);
-          return exception;
-        });
+        .orElseThrow(() -> UserNotFoundException.withId(userId));
 
     user.updateRole(newRole);
-
-    sessionRegistry.getAllPrincipals().stream()
-        .filter(p -> p instanceof DiscodeitUserDetails)
-        .map(p -> (DiscodeitUserDetails) p)
-        .filter(ud -> ud.getUserDto().id().equals(userId))
-        .flatMap(ud -> sessionRegistry.getAllSessions(ud, false).stream())
-        .forEach(SessionInformation::expireNow);
+    jwtRegistry.invalidateJwtInformationByUserId(userId); // JwtInformation 삭제
+    // 다음 API 요청 시 jwtRegistry에 토큰이 없으므로 인증이 실패하고 -> 강제 로그아웃 상태가 됨
+    // 재로그인하면 새 역할이 적용된 JWT가 발급된다.
 
     log.info("사용자 권한 수정 완료: id={}, newRole={}", userId, newRole);
     return userMapper.toDto(user);

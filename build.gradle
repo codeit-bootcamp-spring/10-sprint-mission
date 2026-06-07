@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '2.0-M9'
+version = '2.1-M10'
 
 java {
     toolchain {
@@ -48,6 +48,8 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
 }
 
 tasks.named('test') {

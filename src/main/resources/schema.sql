@@ -93,9 +93,9 @@ ALTER TABLE read_statuses
             REFERENCES channels (id)
             ON DELETE CASCADE;
 
-CREATE TABLE IF NOt EXISTS persistent_logins (
-    username  VARCHAR(64) NOT NULL,
-    series    VARCHAR(64) PRIMARY KEY,
-    token     VARCHAR(64) NOT NULL,
-    last_used TIMESTAMP   NOT NULL
-)
+-- CREATE TABLE IF NOt EXISTS persistent_logins (
+--     username  VARCHAR(64) NOT NULL,
+--     series    VARCHAR(64) PRIMARY KEY,
+--     token     VARCHAR(64) NOT NULL,
+--     last_used TIMESTAMP   NOT NULL
+-- )

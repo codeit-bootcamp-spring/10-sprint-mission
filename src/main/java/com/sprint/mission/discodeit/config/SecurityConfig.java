@@ -1,10 +1,13 @@
 package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,17 +19,14 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
-import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
@@ -37,12 +37,10 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(
       HttpSecurity http,
-      LoginSuccessHandler loginSuccessHandler,
+      JwtAuthenticationFilter jwtAuthenticationFilter,
+      JwtLoginSuccessHandler jwtLoginSuccessHandler,
       LoginFailureHandler loginFailureHandler,
-      SessionRegistry sessionRegistry,
-      UserDetailsService userDetailsService,
-      PersistentTokenRepository persistentTokenRepository
-  ) throws Exception {
+      JwtLogoutHandler jwtLogoutHandler) throws Exception {
     http
         .csrf(csrf -> csrf
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
@@ -50,7 +48,7 @@ public class SecurityConfig {
         )
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
-            .successHandler(loginSuccessHandler)
+            .successHandler(jwtLoginSuccessHandler)
             .failureHandler(loginFailureHandler)
         )
         .authorizeHttpRequests(auth -> auth
@@ -59,6 +57,7 @@ public class SecurityConfig {
                 AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
                 AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
                 AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh"),
                 new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
             ).permitAll()
             .anyRequest().authenticated()
@@ -79,25 +78,16 @@ public class SecurityConfig {
         )
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
+            .addLogoutHandler(jwtLogoutHandler)
             .logoutSuccessHandler(
                 new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
             )
-            .deleteCookies("remember-me", "JSESSIONID")
         )
-        .sessionManagement(management -> management
-            .sessionConcurrency(concurrency -> concurrency
-                .maximumSessions(1)
-                .maxSessionsPreventsLogin(false)
-                .sessionRegistry(sessionRegistry)
-            )
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
-        .rememberMe(rememberMe -> rememberMe
-            .tokenRepository(persistentTokenRepository)
-            .tokenValiditySeconds(60 * 60 * 24 * 7)
-            .userDetailsService(userDetailsService)
-            .rememberMeParameter("remember-me")
-            .rememberMeCookieName("remember-me")
-        );
+        // (UsernamePasswordAuthenticationFilter 앞에) JwtAuthenticationFilter 추가
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
@@ -123,21 +113,15 @@ public class SecurityConfig {
     return handler;
   }
 
+  // @Component 사용하면 이중 등록 되는 문제가 발생함
+  // 이중 등록 시 SecurityContextHolderFilter가 컨텍스트를 다시 빈 컨텍스트로 덮어 씌우는 문제 발생
+  // JwtAuthenticationFilter는 OncePerRequestFilter 이기 때문에 뒤(Spring Security 레이어)에서 다시 실행도 안됨
+  // -> @Bean으로 생성하여 해결 (단일 생성 등록)
   @Bean
-  public SessionRegistry sessionRegistry() {
-    return new SessionRegistryImpl();
-  }
-
-  @Bean
-  public HttpSessionEventPublisher httpSessionEventPublisher() {
-    return new HttpSessionEventPublisher();
-  }
-
-  @Bean
-  public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
-    JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
-    repo.setDataSource(dataSource);
-    repo.setCreateTableOnStartup(false);
-    return repo;
+  public JwtAuthenticationFilter jwtAuthenticationFilter(
+      JwtTokenProvider jwtTokenProvider,
+      UserDetailsService userDetailsService,
+      JwtRegistry jwtRegistry) {
+    return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService, jwtRegistry);
   }
 }
