@@ -36,15 +36,23 @@ public class ReadStatus extends BaseUpdatableEntity {
   @Column(name = "last_read_at", nullable = false)
   private Instant lastReadAt;
 
-  public ReadStatus(User user, Channel channel) {
+  @Column(name = "notification_enabled", nullable = false)
+  private boolean notificationEnabled;
+
+  public ReadStatus(User user, Channel channel, boolean notificationEnabled) {
     super();
     this.user = user;
     this.channel = channel;
     this.lastReadAt = Instant.now();
+    this.notificationEnabled = notificationEnabled;
   }
 
   public void updateLastReadAt() {
     this.lastReadAt = Instant.now();
+  }
+
+  public void updateNotificationEnabled(boolean notificationEnabled) {
+    this.notificationEnabled = notificationEnabled;
   }
 
   @Override

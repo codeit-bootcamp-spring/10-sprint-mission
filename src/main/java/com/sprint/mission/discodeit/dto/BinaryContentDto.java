@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.UUID;
@@ -21,6 +22,9 @@ public class BinaryContentDto {
   @Schema(description = "생성 일시", example = "2026-02-20T17:20:00Z")
   private Instant createdAt;
 
+  @Schema(description = "수정 일시", example = "2026-02-20T17:21:00Z")
+  private Instant updatedAt;
+
   @Schema(description = "파일명", example = "profile_image.png")
   private String fileName;
 
@@ -30,6 +34,10 @@ public class BinaryContentDto {
   @Schema(description = "콘텐츠 타입", example = "image/png")
   private String contentType;
 
-  @Schema(description = "파일 바이너리 데이터")
-  private byte[] bytes;
+  @Schema(
+      description = "파일 업로드 상태",
+      example = "SUCCESS",
+      allowableValues = {"PROCESSING", "SUCCESS", "FAIL"}
+  )
+  private BinaryContentStatus status;
 }

@@ -14,7 +14,6 @@ import com.sprint.mission.discodeit.dto.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,9 +36,6 @@ class UserControllerTest {
 
   @MockitoBean
   private UserService userService;
-
-  @MockitoBean
-  private UserStatusService userStatusService;
 
   @Test
   @DisplayName("유저 등록 성공: 올바른 정보와 프로필 이미지를 전달하면 201 Created를 반환해야 합니다.")

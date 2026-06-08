@@ -34,4 +34,13 @@ public class SwaggerConfig {
         .pathsToMatch("/api/binaryContents/**")
         .build();
   }
+
+  // 4. 알림 관리 그룹: 사용자 알림 조회 및 삭제 API
+  @Bean
+  public GroupedOpenApi notificationGroup() {
+    return GroupedOpenApi.builder()
+        .group("4. 알림 관리")
+        .pathsToMatch("/api/notifications/**")
+        .build();
+  }
 }

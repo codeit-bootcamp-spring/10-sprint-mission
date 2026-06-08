@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.sprint.mission.discodeit.config.JpaAuditConfig;
+import com.sprint.mission.discodeit.config.AppConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -21,7 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DataJpaTest
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(JpaAuditConfig.class)
+@Import(AppConfig.class)
 class ChannelRepositoryTest {
 
   @Autowired
@@ -44,7 +44,7 @@ class ChannelRepositoryTest {
     Channel privateJoined = new Channel("Private Joined Channel", "참여 중인 비공개 채널",
         ChannelType.PRIVATE);
     // 연관 관계 편의 메서드를 통해 사용자를 채널에 참여
-    privateJoined.addReadStatus(new ReadStatus(user, privateJoined));
+    privateJoined.addReadStatus(new ReadStatus(user, privateJoined, true));
     channelRepository.save(privateJoined);
 
     // 4. 참여하지 않은 비공개 채널 생성 및 저장 (참여하지 않았으므로 조회되면 안 됨)

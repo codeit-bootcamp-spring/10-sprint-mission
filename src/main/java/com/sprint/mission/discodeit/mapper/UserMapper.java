@@ -3,21 +3,19 @@ package com.sprint.mission.discodeit.mapper;
 import com.sprint.mission.discodeit.dto.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(uses = {BinaryContentMapper.class})
+@Mapper(componentModel = "spring", uses = {BinaryContentMapper.class})
 public interface UserMapper {
 
-  @Mapping(target = "online", source = "status")
-  UserDto toDto(User Entity);
+  @Mapping(target = "online", expression = "java(isOnline(entity, jwtRegistry))")
+  UserDto toDto(User entity, @Context JwtRegistry jwtRegistry);
 
-  default boolean mapOnlineStatus(UserStatus status) {
-    if (status == null) {
-      return false;
-    }
-    return status.isOnline(); // 엔티티에 이미 만들어두신 로직 호출
+  default boolean isOnline(User user, JwtRegistry jwtRegistry) {
+    return jwtRegistry.hasActiveJwtInformationByUserId(user.getId());
   }
 
   @Mapping(target = "id", ignore = true)

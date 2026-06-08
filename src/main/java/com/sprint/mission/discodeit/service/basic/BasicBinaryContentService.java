@@ -3,16 +3,19 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -23,16 +26,20 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentMapper binaryContentMapper;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   @Override
   public BinaryContentDto create(BinaryContentCreateRequest request) {
     BinaryContent binaryContent = binaryContentMapper.toEntity(request);
     BinaryContent saved = binaryContentRepository.save(binaryContent);
-    binaryContentStorage.put(saved.getId(), request.getBytes());
 
-    log.info("[SUCCESS] Uploaded Binary Content: id={}, fileName={}, size={}",
+    eventPublisher.publishEvent(new BinaryContentCreatedEvent(
+        saved.getId(),
+        request.getBytes()
+    ));
+
+    log.info("[SUCCESS] Created Binary Content Metadata: id={}, fileName={}, size={}",
         saved.getId(), saved.getFileName(), saved.getSize());
 
     return binaryContentMapper.toDto(saved);
@@ -53,6 +60,17 @@ public class BasicBinaryContentService implements BinaryContentService {
     return binaryContentRepository.findAllById(ids).stream()
         .map(binaryContentMapper::toDto)
         .toList();
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Override
+  public BinaryContentDto updateStatus(UUID id, BinaryContentStatus status) {
+    BinaryContent content = findBinaryContentById(id);
+    content.updateStatus(status);
+
+    log.info("[SUCCESS] Binary Content Status Updated: id={}, status={}", id, status);
+
+    return binaryContentMapper.toDto(content);
   }
 
   @Transactional
