@@ -2,16 +2,25 @@ spring:
   application:
     name: discodeit
   cache:
-    type: caffeine
+    type: redis
     cache-names:
       - channelsByUser
       - notificationsByUser
       - users
-    caffeine:
-      spec: >
-        maximumSize=100,
-        expireAfterAccess=600s,
-        recordStats
+    redis:
+      enable-statistics: true
+      time-to-live: 600s
+      cache-null-values: false
+
+    data:
+      redis:
+        host: ${REDIS_HOST:localhost}
+        port: ${REDIS_PORT:6379}
+  #    caffeine:
+  #      spec: >
+  #        maximumSize=100,
+  #        expireAfterAccess=600s,
+  #        recordStats
   servlet:
     multipart:
       maxFileSize: 10MB # 파일 하나의 최대 크기
