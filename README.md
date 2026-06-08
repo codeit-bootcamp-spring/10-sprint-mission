@@ -1,7 +1,14 @@
 # 10-spring-mission
-discode clone coding
+Discode clone coding
 
 ---
+
+- mission-10
+  - spring security with jwt
+
+- mission-9
+  - spring security
+    - authentication, authorization
 
 - mission-8
   - Dockerfile
@@ -41,10 +48,10 @@ services:
     environment:
       JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 6
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 ```
 
@@ -68,8 +75,19 @@ LOCAL_STORAGE_ROOT_PATH=.discodeit/storage
 AWS_S3_ACCESS_KEY=
 AWS_S3_SECRET_KEY=
 AWS_S3_BUCKET=
-AWS_S3_REGION=
-AWS_S3_PRESIGNED_URL_EXPIRATION=
+AWS_S3_REGION=ap-northeast-2
+AWS_S3_PRESIGNED_URL_EXPIRATION=600
+
+ADMIN_USERNAME=admin
+ADMIN_EMAIL=admin@admin.com
+ADMIN_PASSWORD=admin
+
+JWT_SECRET_KEY=ifrtL3sSclJZ7r/3tr9zOXxQAU3vMzW7rZYqO6oI4nR3EeuYnkTt+wmT468ZKEevfyK+cDg9QtFsLRQ5F0VWtA==
+JWT_ACCESS_TOKEN_EXPIRATION=900
+JWT_REFRESH_TOKEN_EXPIRATION=1209600 # 14d
+JWT_REGISTRY_STORE_TYPE=in-memory # in-memory | db
+JWT_REGISTRY_MAX_CONCURRENT=1
+JWT_REGISTRY_MAX_RETAINED=5
 
 ```
 

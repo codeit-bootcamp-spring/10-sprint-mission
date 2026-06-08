@@ -1,10 +1,10 @@
 springdoc:
   swagger-ui:
-    url: /api/api-docs_1.2.json
+    url: /api.json
 
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}
+    url: jdbc:postgresql://localhost:5432/${DB_NAME}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
 
@@ -16,7 +16,7 @@ spring:
     defer-datasource-initialization: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
         jdbc.batch_size: 100
         order_inserts: true
         order_updates: true
@@ -29,6 +29,7 @@ logging:
     com.sprint.mission.discodeit: debug
     org.hibernate.orm.jdbc.bind: warn
     org.hibernate.SQL: warn
+    org.springframework.security: trace
 
   file:
     name: .logs/discodeit.log
@@ -39,6 +40,5 @@ logging:
       clean-history-on-start: true
       max-history: 30
   pattern:
-    console: "%d{HH:mm:ss.SSS} [%thread] %clr(%-5level) [%logger{36}] - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-
+    console: "%d{HH:mm:ss.SSS} [%thread] %clr(%-5level) [traceId: %X{traceId}] [%logger{36}] - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [traceId: %X{traceId}] [%logger{36}] - %msg%n"
