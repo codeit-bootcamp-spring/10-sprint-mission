@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.nimbusds.jose.JOSEException;
+import com.sprint.mission.discodeit.config.CacheNames;
 import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
@@ -19,6 +20,7 @@ import com.sprint.mission.discodeit.service.AuthService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,6 +41,7 @@ public class BasicAuthService implements AuthService {
   private final ApplicationEventPublisher eventPublisher;
 
   @PreAuthorize("hasRole('ADMIN')")
+  @CacheEvict(cacheNames = CacheNames.USERS, allEntries = true)
   @Transactional
   @Override
   public UserDto updateRole(RoleUpdateRequest request) {
@@ -46,6 +49,7 @@ public class BasicAuthService implements AuthService {
   }
 
   @Transactional
+  @CacheEvict(cacheNames = CacheNames.USERS, allEntries = true)
   @Override
   public UserDto updateRoleInternal(RoleUpdateRequest request) {
     UUID userId = request.userId();

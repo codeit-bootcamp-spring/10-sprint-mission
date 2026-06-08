@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.config.CacheNames;
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.User;
@@ -13,6 +14,10 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +30,9 @@ public class BasicNotificationService implements NotificationService {
   private final NotificationRepository notificationRepository;
   private final UserRepository userRepository;
   private final NotificationMapper notificationMapper;
+  private final CacheManager cacheManager;
 
+  @CacheEvict(cacheNames = CacheNames.NOTIFICATIONS_BY_RECEIVER, key = "#receiverId")
   @Transactional
   @Override
   public NotificationDto create(UUID receiverId, String title, String content) {
@@ -45,6 +52,7 @@ public class BasicNotificationService implements NotificationService {
         .orElseThrow(() -> NotificationNotFoundException.withId(notificationId));
   }
 
+  @Cacheable(cacheNames = CacheNames.NOTIFICATIONS_BY_RECEIVER, key = "#receiverId")
   @Transactional(readOnly = true)
   @Override
   public List<NotificationDto> findAllByReceiverId(UUID receiverId) {
@@ -57,10 +65,19 @@ public class BasicNotificationService implements NotificationService {
   @Transactional
   @Override
   public void delete(UUID notificationId) {
-    if (!notificationRepository.existsById(notificationId)) {
-      throw NotificationNotFoundException.withId(notificationId);
-    }
-    notificationRepository.deleteById(notificationId);
+    Notification notification = notificationRepository.findById(notificationId)
+        .orElseThrow(() -> NotificationNotFoundException.withId(notificationId));
+    UUID receiverId = notification.getReceiver().getId();
+
+    notificationRepository.delete(notification);
+    evictNotificationsByReceiver(receiverId);
     log.info("알림 확인 완료: id={}", notificationId);
+  }
+
+  private void evictNotificationsByReceiver(UUID receiverId) {
+    Cache cache = cacheManager.getCache(CacheNames.NOTIFICATIONS_BY_RECEIVER);
+    if (cache != null) {
+      cache.evict(receiverId);
+    }
   }
 }
