@@ -15,8 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @EnableAsync
 public class AsyncConfig {
 
-  @Bean
-  public Executor taskExecutor(TaskDecorator contextCopyingTaskDecorator) {
+  @Bean(name = "eventTaskExecutor")
+  public Executor eventTaskExecutor(TaskDecorator contextCopyingTaskDecorator) {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
     executor.setCorePoolSize(4);
