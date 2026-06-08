@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -39,7 +40,7 @@ public class KafkaProduceRequiredEventListener {
 
     /// Kafka에 BinaryContentUploadFailedEvent 발행
     @Async("ioTaskExecutor")
-    @TransactionalEventListener
+    @EventListener
     public void on(BinaryContentUploadFailedEvent event) throws JsonProcessingException {
         String payload = objectMapper.writeValueAsString(event);
         kafkaTemplate.send("discodeit.BinaryContentUploadFailedEvent", payload);

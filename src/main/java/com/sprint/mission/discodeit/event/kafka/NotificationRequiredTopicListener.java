@@ -129,7 +129,7 @@ public class NotificationRequiredTopicListener {
 
     }
 
-    @KafkaListener(topics = "discodeit.S3UploadFailedEvent")
+    @KafkaListener(topics = "discodeit.BinaryContentUploadFailedEvent")
     public void onS3UploadFailedEvent(String kafkaEvent) {
         try {
             BinaryContentUploadFailedEvent event = objectMapper.readValue(kafkaEvent, BinaryContentUploadFailedEvent.class);
