@@ -1,0 +1,35 @@
+# docker-compose-kafka.yaml
+# https://developer.confluent.io/confluent-tutorials/kafka-on-docker/#the-docker-compose-file
+services:
+  broker:
+    image: apache/kafka:latest
+    hostname: broker
+    container_name: broker
+    ports:
+      - 9092:9092
+    environment:
+      #"Kafka 클러스터 안에서 1번 서버" 라는 의미
+      # Kafka 서버 3대라면 2, 3도 있을것이다.
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      #LISTENERS: Kafka가 실제로 열어둔 주소
+      #ADVERTISED_LISTENERS: Kafka가 클라이언트에게 알려주는 주소.
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      # Kafa 프로세스가 어떤 역할을 할지 정하는 설정
+      # broker: 메시지 저장하고 전달하는 역할
+      # controller: Kafka 클러스터를 관리하는 역할
+      KAFKA_PROCESS_ROLES: broker,controller
+      #KRaft 모드에서 사용하는 노드ID
+      #단일 Kafka라 보통 BROKER_ID와 똑같이 맞춘다.
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      #Kafka가 실제로 열어둘 접속 주소.
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk

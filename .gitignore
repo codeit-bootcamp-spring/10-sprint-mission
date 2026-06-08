@@ -41,11 +41,11 @@ bin/
 ### Discodeit ###
 .discodeit
 
-
-# 숨김 파일 무시
+### 숨김 파일 ###
 .*
-# 하지만 이건 포함
 !.gitignore
+
+
+### Github Actions ###
 !.github/
 .env
-discodeit.env
