@@ -36,6 +36,25 @@ public class AsyncConfig implements AsyncConfigurer {
         return executor;
     }
 
+    @Bean(name = "eventTaskExecutor")
+    public TaskExecutor eventTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(4);
+        executor.setQueueCapacity(100);
+        executor.setKeepAliveSeconds(60);
+        executor.setThreadNamePrefix("event-async-");
+
+        executor.setTaskDecorator(new CompositeTaskDecorator(
+                List.of(new MdcTaskDecorator(), new SecurityContextTaskDecorator())
+        ));
+
+        executor.initialize();
+
+        return executor;
+    }
+
     @Override
     public Executor getAsyncExecutor() {
         return discodeitExecutor();

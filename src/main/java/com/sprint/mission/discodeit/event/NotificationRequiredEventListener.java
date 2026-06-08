@@ -16,8 +16,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import java.util.List;
 
 @Slf4j
-@Component
-@Async
+//@Component
+//@Async
 @RequiredArgsConstructor
 public class NotificationRequiredEventListener {
 
