@@ -23,12 +23,9 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,11 +81,17 @@ public class NotificationRequiredTopicListener {
     }
 
     @KafkaListener(topics = "discodeit.RoleUpdatedEvent", groupId = "discodeit-group")
-    @CacheEvict(value = "userNotifications", key = "#event.receiverId")
     public void consumeRoleUpdate(String kafkaEvent) {
         try {
             RoleUpdatedEvent event = objectMapper.readValue(kafkaEvent, RoleUpdatedEvent.class);
             log.info("[Kafka 수신 완료]");
+
+            Cache notificationsCache = cacheManager.getCache("userNotifications");
+
+            // 캐시 비우기
+            if(notificationsCache != null){
+                notificationsCache.evict(event.getReceiverId());
+            }
 
             String content = String.format("%s -> %s", event.getOldRole(), event.getNewRole());
             User receiverProxy = userRepository.getReferenceById(event.getReceiverId());
@@ -99,17 +102,25 @@ public class NotificationRequiredTopicListener {
                     content));
 
             log.info("권한 업데이트 알림 발송 완료");
+
+
         } catch (JsonProcessingException e) {
             log.error("[Kafka 소비 실패] 메시지 파싱 또는 처리 중 에러 발생", e);
         }
     }
 
     @KafkaListener(topics = "discodeit.BinaryContentCreatedEvent", groupId = "discodeit-group")
-    public void consumeProfileUpload(String kafkaEvent){
+    public void consumeProfileUpload(String kafkaEvent,
+                                     @Header(value = "requestId", required = false) String requestId){
         try{
             BinaryContentCreatedEvent event = objectMapper.readValue(kafkaEvent, BinaryContentCreatedEvent.class);
             UUID binaryContentId = event.getBinaryContentId();
-            String requestId = MDC.get("requestId");
+            if (requestId != null) {
+                MDC.put("requestId", requestId);
+            }
+
+            Cache notificationsCache = cacheManager.getCache("userNotifications");
+
             try{
                 log.info("비동기 s3 업로드 시작: id = {}", binaryContentId);
                 s3BinaryContentStorage.put(binaryContentId, event.getBytes());
@@ -122,6 +133,11 @@ public class NotificationRequiredTopicListener {
                 try {
                     User admin = userRepository.findByEmail(adminEmail)
                             .orElseThrow(() -> new UserNotFoundException(adminEmail));
+
+                    // 캐시 비우기
+                    if(notificationsCache != null){
+                        notificationsCache.evict(admin.getId());
+                    }
 
                     notificationRepository.save(new Notification(
                             admin,

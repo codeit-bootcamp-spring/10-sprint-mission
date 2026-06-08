@@ -13,7 +13,7 @@ public class CompositeTaskDecorator implements TaskDecorator {
 
     @Override
     public Runnable decorate(Runnable runnable) {
-        for(int i = decorators.size() - 1; i >=0; i--){
+        for(int i = decorators.size() - 1; i >= 0; i--){
             runnable = decorators.get(i).decorate(runnable);
         }
 
