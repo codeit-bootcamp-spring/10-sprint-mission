@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
+import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import java.util.List;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,11 +38,15 @@ public class BasicNotificationsService {
   @CacheEvict(cacheManager = "redisCacheManager", value = "userNotifications", key = "#userId")
   @Transactional
   public void delete(UUID userId, UUID notificationId) {
-    if (!notificationRepository.existsByIdAndReceiverId(notificationId, userId)) {
-      throw NotificationNotFoundException.withId(notificationId);
+    /// 알림 자체가 없다 - 404 NOT FOUND
+    Notification notification = notificationRepository.findById(notificationId)
+            .orElseThrow(() -> NotificationNotFoundException.withId(notificationId));
+
+    /// 알림 존재하지만 다른 사용자 알림 - 403 FORBIDDEN
+    if (!notification.getReceiver().getId().equals(userId)) {
+      throw new AuthorizationDeniedException("해당 알림을 삭제할 권한이 없습니다.");
     }
 
-    notificationRepository.deleteById(notificationId);
     log.info("Read notification: userId={}, notificationId={}", userId, notificationId);
   }
 }
