@@ -7,15 +7,25 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MessageService {
-    public Message createMessage(String context, UUID channelID, String userID); // 생성
-   // public Message createMessage(String context, String channelName, String userName);
-    public Message readMessage(UUID uuid);
-    public List<Message> readMessagebyUser(String userID);
-    public List<Message> readMessagebyChannel(UUID channelID);
-    public Message updateMessage(UUID uuid, String context); // 업데이트
-    public void deleteMessage(UUID uuid); // 삭제
-    public List<Message> readAllMessage(); // 모두 조회
-    public void save(Message message);
-    public void setUserService(UserService userService);
-    public void setChannelService(ChannelService channelService);
+
+  Message createMessage(String context, UUID channelID, String userID); // 생성
+
+  // public Message createMessage(String context, String channelName, String userName);
+  Message readMessage(UUID uuid);
+
+  List<Message> readMessagebyUser(String userID);
+
+  List<Message> readMessagebyChannel(UUID channelID);
+
+  Message updateMessage(UUID uuid, String context); // 업데이트
+
+  void deleteMessage(UUID uuid); // 삭제
+
+  List<Message> readAllMessage(); // 모두 조회
+
+  void save(Message message);
+
+  void setUserService(UserService userService);
+
+  void setChannelService(ChannelService channelService);
 }

@@ -10,12 +10,17 @@ build/
 .classpath
 .factorypath
 .project
-.settings
+.settingsg
 .springBeans
 .sts4-cache
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
+
+### 로컬 로그 및 첨부 파일 ###
+.discodeit/
+*.logs
+*/logs
 
 ### IntelliJ IDEA ###
 .idea
@@ -40,3 +45,13 @@ out/
 ## 파일들
 .ser
 /file-data-map
+.env
+.env.example
+
+.env.*
+!.env.example
+
+### Node ###
+node_modules/
+package.json
+package-lock.json

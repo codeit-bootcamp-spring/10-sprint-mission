@@ -21,17 +21,21 @@ public interface ChannelRepository extends JpaRepository<Channel, UUID> {
     @Query("""
                 select distinct c
                 from Channel c
-                left join c.readStatuses mine
                 left join fetch c.readStatuses rs
                 left join fetch rs.user u
                 where c.type = :publicType
-                   or mine.user.id = :userId
+                   or exists (
+                      select 1
+                      from ReadStatus mine
+                      where mine.channel = c
+                        and mine.user.id = :userId
+                   )
         """)
     List<Channel> findAllVisibleWithParticipants(@Param("userId") UUID userId,
         @Param("publicType") ChannelType publicType);
 
     @EntityGraph(attributePaths = {
-        "readStatuses", "readStatuses.user", "readStatuses.user.userStatus", "readStatuses.user.profile"
+        "readStatuses", "readStatuses.user", "readStatuses.user.profile"
     })
     Optional<Channel> findWithParticipantsById(UUID id);
 

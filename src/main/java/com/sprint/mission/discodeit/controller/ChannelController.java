@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("api/channels")
 @RequiredArgsConstructor
@@ -30,6 +32,7 @@ public class ChannelController {
 
     @GetMapping(value = "/all")
     public ResponseEntity<List<ChannelDto>> findAllChannel() {
+        log.trace("[Channel] 컨트롤러에서 전체 목록 조회 요청 받음");
         return new ResponseEntity<>(channelService.findAll(), HttpStatus.OK);
     }
 
@@ -44,6 +47,7 @@ public class ChannelController {
     )
     public ResponseEntity<ChannelDto> createPublicChannel(
         @Valid @RequestBody PublicChannelCreateDTO req) {
+        log.trace("[Channel] 컨트롤러에서 공개 채널 생성 요청 받음");
         return new ResponseEntity<>(channelService.createPublicChannel(req), HttpStatus.CREATED);
     }
 
@@ -75,6 +79,7 @@ public class ChannelController {
         )
     )
     public ResponseEntity<List<ChannelDto>> getChannels(@RequestParam UUID userId) {
+        log.trace("[Channel] 컨트롤러에서 채널 목록 조회 요청 받음");
         return new ResponseEntity<>(channelService.findAllByUserId(userId), HttpStatus.OK);
     }
 
@@ -94,7 +99,11 @@ public class ChannelController {
         )
     })
     public void deleteChannel(@PathVariable UUID channelId) {
-        channelService.delete(channelId);
+        ChannelDto channel = channelService.find(channelId);
+        switch (channel.type()) {
+            case PUBLIC -> channelService.deletePublicChannel(channelId);
+            case PRIVATE -> channelService.deletePrivateChannel(channelId);
+        }
     }
 
     @RequestMapping(value = "/{channelId}", method = RequestMethod.PATCH)
@@ -109,8 +118,14 @@ public class ChannelController {
         )
     )
     public ResponseEntity<ChannelDto> updateChannel(@PathVariable UUID channelId,
-        @RequestBody PublicChannelUpdateRequestDTO req) {
-        return new ResponseEntity<>(channelService.update(channelId, req), HttpStatus.OK);
+        @Valid @RequestBody PublicChannelUpdateRequestDTO req) {
+        log.trace("[Channel] 컨트롤러에서 채널 업데이트 요청 받음");
+        ChannelDto channel = channelService.find(channelId);
+        ChannelDto updated = switch (channel.type()) {
+            case PUBLIC -> channelService.updatePublicChannel(channelId, req);
+            case PRIVATE -> channelService.updatePrivateChannel(channelId, req);
+        };
+        return new ResponseEntity<>(updated, HttpStatus.OK);
     }
 
 

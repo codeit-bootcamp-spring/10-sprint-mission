@@ -9,7 +9,9 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("api/binaryContents")
 @RequiredArgsConstructor
@@ -38,7 +41,7 @@ public class BinaryContentController {
     )
     public ResponseEntity<List<BinaryContentDto>> getBinaryContents(
         @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
-
+        log.trace("[BinaryContent] 컨트롤러에서 전체 목록 조회 요청 받음");
         return new ResponseEntity<>(binaryContentService.findAllByIdIn(binaryContentIds),
             HttpStatus.OK);
     }
@@ -63,16 +66,28 @@ public class BinaryContentController {
             )
         )
     })
-    public ResponseEntity<BinaryContentDto> getBinaryContent(
-        @PathVariable UUID binaryContentId) {
-        return new ResponseEntity<>(binaryContentService.find(binaryContentId), HttpStatus.OK);
+    public ResponseEntity<?> getBinaryContent(
+        @PathVariable UUID binaryContentId,
+        HttpServletRequest request) {
+        log.trace("[BinaryContent] 컨트롤러에서 단일 조회 요청 받음.");
+        BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
+        if (isImageRequest(request)) {
+            return binaryContentStorage.download(binaryContent);
+        }
+        return new ResponseEntity<>(binaryContent, HttpStatus.OK);
     }
 
     @GetMapping(value = "/{binaryContentId}/download")
     public ResponseEntity<?> downloadBinaryContent(
         @PathVariable UUID binaryContentId) {
+        log.trace("[BinaryContent] 컨트롤러에서 다운로드 요청 받음");
 
         return binaryContentStorage.download(binaryContentService.find(binaryContentId));
+    }
+
+    private boolean isImageRequest(HttpServletRequest request) {
+        String accept = request.getHeader("Accept");
+        return accept != null && accept.contains("image/");
     }
 
 }
