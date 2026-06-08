@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
@@ -33,6 +34,7 @@ public class BasicAuthService implements AuthService {
     @Override
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto updateRole(UserRoleUpdateRequest request) {
 
         User user = userRepository.findById(request.getUserId())
@@ -60,6 +62,7 @@ public class BasicAuthService implements AuthService {
         return !sessions.isEmpty();
     }
 
+    // 토큰 방식으로 추후에 바꾸고 캐시도 비울것
     private void expireUserSessions(UserDto dto){
 
         DiscodeitUserDetails principal = new DiscodeitUserDetails(dto,"");

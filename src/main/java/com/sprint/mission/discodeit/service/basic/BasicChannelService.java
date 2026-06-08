@@ -144,6 +144,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     @Transactional
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+    @CacheEvict(value = "userPublicChannels", allEntries = true)
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest dto) {
         Channel channel = getChannel(channelId);
         if(channel.getType() == ChannelType.PRIVATE){
@@ -164,6 +165,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     @Transactional
     @PreAuthorize("@channelChecker.isPublic(#channelId) and hasRole('CHANNEL_MANAGER')")
+    @CacheEvict(value = "userPublicChannels", allEntries = true)
     public void delete(UUID channelId) {
         Channel channel = getChannel(channelId);
 

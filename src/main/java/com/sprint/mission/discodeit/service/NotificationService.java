@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,7 @@ public class NotificationService {
     }
 
     @Transactional
+    @CacheEvict(value = "userNotifications", key = "#receiverId")
     public void readNotifications(UUID notificationId, UUID receiverId){
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(

@@ -110,6 +110,7 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional
     @PreAuthorize("#userId == principal.userDto.id")
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile profile) {
         User user = getUser(userId);
         // 이름 수정
@@ -150,6 +151,7 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional
     @PreAuthorize("#userId == principal.userDto.id")
+    @CacheEvict(value = "users", allEntries = true)
     public void delete(UUID userId) {
         User user = getUser(userId);
         BinaryContent profileImg = user.getProfile();

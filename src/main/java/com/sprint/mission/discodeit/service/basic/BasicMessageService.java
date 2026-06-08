@@ -4,10 +4,8 @@ import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -16,13 +14,12 @@ import com.sprint.mission.discodeit.exception.file.FileUploadFailException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +44,8 @@ public class BasicMessageService implements MessageService {
     private final PageResponseMapper pageResponseMapper;
     private final BinaryContentRepository binaryContentRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final CacheManager cacheManager;
+    private final ReadStatusRepository readStatusRepository;
 
 
     @Override
@@ -86,6 +85,8 @@ public class BasicMessageService implements MessageService {
                 user.getId(),
                 user.getUsername(),
                 savedMessage.getContent()));
+
+        deleteChannelCache(channel);
         return messageMapper.toDto(message);
     }
 
@@ -145,6 +146,7 @@ public class BasicMessageService implements MessageService {
         //데이터에서 메시지 삭제 -> 조인 테이블과의 영속성 전이로 인해 관련된 조인 테이블의 데이터도 삭제 -> binaryContent와 조인테이블
         // 과의 연결도 끊김 -> JPA는 조인 테이블과의 연결이 끊긴 데이터를 orphan으로 인식하고 삭제해버림(orphanRemoval)
         messageRepository.delete(message);
+        deleteChannelCache(message.getChannel());
         log.info("메시지 삭제 성공: 메시지 id = {}", messageId);
     }
 
@@ -154,4 +156,21 @@ public class BasicMessageService implements MessageService {
                 .orElseThrow(() -> new MessageNotFoundException(messageId));
     }
 
+    private void deleteChannelCache(Channel channel){
+        if(channel.getType().equals(ChannelType.PUBLIC)){
+            Cache publicCache = cacheManager.getCache("userPublicChannels");
+            if(publicCache != null){
+                publicCache.clear();
+            }
+        } else{
+            Cache privateCache = cacheManager.getCache("userPrivateChannels");
+            List<ReadStatus> activeStatus = readStatusRepository.findAllByChannelId(channel.getId());
+            for(ReadStatus status : activeStatus){
+                UUID participantId = status.getUser().getId();
+                if(privateCache != null){
+                    privateCache.evict(participantId);
+                }
+            }
+        }
+    }
 }
