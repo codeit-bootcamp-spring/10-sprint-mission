@@ -12,6 +12,8 @@ import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +34,7 @@ public class BasicNotificationService implements NotificationService {
     private final NotificationMapper notificationMapper;
 
     @Override
+    @CacheEvict(value = "notifications", allEntries = true)
     public void notifyAdmin(String title, String content) {
         User admin = userRepository.findByUsername(adminUsername)
                 .orElseThrow(() -> new UserNotFoundException(adminUsername));
@@ -47,6 +50,7 @@ public class BasicNotificationService implements NotificationService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable("notifications")
     @Override
     public List<NotificationDto> findAllByReceiverId(UUID receiverId) {
         return notificationRepository.findAllByReceiverIdOrderByCreatedAtDesc(receiverId)
@@ -57,6 +61,7 @@ public class BasicNotificationService implements NotificationService {
 
     @Transactional
     @Override
+    @CacheEvict(value = "notifications", allEntries = true)
     public void delete(UUID notificationId, UUID receiverId) {
         Notification notification = notificationRepository.findByIdAndReceiverId(notificationId, receiverId)
                 .orElseThrow(() -> new NotificationNotFoundException(notificationId));

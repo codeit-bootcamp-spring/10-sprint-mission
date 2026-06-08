@@ -20,6 +20,8 @@ import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +46,7 @@ public class BasicChannelService implements ChannelService {
     private final JwtRegistry jwtRegistry;
 
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+    @CacheEvict(value = "channels", allEntries = true)
     @Override
     public ChannelDto createPublicChannel(CreatePublicChannelRequestDTO dto) {
         Channel channel = new Channel(dto.name(), dto.description(), ChannelType.PUBLIC);
@@ -60,6 +63,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
+    @CacheEvict(value = "channels", allEntries = true)
     public ChannelDto createPrivateChannel(CreatePrivateChannelRequestDTO dto) {
         // Mapper에서 name, description은 null로 처리
         Channel channel = new Channel(null, null, ChannelType.PRIVATE);
@@ -83,6 +87,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
+    @Cacheable("channels")
     @Transactional(readOnly = true)
     public List<ChannelDto> findAllByUserId(UUID userId) {
         findUserOrThrow(userId);
@@ -115,6 +120,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+    @CacheEvict(value = "channels", allEntries = true)
     @Override
     public ChannelDto updateChannel(
             UUID channelId,
@@ -139,6 +145,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+    @CacheEvict(value = "channels", allEntries = true)
     @Override
     public void deleteChannel(UUID channelId) {
         findChannelOrThrow(channelId);

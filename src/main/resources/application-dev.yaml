@@ -29,7 +29,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, loggers
+        include: health, info, metrics, loggers, caches
 
   endpoint:
     health:
@@ -38,6 +38,10 @@ management:
   info:
     env:
       enabled: true
+
+  metrics:
+    enable:
+      cache: true
 
 info:
   app:

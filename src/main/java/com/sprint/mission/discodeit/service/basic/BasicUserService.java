@@ -22,6 +22,8 @@ import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -47,6 +49,7 @@ public class BasicUserService implements UserService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto createUser(CreateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
         if (userRepository.existsByUsername(dto.username())) {
             log.warn("[USER_CREATE_FAIL_BY_USERNAME] 이미 사용중인 이름으로 유저 생성 실패: username={}", dto.username());
@@ -85,10 +88,12 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Cacheable("users")
     @Transactional(readOnly = true)
     public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
 
+        log.info("[BasicUserService] findAll 실행!");
         return userMapper.toDtoList(users, jwtRegistry::hasActiveJwtInformationByUserId);
     }
 

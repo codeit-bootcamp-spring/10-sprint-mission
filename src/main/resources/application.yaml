@@ -22,13 +22,6 @@ discodeit:
     username: ${ADMIN_USERNAME:admin}
     email: ${ADMIN_EMAIL:admin@gmail.com}
     password: ${ADMIN_PASSWORD:1111}
-  cache:
-    type: caffeine
-    caffeine:
-      spec: >
-        maximumSize=100,
-        expireAfterAccess=600s,
-        recordStats
 
 spring:
   profiles:
@@ -40,6 +33,18 @@ spring:
       max-request-size: 10MB
   jpa:
     open-in-view: false
+  cache:
+    type: caffeine
+    cache-names:
+      - users
+      - channels
+      - notifications
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
+
 logging:
   level:
     root: info
