@@ -88,7 +88,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    @Cacheable("users")
+    @Cacheable(value = "users", key = "'all'")
     @Transactional(readOnly = true)
     public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
@@ -105,6 +105,7 @@ public class BasicUserService implements UserService {
 
     @PreAuthorize("#userId == authentication.principal.id")
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto updateUserInfo(UUID userId, UpdateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
         User user = findUserOrThrow(userId);
 
@@ -133,6 +134,7 @@ public class BasicUserService implements UserService {
 
     @PreAuthorize("hasRole('ADMIN')")
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto updateRole(UserRoleUpdateRequest dto) {
         User user = findUserOrThrow(dto.userId());
         Role oldRole = user.getRole();
@@ -156,6 +158,7 @@ public class BasicUserService implements UserService {
 
     @PreAuthorize("#userId == authentication.principal.id")
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     public void deleteUser(UUID userId) {
         User user = findUserOrThrow(userId);
 

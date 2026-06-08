@@ -25,6 +25,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -53,6 +54,7 @@ public class BasicMessageService implements MessageService {
 
     @Transactional
     @Override
+    @CacheEvict(value = "channels", allEntries = true)
     public MessageDto createMessage(CreateMessageRequestDTO dto, List<CreateBinaryContentPayloadDTO> attachments) {
         User user = findUserOrThrow(dto.authorId());
         Channel channel = findChannelOrThrow(dto.channelId());
@@ -148,6 +150,7 @@ public class BasicMessageService implements MessageService {
 
     @PreAuthorize("@messageSecurity.isOwner(#messageId, authentication.principal.id)")
     @Override
+    @CacheEvict(value = "channels", allEntries = true)
     public MessageDto updateMessage(UUID messageId, UpdateMessageRequestDTO dto) {
         Message message = findMessageOrThrow(messageId);
 
@@ -166,6 +169,7 @@ public class BasicMessageService implements MessageService {
 
     @PreAuthorize("@messageSecurity.isOwner(#messageId, authentication.principal.id)")
     @Override
+    @CacheEvict(value = "channels", allEntries = true)
     public void deleteMessage(UUID messageId) {
         findMessageOrThrow(messageId).getAttachments();
 
