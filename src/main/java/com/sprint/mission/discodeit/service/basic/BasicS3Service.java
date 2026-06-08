@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.enums.binarycontents.BinaryContentStatus;
 import com.sprint.mission.discodeit.events.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.events.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorage;
@@ -25,7 +26,7 @@ public class BasicS3Service {
 
   private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentService binaryContentService;
-  private final ApplicationEventPublisher eventPublisher;
+  private final BinaryContentUploadService binaryContentUploadService;
 
   public UUID upload(MultipartFile file) throws IOException {
     Objects.requireNonNull(file, "파일이 유효하지 않습니다.");
@@ -36,7 +37,7 @@ public class BasicS3Service {
             file.getBytes()
         )
     );
-
+    binaryContentUploadService.upload(binaryContent.getId(), file.getBytes());
     return binaryContent.getId();
   }
 

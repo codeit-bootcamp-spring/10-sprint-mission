@@ -28,10 +28,30 @@ spring:
     open-in-view: false
 
   cache:
-    type: caffeine
+    type: redis
     cache-names: channelsByUser, notificationsByUser, users
     caffeine:
       spec: maximumSize=1000, expireAfterWrite=600s, recordStats
+    redis:
+      enable-statistics: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+
 
 management:
   endpoints:
