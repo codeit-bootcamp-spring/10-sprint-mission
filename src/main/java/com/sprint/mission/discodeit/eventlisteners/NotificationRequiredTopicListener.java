@@ -21,7 +21,8 @@ import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +38,12 @@ public class NotificationRequiredTopicListener {
   private final ReadStatusRepository readStatusRepository;
 
   @KafkaListener(topics = "discodeit.MessageCreatedEvent", groupId = "discodeit-group")
+  @Caching(evict = {
+      @CacheEvict(cacheNames = "channelsByUser", allEntries = true),
+      // 메시지 생성 시 채널 목록 dto가 최신 메시지 시간을 포함->캐시 무효화 필요
+      @CacheEvict(cacheNames = "notificationsByUser", allEntries = true)
+      // 메시지 생성 시 알림 생성 -> 알림 캐시 무효화 필요ㅕ
+  })
   public void onMessageCreatedEvent(String kafkaEvent) {
     MessageCreatedEvent event;
 
@@ -71,6 +78,10 @@ public class NotificationRequiredTopicListener {
   }
 
   @KafkaListener(topics = "discodeit.RoleUpdatedEvent", groupId = "discodeit-group")
+  @Caching(evict = {
+      @CacheEvict(cacheNames = "notificationsByUser", allEntries = true),
+      @CacheEvict(cacheNames = "users", allEntries = true)
+  })
   public void onRoleUpdatedEvent(String kafkaEvent) throws JsonProcessingException {
     RoleUpdatedEvent event;
     try {
@@ -108,10 +119,12 @@ public class NotificationRequiredTopicListener {
         Task: %s
         RequestId: %s
         BinaryContentId: %s
+        ErrorMessage: %s
         """.formatted(
         "S3 파일 업로드 실패",
-        MDC.get("requestId"),
-        event.binaryContentId()
+        event.requestId(),
+        event.binaryContentId(),
+        event.errorMessage()
     );
 
     // 권한이 ADMIN 유저를 리스트 형식으로 뽑고

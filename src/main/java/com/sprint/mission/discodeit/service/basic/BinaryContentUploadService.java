@@ -60,7 +60,9 @@ public class BinaryContentUploadService {
     binaryContentService.updateStatus(binaryContentId, BinaryContentStatus.FAIL);
     eventPublisher.publishEvent(
         new S3UploadFailedEvent(
-            binaryContentId
+            binaryContentId,
+            MDC.get("requestId"),
+            exception.getMessage()
         ));
   }
 }

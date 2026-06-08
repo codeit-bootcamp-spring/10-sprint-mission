@@ -37,7 +37,6 @@ public class BasicS3Service {
             file.getBytes()
         )
     );
-    binaryContentUploadService.upload(binaryContent.getId(), file.getBytes());
     return binaryContent.getId();
   }
 
