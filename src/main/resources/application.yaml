@@ -23,6 +23,17 @@ spring:
   cache:
     type: redis
 
+  kafka:
+    bootstrap-servers: localhost:9092 #spring boot가 Kafka와 연결할 주소.
+    producer: #producer 설정: Kafka에 메시지를 보내는쪽
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
 management:
   endpoints:
     web:

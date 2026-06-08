@@ -79,6 +79,8 @@ public class BasicReadStatusService implements ReadStatusService {
     return dtos;
   }
 
+  /// 채널 클릭시 마지막 읽은시간때문에 수행된다.
+  /// -> request.newNotificationEnabled값이 null로 들어간다.
   @Transactional
   @Override
   public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {

@@ -48,11 +48,14 @@ public class ReadStatus extends BaseUpdatableEntity {
 
   }
 
-  public void update(Instant newLastReadAt, boolean newNotificationEnabled) {
+  /// newNotificationEnabled를 boolean 타입으로 두면 null값이 false로 인식된다.
+  /// 채널을 클릭할때 update의 경우 newNotificationEnabeld가 null값으로 들어오므로
+  /// 채널을 옮겨다니는것만으로 채널 알림상태를 false로 만들고 다닌다.
+  public void update(Instant newLastReadAt, Boolean newNotificationEnabled) {
     if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
       this.lastReadAt = newLastReadAt;
     }
-    if (this.notificationEnabled != newNotificationEnabled) {
+    if (newNotificationEnabled != null && this.notificationEnabled != newNotificationEnabled) {
       this.notificationEnabled = newNotificationEnabled;
     }
   }
