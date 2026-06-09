@@ -35,7 +35,7 @@ public class BasicReadStatusService implements ReadStatusService {
   private final ChannelRepository channelRepository;
   private final ReadStatusMapper readStatusMapper;
 
-  @CacheEvict(cacheNames = CacheNames.CHANNELS_BY_USER, allEntries = true)
+  @CacheEvict(cacheNames = CacheNames.CHANNELS, allEntries = true)
   @Transactional
   @Override
   public ReadStatusDto create(ReadStatusCreateRequest request) {
@@ -97,7 +97,7 @@ public class BasicReadStatusService implements ReadStatusService {
     return readStatusMapper.toDto(readStatus);
   }
 
-  @CacheEvict(cacheNames = CacheNames.CHANNELS_BY_USER, allEntries = true)
+  @CacheEvict(cacheNames = CacheNames.CHANNELS, allEntries = true)
   @Transactional
   @Override
   public void delete(UUID readStatusId) {

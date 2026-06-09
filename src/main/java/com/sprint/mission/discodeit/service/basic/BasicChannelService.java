@@ -39,7 +39,7 @@ public class BasicChannelService implements ChannelService {
   private final ChannelMapper channelMapper;
 
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
-  @CacheEvict(cacheNames = CacheNames.CHANNELS_BY_USER, allEntries = true)
+  @CacheEvict(cacheNames = CacheNames.CHANNELS, allEntries = true)
   @Transactional
   @Override
   public ChannelDto create(PublicChannelCreateRequest request) {
@@ -53,7 +53,7 @@ public class BasicChannelService implements ChannelService {
     return channelMapper.toDto(channel);
   }
 
-  @CacheEvict(cacheNames = CacheNames.CHANNELS_BY_USER, allEntries = true)
+  @CacheEvict(cacheNames = CacheNames.CHANNELS, allEntries = true)
   @Transactional
   @Override
   public ChannelDto create(PrivateChannelCreateRequest request) {
@@ -78,7 +78,7 @@ public class BasicChannelService implements ChannelService {
         .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
   }
 
-  @Cacheable(cacheNames = CacheNames.CHANNELS_BY_USER, key = "#userId")
+  @Cacheable(cacheNames = CacheNames.CHANNELS, key = "#userId")
   @Transactional(readOnly = true)
   @Override
   public List<ChannelDto> findAllByUserId(UUID userId) {
@@ -94,7 +94,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
-  @CacheEvict(cacheNames = CacheNames.CHANNELS_BY_USER, allEntries = true)
+  @CacheEvict(cacheNames = CacheNames.CHANNELS, allEntries = true)
   @Transactional
   @Override
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
@@ -112,7 +112,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
-  @CacheEvict(cacheNames = CacheNames.CHANNELS_BY_USER, allEntries = true)
+  @CacheEvict(cacheNames = CacheNames.CHANNELS, allEntries = true)
   @Transactional
   @Override
   public void delete(UUID channelId) {

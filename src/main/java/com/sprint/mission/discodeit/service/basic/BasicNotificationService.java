@@ -32,7 +32,7 @@ public class BasicNotificationService implements NotificationService {
   private final NotificationMapper notificationMapper;
   private final CacheManager cacheManager;
 
-  @CacheEvict(cacheNames = CacheNames.NOTIFICATIONS_BY_RECEIVER, key = "#receiverId")
+  @CacheEvict(cacheNames = CacheNames.NOTIFICATIONS, key = "#receiverId")
   @Transactional
   @Override
   public NotificationDto create(UUID receiverId, String title, String content) {
@@ -52,7 +52,7 @@ public class BasicNotificationService implements NotificationService {
         .orElseThrow(() -> NotificationNotFoundException.withId(notificationId));
   }
 
-  @Cacheable(cacheNames = CacheNames.NOTIFICATIONS_BY_RECEIVER, key = "#receiverId")
+  @Cacheable(cacheNames = CacheNames.NOTIFICATIONS, key = "#receiverId")
   @Transactional(readOnly = true)
   @Override
   public List<NotificationDto> findAllByReceiverId(UUID receiverId) {
@@ -75,7 +75,7 @@ public class BasicNotificationService implements NotificationService {
   }
 
   private void evictNotificationsByReceiver(UUID receiverId) {
-    Cache cache = cacheManager.getCache(CacheNames.NOTIFICATIONS_BY_RECEIVER);
+    Cache cache = cacheManager.getCache(CacheNames.NOTIFICATIONS);
     if (cache != null) {
       cache.evict(receiverId);
     }
