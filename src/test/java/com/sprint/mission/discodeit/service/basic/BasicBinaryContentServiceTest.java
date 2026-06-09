@@ -1,17 +1,17 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.verify;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -22,14 +22,17 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
+@Tag("unit")
 class BasicBinaryContentServiceTest {
 
   @Mock
@@ -40,6 +43,9 @@ class BasicBinaryContentServiceTest {
 
   @Mock
   private BinaryContentStorage binaryContentStorage;
+
+  @Mock
+  ApplicationEventPublisher applicationEventPublisher;
 
   @InjectMocks
   private BasicBinaryContentService binaryContentService;
@@ -65,7 +71,8 @@ class BasicBinaryContentServiceTest {
         binaryContentId,
         fileName,
         (long) bytes.length,
-        contentType
+        contentType,
+        BinaryContentStatus.SUCCESS
     );
   }
 
@@ -84,7 +91,7 @@ class BasicBinaryContentServiceTest {
 
     //then
     assertEquals(binaryContent, result);
-    then(binaryContentStorage).should().put(binaryContentId, bytes);
+    then(applicationEventPublisher).should().publishEvent(any(BinaryContentCreatedEvent.class));
   }
 
   @Test
@@ -129,8 +136,10 @@ class BasicBinaryContentServiceTest {
 
     List<BinaryContent> contents = Arrays.asList(content1, content2);
 
-    BinaryContentDto dto1 = new BinaryContentDto(id1, "file1.jpg", 100L, "image/jpeg");
-    BinaryContentDto dto2 = new BinaryContentDto(id2, "file2.jpg", 200L, "image/png");
+    BinaryContentDto dto1 = new BinaryContentDto(id1, "file1.jpg", 100L, "image/jpeg",
+        BinaryContentStatus.PROCESSING);
+    BinaryContentDto dto2 = new BinaryContentDto(id2, "file2.jpg", 200L, "image/png",
+        BinaryContentStatus.SUCCESS);
 
     given(binaryContentRepository.findAllById(eq(ids))).willReturn(contents);
     given(binaryContentMapper.toDto(eq(content1))).willReturn(dto1);

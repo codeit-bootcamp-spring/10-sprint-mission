@@ -8,6 +8,9 @@ import lombok.Getter;
 public enum ErrorCode {
   //AUTH
   INVALID_CREDENTIALS(401, "AU001", "잘못된 아이디 또는 비밀번호"),
+  UNAUTHORIZED(401, "AU002", "인증되지 않은 사용자"),
+  AUTHENTICATION_FAILED(401, "AU003", "인증 실패"),
+  ACCESS_DENIED(403, "AU004", "권한 없음"),
   //USER
   USER_NOT_FOUND(404, "U001", "존재하지 않는 사용자"),
   EMAIL_ALREADY_EXIST(409, "U101", "이미 존재하는 이메일"),
@@ -32,7 +35,8 @@ public enum ErrorCode {
   STORAGE_UPLOAD_FAILED(500, "BC101", "파일 업로드 중 오류 발생"),
   STORAGE_DOWNLOAD_FAILED(500, "BC102", "파일 다운로드 중 오류 발생"),
   STORAGE_GET_FAILED(500, "BC103", "파일을 읽어오는 중 오류 발생"),
-
+  //NOTIFICATION
+  NOTIFICATION_NOT_FOUND(404, "NF001", "존재하지 않는 알림"),
   //그외
   BAD_REQUEST(400, "C001", "입력값 유효성 검증 실패"),
   INTERNAL_SERVER_ERROR(500, "C999", "서버 내부 오류 발생");

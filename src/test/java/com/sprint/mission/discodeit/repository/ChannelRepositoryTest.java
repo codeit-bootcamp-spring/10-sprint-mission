@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -15,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DataJpaTest
 @EnableJpaAuditing
 @ActiveProfiles("test")
+@Tag("unit")
 class ChannelRepositoryTest {
 
   @Autowired

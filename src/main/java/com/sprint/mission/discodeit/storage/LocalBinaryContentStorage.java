@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
-import java.io.FileInputStream;
+import com.sprint.mission.discodeit.event.ErrorNotificationEvent;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,12 +11,16 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriUtils;
 
@@ -26,10 +30,13 @@ import org.springframework.web.util.UriUtils;
 public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   private final Path root;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   LocalBinaryContentStorage(
-      @Value("${discodeit.storage.local.root-path}") Path root) {
+      @Value("${discodeit.storage.local.root-path}") Path root,
+      ApplicationEventPublisher applicationEventPublisher) {
     this.root = root;
+    this.applicationEventPublisher = applicationEventPublisher;
     init();
   }
 
@@ -47,6 +54,13 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     return root.resolve(id.toString());
   }
 
+  @Retryable(
+      retryFor = {
+          RuntimeException.class
+      },
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 1000)
+  )
   @Override
   public UUID put(UUID id, byte[] bytes) {
     Path path = resolvePath(id);
@@ -84,5 +98,18 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         .header("Content-Type", binaryContentDto.contentType())
         .contentLength(binaryContentDto.size())
         .body(resource);
+  }
+
+  @Recover
+  public UUID recover(RuntimeException e, UUID id, byte[] bytes) {
+    // MDC에서 키 꺼내기
+    String requestId = MDC.get("request_id");
+    String content =
+        "RequestId: " + requestId + "\nContentId: " + id + "\nError: " + e.getMessage();
+    applicationEventPublisher.publishEvent(new ErrorNotificationEvent(
+        "로컬 파일 업로드 실패",
+        content
+    ));
+    throw e;
   }
 }

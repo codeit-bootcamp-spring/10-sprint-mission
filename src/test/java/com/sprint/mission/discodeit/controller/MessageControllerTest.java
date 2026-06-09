@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.times;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -14,12 +15,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.auth.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.auth.enums.Role;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.message.PageResponse;
 import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.exception.message.InvalidMessageException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
@@ -29,22 +33,33 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(MessageController.class)
+@WithMockUser
+@WebMvcTest(
+    controllers = MessageController.class,
+    // 테스트할 때 검증 필터를 스캔 대상에서 제외
+    excludeFilters = @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        classes = JwtAuthenticationFilter.class
+    )
+)
 @ActiveProfiles("test")
 @Import({GlobalExceptionHandler.class})
+@Tag("unit")
 class MessageControllerTest {
 
   @Autowired
@@ -65,11 +80,13 @@ class MessageControllerTest {
     UUID channelId = UUID.randomUUID();
     UUID messageId = UUID.randomUUID();
     MessageCreateRequest request = new MessageCreateRequest("testContent", channelId, userId);
-    UserDto userDto = new UserDto(userId, "test", "test@test.com", null, true, Instant.now(),
+    UserDto userDto = new UserDto(userId, "test", "test@test.com", Role.USER, null, true,
+        Instant.now(),
         Instant.now());
     BinaryContentDto attachmentDto1 = new BinaryContentDto(UUID.randomUUID(), "myImage", 50L,
-        "jpg");
-    BinaryContentDto attachmentDto2 = new BinaryContentDto(UUID.randomUUID(), "myTxt", 50L, "txt");
+        "jpg", BinaryContentStatus.PROCESSING);
+    BinaryContentDto attachmentDto2 = new BinaryContentDto(UUID.randomUUID(), "myTxt", 50L, "txt",
+        BinaryContentStatus.PROCESSING);
     List<BinaryContentDto> attachments = List.of(attachmentDto1, attachmentDto2);
     MessageDto messageDto = new MessageDto(messageId, request.content(), request.channelId(),
         userDto,
@@ -106,6 +123,7 @@ class MessageControllerTest {
             .file(userPart)
             .file(attachmentsPart1)
             .file(attachmentsPart2)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").exists())
@@ -137,6 +155,7 @@ class MessageControllerTest {
     //when & then
     mockMvc.perform(multipart("/api/messages")
             .file(userPart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isBadRequest())
         .andExpect(
@@ -151,11 +170,13 @@ class MessageControllerTest {
     UUID channelId = UUID.randomUUID();
     UUID messageId = UUID.randomUUID();
     MessageUpdateRequest request = new MessageUpdateRequest("newContent");
-    UserDto userDto = new UserDto(userId, "test", "test@test.com", null, true, Instant.now(),
+    UserDto userDto = new UserDto(userId, "test", "test@test.com", Role.USER, null, true,
+        Instant.now(),
         Instant.now());
     BinaryContentDto attachmentDto1 = new BinaryContentDto(UUID.randomUUID(), "myImage", 50L,
-        "jpg");
-    BinaryContentDto attachmentDto2 = new BinaryContentDto(UUID.randomUUID(), "myTxt", 50L, "txt");
+        "jpg", BinaryContentStatus.PROCESSING);
+    BinaryContentDto attachmentDto2 = new BinaryContentDto(UUID.randomUUID(), "myTxt", 50L, "txt",
+        BinaryContentStatus.PROCESSING);
     List<BinaryContentDto> attachments = List.of(attachmentDto1, attachmentDto2);
     MessageDto messageDto = new MessageDto(messageId, request.newContent(), channelId,
         userDto,
@@ -168,6 +189,7 @@ class MessageControllerTest {
 
     //when & then
     mockMvc.perform(patch("/api/messages/{messageId}", messageId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(body))
@@ -191,6 +213,7 @@ class MessageControllerTest {
 
     //when & then
     mockMvc.perform(patch("/api/messages/{messageId}", wrongMessageId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(body))
@@ -207,6 +230,7 @@ class MessageControllerTest {
 
     //when & then
     mockMvc.perform(delete("/api/messages/{messageId}", messageId)
+            .with(csrf())
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
 
@@ -222,6 +246,7 @@ class MessageControllerTest {
 
     //when & then
     mockMvc.perform(delete("/api/messages/{messageId}", wrongMessageId)
+            .with(csrf())
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound())
         .andExpect(
@@ -236,9 +261,11 @@ class MessageControllerTest {
     UUID u1Id = UUID.randomUUID();
     UUID u2Id = UUID.randomUUID();
     UUID channelId = UUID.randomUUID();
-    UserDto userDto1 = new UserDto(u1Id, "test1", "test1@test.com", null, true, Instant.now(),
+    UserDto userDto1 = new UserDto(u1Id, "test1", "test1@test.com", Role.USER, null, true,
+        Instant.now(),
         Instant.now());
-    UserDto userDto2 = new UserDto(u2Id, "test2", "test2@test.com", null, true, Instant.now(),
+    UserDto userDto2 = new UserDto(u2Id, "test2", "test2@test.com", Role.USER, null, true,
+        Instant.now(),
         Instant.now());
     Instant cursor = Instant.now();
     MessageDto messageDto1 = new MessageDto(UUID.randomUUID(), "m1", channelId, userDto1, List.of(),
@@ -269,9 +296,11 @@ class MessageControllerTest {
     UUID u1Id = UUID.randomUUID();
     UUID u2Id = UUID.randomUUID();
     UUID channelId = UUID.randomUUID();
-    UserDto userDto1 = new UserDto(u1Id, "test1", "test1@test.com", null, true, Instant.now(),
+    UserDto userDto1 = new UserDto(u1Id, "test1", "test1@test.com", Role.USER, null, true,
+        Instant.now(),
         Instant.now());
-    UserDto userDto2 = new UserDto(u2Id, "test2", "test2@test.com", null, true, Instant.now(),
+    UserDto userDto2 = new UserDto(u2Id, "test2", "test2@test.com", Role.USER, null, true,
+        Instant.now(),
         Instant.now());
     Instant cursor = Instant.now();
     MessageDto messageDto1 = new MessageDto(UUID.randomUUID(), "m1", channelId, userDto1, List.of(),

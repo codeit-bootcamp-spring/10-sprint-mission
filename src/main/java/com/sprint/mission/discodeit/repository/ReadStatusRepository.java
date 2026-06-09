@@ -17,16 +17,19 @@ public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
   @Query("select r from ReadStatus r join fetch r.user where r.channel.id = :channelId")
   List<ReadStatus> findAllByChannelIdFetchUser(UUID channelId);
 
-  @Query("select r from ReadStatus r join fetch r.user left join fetch r.user.userStatus "
+  @Query("select r from ReadStatus r join fetch r.user "
       + "left join fetch r.user.profile where r.channel.id in :channelIds")
   List<ReadStatus> findAllByChannelIdInFetchUser(Set<UUID> channelIds);
 
-  @Query("select r from ReadStatus r join fetch r.channel where r.user.id = :userId")
-  List<ReadStatus> findAllByUserIdFetchChannel(UUID userId);
+  @Query("select r from ReadStatus r join fetch r.channel where r.user.id = :userId and r.channel.type = 'PRIVATE'")
+  List<ReadStatus> findAllPrivateByUserIdFetchChannel(UUID userId);
 
   Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId);
 
   @Modifying
   @Query("delete from ReadStatus r where r.user.id = :userId")
   void deleteByUserId(UUID userId);
+
+  List<ReadStatus> findAllByChannelIdAndNotificationEnabledAndUserIdNot(UUID channelId,
+      boolean enabled, UUID userId);
 }

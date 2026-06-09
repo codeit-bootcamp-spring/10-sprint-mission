@@ -4,13 +4,11 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDto;
-import com.sprint.mission.discodeit.entity.UserStatus;
+//import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
+//import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,7 +45,7 @@ public class UserController {
       - [ ]  사용자의 온라인 상태를 업데이트할 수 있다.
    */
   private final UserService userService;
-  private final UserStatusService userStatusService;
+  //private final UserStatusService userStatusService;
   private final BinaryContentMapper binaryContentMapper;
 
   @Operation(summary = "User 등록")
@@ -148,6 +147,7 @@ public class UserController {
           )
       )
   })
+  @PreAuthorize("#userId==principal.userDto.id")
   @PatchMapping(path = "/{userId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
   public ResponseEntity<UserDto> updateUser(
       @PathVariable UUID userId,
@@ -188,6 +188,7 @@ public class UserController {
   })
   @ApiResponse(responseCode = "204", description = "User가 성공적으로 삭제됨")
   @DeleteMapping("/{userId}")
+  @PreAuthorize("#userId==principal.userDto.id")
   public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
     userService.delete(userId);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -200,31 +201,31 @@ public class UserController {
     return ResponseEntity.ok(userService.findAll());
   }
 
-  @Operation(summary = "User 온라인 상태 업데이트", operationId = "updateUserStatusByUserId",
-      parameters = @Parameter(name = "userId", description = "상태를 변경할 User ID", required = true))
-  @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "User 온라인 상태가 성공적으로 업데이트됨"),
-      @ApiResponse(
-          responseCode = "404",
-          description = "해당 User의 UserStatus를 찾을 수 없음",
-          content = @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = ErrorResponse.class),
-              examples = @ExampleObject(value = """
-                      {
-                        "fieldErrors": null,
-                        "violationErrors": null,
-                        "code": 404,
-                        "message": "존재하지 않는 사용자 상태 정보"
-                      }
-                  """)
-          )
-      )
-  })
-  @PatchMapping(path = "/{userId}/userStatus")
-  public ResponseEntity<UserStatusDto> updateUserStatus(@PathVariable UUID userId,
-      @Valid @RequestBody UserStatusUpdateDto dto) {
-    return ResponseEntity.ok(userStatusService.updateByUserId(userId, dto));
-  }
+//  @Operation(summary = "User 온라인 상태 업데이트", operationId = "updateUserStatusByUserId",
+//      parameters = @Parameter(name = "userId", description = "상태를 변경할 User ID", required = true))
+//  @ApiResponses({
+//      @ApiResponse(responseCode = "200", description = "User 온라인 상태가 성공적으로 업데이트됨"),
+//      @ApiResponse(
+//          responseCode = "404",
+//          description = "해당 User의 UserStatus를 찾을 수 없음",
+//          content = @Content(
+//              mediaType = "application/json",
+//              schema = @Schema(implementation = ErrorResponse.class),
+//              examples = @ExampleObject(value = """
+//                      {
+//                        "fieldErrors": null,
+//                        "violationErrors": null,
+//                        "code": 404,
+//                        "message": "존재하지 않는 사용자 상태 정보"
+//                      }
+//                  """)
+//          )
+//      )
+//  })
+//  @PatchMapping(path = "/{userId}/userStatus")
+//  public ResponseEntity<UserStatusDto> updateUserStatus(@PathVariable UUID userId,
+//      @Valid @RequestBody UserStatusUpdateDto dto) {
+//    return ResponseEntity.ok(userStatusService.updateByUserId(userId, dto));
+//  }
 
 }

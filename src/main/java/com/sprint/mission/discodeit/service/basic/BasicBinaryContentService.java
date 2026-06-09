@@ -3,17 +3,20 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -23,12 +26,13 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentMapper binaryContentMapper;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   @Override
   public BinaryContent create(BinaryContentCreateDto dto) {
     BinaryContent content = binaryContentRepository.save(binaryContentMapper.toEntity(dto));
-    binaryContentStorage.put(content.getId(), dto.bytes());
+    applicationEventPublisher.publishEvent(
+        new BinaryContentCreatedEvent(content, dto.bytes()));
     //return binaryContentMapper.toDto(content);
     return content;
   }
@@ -59,4 +63,13 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
     binaryContentRepository.deleteById(id);
   }
+
+  @Override
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public BinaryContentDto updateStatus(UUID id, BinaryContentStatus newStatus) {
+    BinaryContent content = binaryContentRepository.getReferenceById(id);
+    content.updateStatus(newStatus);
+    return binaryContentMapper.toDto(content);
+  }
+
 }

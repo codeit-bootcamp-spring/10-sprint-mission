@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -37,6 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
+@Tag("unit")
 class BasicReadStatusServiceTest {
 
   @Mock
@@ -80,7 +82,7 @@ class BasicReadStatusServiceTest {
 
     readStatusId = UUID.randomUUID();
     readStatus = ReadStatus.create(user, channel, lastReadAt);
-    readStatusDto = new ReadStatusDto(readStatusId, userId, channelId, lastReadAt);
+    readStatusDto = new ReadStatusDto(readStatusId, userId, channelId, lastReadAt, true);
 
   }
 
@@ -178,7 +180,7 @@ class BasicReadStatusServiceTest {
   void updateReadStatusSuccess() {
     //given
     Instant newLastReadAt = lastReadAt.plusSeconds(60);
-    ReadStatusUpdateRequest request = new ReadStatusUpdateRequest(newLastReadAt);
+    ReadStatusUpdateRequest request = new ReadStatusUpdateRequest(newLastReadAt, null);
     given(readStatusRepository.findById(readStatusId)).willReturn(Optional.of(readStatus));
     given(readStatusMapper.toDto(eq(readStatus))).willReturn(readStatusDto);
 
@@ -196,7 +198,7 @@ class BasicReadStatusServiceTest {
   void updateReadStatusFailure() {
     //given
     Instant newLastReadAt = lastReadAt.plusSeconds(60);
-    ReadStatusUpdateRequest request = new ReadStatusUpdateRequest(newLastReadAt);
+    ReadStatusUpdateRequest request = new ReadStatusUpdateRequest(newLastReadAt, null);
     given(readStatusRepository.findById(readStatusId)).willReturn(Optional.empty());
     //when & then
     assertThrows(ReadStatusNotFoundException.class,
