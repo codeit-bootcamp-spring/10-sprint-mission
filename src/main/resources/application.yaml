@@ -35,7 +35,8 @@ spring:
     open-in-view: false
   # 캐시 설정
   cache:
-    type: caffeine
+#    type: caffeine
+    type: redis
     cache-names:
       - users
       - channels
@@ -45,6 +46,12 @@ spring:
         maximumSize=100,
         expireAfterAccess=600s,
         recordStats
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   # kafka 설정
   kafka:
     bootstrap-servers: localhost:9092
