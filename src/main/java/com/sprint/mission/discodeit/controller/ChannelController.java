@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,7 +43,14 @@ public class ChannelController {
     // 유저가 속한 채널 전체 조회
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<ChannelDto>> getAllChannelByUserId(@RequestParam(required = true) UUID userId){
-        return ResponseEntity.ok(channelService.findAllChannelsByUserId(userId));
+        List<ChannelDto> channelDtos = new ArrayList<>();
+        List<ChannelDto> publicDtos = channelService.findAllPublicChannelsByUserId();
+        List<ChannelDto> privateDtos = channelService.findAllPrivateChannelsByUserId(userId);
+
+        channelDtos.addAll(publicDtos);
+        channelDtos.addAll(privateDtos);
+
+        return ResponseEntity.ok(channelDtos);
     }
 
     // 채널 업데이트

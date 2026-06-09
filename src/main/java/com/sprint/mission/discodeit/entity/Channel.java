@@ -1,12 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.type.ChannelType;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
@@ -41,5 +39,9 @@ public class Channel extends BaseUpdatableEntity {
 
     public void updateChannelDescription(String newDescription){
         this.description = newDescription;
+    }
+
+    public boolean isPrivate(){
+        return this.type.equals(ChannelType.PRIVATE);
     }
 }

@@ -1,9 +1,9 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: none
@@ -14,7 +14,7 @@ spring:
   sql:
     init:
       mode: always
-      schema-locations: classpath:schema-h2.sql
+      schema-locations: classpath:schema.sql
   h2:
     console:
       enabled: true
@@ -29,11 +29,14 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,info,loggers,metrics"
+        include: "health,info,loggers,metrics,caches"
         exclude: ""
   endpoint:
     health:
       show-details: always
+  observations:
+    annotations:
+      enabled: true
   info:
     env:
       enabled: true
@@ -57,8 +60,14 @@ info:
       max-request-size: 10MB
 discodeit:
   storage:
-    type: local
+    type: s3
     local:
       root-path: ./uploads
+    s3:
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+      region: ${AWS_REGION}
+      bucket: ${AWS_S3_BUCKET}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
 server:
   port: 8080
