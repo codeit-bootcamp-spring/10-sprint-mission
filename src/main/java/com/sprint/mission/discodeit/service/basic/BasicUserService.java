@@ -9,6 +9,9 @@ import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserRole;
+import com.sprint.mission.discodeit.event.binarycontent.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.user.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.auth.PasswordEmptyException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidParameterException;
@@ -27,6 +30,9 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -46,8 +52,10 @@ public class BasicUserService implements UserService {
   private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
   private final JwtRegistry jwtRegistry;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
+  @CacheEvict(cacheNames = "users", allEntries = true)
   public UserResponse create(UserCreateRequest request) {
     requireNonNull(request, "request");
     requireNonNull(request.userName(), "userName");
@@ -75,18 +83,31 @@ public class BasicUserService implements UserService {
         encryptedPassword
     );
 
+    BinaryContent profileImage = null;
+    ProfileImageCreateRequest profileImageRequest = null;
+
     if (request.profileImage() != null) {
-      ProfileImageCreateRequest imgReq = request.profileImage();
-      BinaryContent image = new BinaryContent(
-          imgReq.fileName(),
-          imgReq.data().length,
-          imgReq.contentType()
+      profileImageRequest = request.profileImage();
+
+      profileImage = new BinaryContent(
+          profileImageRequest.fileName(),
+          profileImageRequest.data().length,
+          profileImageRequest.contentType()
       );
-      binaryContentStorage.put(image.getId(), imgReq.data());
-      user.updateProfileImage(image);
+
+      user.updateProfileImage(profileImage);
     }
 
     User savedUser = userRepository.save(user);
+
+    if (profileImage != null && profileImageRequest != null) {
+      eventPublisher.publishEvent(
+          new BinaryContentCreatedEvent(
+              profileImage.getId(),
+              profileImageRequest.data()
+          )
+      );
+    }
 
     boolean online = isOnline(savedUser.getId());
 
@@ -122,6 +143,7 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional(readOnly = true)
+  @Cacheable(cacheNames = "users")
   public List<UserDto> findAllDto() {
     return userRepository.findAll().stream()
         .map(user -> {
@@ -138,6 +160,7 @@ public class BasicUserService implements UserService {
 
   @PreAuthorize("@securityExpression.isSelf(#request.userId())")
   @Override
+  @CacheEvict(cacheNames = "users", allEntries = true)
   public UserResponse update(UserUpdateRequest request) {
     requireNonNull(request, "request");
     requireNonNull(request.userId(), "userId");
@@ -168,17 +191,31 @@ public class BasicUserService implements UserService {
       user.updatePassword(encryptedPassword);
     });
 
-    request.profileImage().ifPresent(imgReq -> {
-      BinaryContent newImage = new BinaryContent(
-          imgReq.fileName(),
-          imgReq.data().length,
-          imgReq.contentType()
+    BinaryContent newProfileImage = null;
+    ProfileImageCreateRequest profileImageRequest = null;
+
+    if (request.profileImage().isPresent()) {
+      profileImageRequest = request.profileImage().get();
+
+      newProfileImage = new BinaryContent(
+          profileImageRequest.fileName(),
+          profileImageRequest.data().length,
+          profileImageRequest.contentType()
       );
-      binaryContentStorage.put(newImage.getId(), imgReq.data());
-      user.updateProfileImage(newImage);
-    });
+
+      user.updateProfileImage(newProfileImage);
+    }
 
     User savedUser = userRepository.save(user);
+
+    if (newProfileImage != null && profileImageRequest != null) {
+      eventPublisher.publishEvent(
+          new BinaryContentCreatedEvent(
+              newProfileImage.getId(),
+              profileImageRequest.data()
+          )
+      );
+    }
 
     BinaryContent profileImage = findProfileImageOrNull(savedUser);
     boolean online = isOnline(savedUser.getId());
@@ -188,6 +225,7 @@ public class BasicUserService implements UserService {
 
   @PreAuthorize("hasRole('ADMIN')")
   @Override
+  @CacheEvict(cacheNames = "users", allEntries = true)
   public UserResponse updateRole(UserRoleUpdateRequest request) {
     requireNonNull(request, "request");
     requireNonNull(request.userId(), "userId");
@@ -196,9 +234,22 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(request.userId())
         .orElseThrow(() -> new UserNotFoundException(request.userId()));
 
-    user.updateRole(request.role());
+    UserRole oldRole = user.getRole();
+    UserRole newRole = request.role();
+
+    user.updateRole(newRole);
 
     User savedUser = userRepository.save(user);
+
+    if (oldRole != newRole) {
+      eventPublisher.publishEvent(
+          new RoleUpdatedEvent(
+              savedUser.getId(),
+              oldRole,
+              newRole
+          )
+      );
+    }
 
     jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
 
@@ -210,6 +261,7 @@ public class BasicUserService implements UserService {
 
   @PreAuthorize("@securityExpression.isSelf(#userId)")
   @Override
+  @CacheEvict(cacheNames = "users", allEntries = true)
   public void delete(UUID userId) {
     requireNonNull(userId, "userId");
 

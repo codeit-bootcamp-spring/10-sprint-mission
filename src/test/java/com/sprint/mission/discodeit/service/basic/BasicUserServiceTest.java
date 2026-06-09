@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.any;
 import static org.mockito.BDDMockito.anyBoolean;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
 
@@ -14,6 +15,7 @@ import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserRole;
+import com.sprint.mission.discodeit.event.user.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserEmailAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -60,6 +63,9 @@ class BasicUserServiceTest {
 
   @Mock
   private JwtRegistry jwtRegistry;
+
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
 
   @InjectMocks
   private BasicUserService userService;
@@ -110,6 +116,7 @@ class BasicUserServiceTest {
     then(passwordEncoder).should().encode(request.password());
     then(userRepository).should().save(any(User.class));
     then(jwtRegistry).should().hasActiveJwtInformationByUserId(userId);
+    then(eventPublisher).should(never()).publishEvent(any(RoleUpdatedEvent.class));
   }
 
   @Test
@@ -129,6 +136,8 @@ class BasicUserServiceTest {
     // when, then
     assertThatThrownBy(() -> userService.create(request))
         .isInstanceOf(UserEmailAlreadyExistsException.class);
+
+    then(eventPublisher).should(never()).publishEvent(any(RoleUpdatedEvent.class));
   }
 
   @Test
@@ -173,6 +182,7 @@ class BasicUserServiceTest {
     then(userRepository).should().findById(userId);
     then(userRepository).should().save(any(User.class));
     then(jwtRegistry).should().hasActiveJwtInformationByUserId(userId);
+    then(eventPublisher).should(never()).publishEvent(any(RoleUpdatedEvent.class));
   }
 
   @Test
@@ -194,6 +204,8 @@ class BasicUserServiceTest {
     // when, then
     assertThatThrownBy(() -> userService.update(request))
         .isInstanceOf(UserNotFoundException.class);
+
+    then(eventPublisher).should(never()).publishEvent(any(RoleUpdatedEvent.class));
   }
 
   @Test
@@ -234,6 +246,7 @@ class BasicUserServiceTest {
     then(userRepository).should().save(any(User.class));
     then(jwtRegistry).should().invalidateJwtInformationByUserId(userId);
     then(jwtRegistry).should().hasActiveJwtInformationByUserId(userId);
+    then(eventPublisher).should().publishEvent(any(RoleUpdatedEvent.class));
   }
 
   @Test
@@ -250,6 +263,8 @@ class BasicUserServiceTest {
     // when, then
     assertThatThrownBy(() -> userService.updateRole(request))
         .isInstanceOf(UserNotFoundException.class);
+
+    then(eventPublisher).should(never()).publishEvent(any(RoleUpdatedEvent.class));
   }
 
   @Test
@@ -271,6 +286,7 @@ class BasicUserServiceTest {
     then(userRepository).should().findById(userId);
     then(readStatusRepository).should().deleteByUserId(userId);
     then(userRepository).should().delete(user);
+    then(eventPublisher).should(never()).publishEvent(any(RoleUpdatedEvent.class));
   }
 
   @Test
@@ -284,5 +300,7 @@ class BasicUserServiceTest {
     // when, then
     assertThatThrownBy(() -> userService.delete(userId))
         .isInstanceOf(UserNotFoundException.class);
+
+    then(eventPublisher).should(never()).publishEvent(any(RoleUpdatedEvent.class));
   }
 }

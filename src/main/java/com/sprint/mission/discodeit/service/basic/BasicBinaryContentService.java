@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.event.binarycontent.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidParameterException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -13,7 +15,9 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -25,6 +29,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentMapper binaryContentMapper;
   private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   @Override
   public UUID create(BinaryContentCreateRequest request) {
@@ -40,8 +45,21 @@ public class BasicBinaryContentService implements BinaryContentService {
     );
 
     BinaryContent saved = binaryContentRepository.save(entity);
-    binaryContentStorage.put(saved.getId(), request.bytes());
+    applicationEventPublisher.publishEvent(
+        new BinaryContentCreatedEvent(saved.getId(), request.bytes())
+    );
+
     return saved.getId();
+  }
+
+  @Override
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+    BinaryContent binaryContent = binaryContentRepository
+        .findById(binaryContentId)
+        .orElseThrow(BinaryContentNotFoundException::new);
+
+    binaryContent.updateStatus(status);
   }
 
   @Override

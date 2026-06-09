@@ -19,6 +19,7 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserRole;
+import com.sprint.mission.discodeit.event.message.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageEmptyException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
@@ -41,6 +42,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -73,6 +75,9 @@ class BasicMessageServiceTest {
 
   @Mock
   private JwtRegistry jwtRegistry;
+
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
 
   @InjectMocks
   private BasicMessageService messageService;
@@ -135,6 +140,7 @@ class BasicMessageServiceTest {
     then(userRepository).should().findById(authorId);
     then(messageRepository).should().save(any(Message.class));
     then(jwtRegistry).should().hasActiveJwtInformationByUserId(authorId);
+    then(eventPublisher).should().publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -155,6 +161,7 @@ class BasicMessageServiceTest {
 
     then(userRepository).should(never()).findById(authorId);
     then(messageRepository).should(never()).save(any(Message.class));
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -178,6 +185,7 @@ class BasicMessageServiceTest {
         .isInstanceOf(UserNotFoundException.class);
 
     then(messageRepository).should(never()).save(any(Message.class));
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -195,6 +203,7 @@ class BasicMessageServiceTest {
         .isInstanceOf(MessageEmptyException.class);
 
     then(channelRepository).should(never()).findById(channelId);
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -249,6 +258,7 @@ class BasicMessageServiceTest {
 
     then(messageRepository).should().findById(messageId);
     then(jwtRegistry).should().hasActiveJwtInformationByUserId(authorId);
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -306,6 +316,7 @@ class BasicMessageServiceTest {
     // then
     then(messageRepository).should().findById(messageId);
     then(messageRepository).should().delete(message);
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -321,6 +332,7 @@ class BasicMessageServiceTest {
         .isInstanceOf(MessageNotFoundException.class);
 
     then(messageRepository).should(never()).delete(any(Message.class));
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -385,6 +397,7 @@ class BasicMessageServiceTest {
         .findMessageIdsByChannelId(any(UUID.class), any(Pageable.class));
     then(messageRepository).should().findAllByIdInWithAuthorAndAttachments(List.of(messageId));
     then(jwtRegistry).should().hasActiveJwtInformationByUserId(authorId);
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -400,5 +413,6 @@ class BasicMessageServiceTest {
         .isInstanceOf(ChannelNotFoundException.class);
 
     then(messageRepository).should(never()).findMessageIdsByChannelId(any(), any());
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 }

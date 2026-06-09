@@ -3,21 +3,33 @@ spring:
     active: dev
   config:
     import: optional:file:./.env[.properties]
+  cache:
+    type: caffeine
+    cache-names:
+      - userChannels
+      - userNotifications
+      - users
+    caffeine:
+      spec: maximumSize=100,expireAfterAccess=600s,recordStats
 
 logging:
   level:
     org.springframework.security.web.DefaultSecurityFilterChain: trace
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
     root: info
 
 management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,info,metrics,caches
   endpoint:
     health:
       show-details: never
-
+  observations:
+    annotations:
+      enabled: true
 
 jwt:
   key: ${JWT_SECRET_KEY}

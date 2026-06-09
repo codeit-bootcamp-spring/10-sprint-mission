@@ -11,7 +11,8 @@ public record ReadStatusResponse(
     UUID userId,
     UUID channelId,
     @JsonProperty("lastReadAt")
-    Instant readAt
+    Instant readAt,
+    Boolean notificationEnabled
 ) {
 
 }

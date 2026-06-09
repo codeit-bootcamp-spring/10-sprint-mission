@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +41,7 @@ public class BasicChannelService implements ChannelService {
   private final ChannelMapper channelMapper;
 
   @Override
+  @CacheEvict(cacheNames = "userChannels", allEntries = true)
   public UUID createPrivate(PrivateChannelCreateRequest req) {
     requireNonNull(req, "privateChReq");
     requireNonNull(req.participantIds(), "participantIds");
@@ -59,7 +62,7 @@ public class BasicChannelService implements ChannelService {
 
     Instant now = Instant.now();
     for (User user : participants) {
-      ReadStatus rs = new ReadStatus(user, savedChannel);
+      ReadStatus rs = new ReadStatus(user, savedChannel, true);
       rs.updateLastReadAt(now);
       readStatusRepository.save(rs);
     }
@@ -69,6 +72,7 @@ public class BasicChannelService implements ChannelService {
 
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Override
+  @CacheEvict(cacheNames = "userChannels", allEntries = true)
   public UUID createPublic(PublicChannelCreateRequest req) {
     requireNonNull(req, "publicChReq");
     requireNonNull(req.name(), "name");
@@ -105,6 +109,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional(readOnly = true)
+  @Cacheable(cacheNames = "userChannels", key = "#userId")
   public List<ChannelResponse> findAllByUserId(UUID userId) {
     requireNonNull(userId, "userId");
 
@@ -127,6 +132,7 @@ public class BasicChannelService implements ChannelService {
 
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Override
+  @CacheEvict(cacheNames = "userChannels", allEntries = true)
   public ChannelResponse update(ChannelUpdateRequest req) {
     requireNonNull(req, "req");
     requireNonNull(req.channelId(), "channelId");
@@ -145,6 +151,7 @@ public class BasicChannelService implements ChannelService {
 
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Override
+  @CacheEvict(cacheNames = "userChannels", allEntries = true)
   public void delete(UUID channelId) {
     requireNonNull(channelId, "channelId");
     Channel channel = findChannelOrThrow(channelId);
