@@ -27,6 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class BasicNotificationService implements NotificationService {
 
+  private static final int NOTIFICATION_TITLE_MAX_LENGTH = 100;
+  private static final int NOTIFICATION_CONTENT_MAX_LENGTH = 500;
+
   private final NotificationRepository notificationRepository;
   private final UserRepository userRepository;
   private final NotificationMapper notificationMapper;
@@ -38,7 +41,11 @@ public class BasicNotificationService implements NotificationService {
   public NotificationDto create(UUID receiverId, String title, String content) {
     User receiver = userRepository.findById(receiverId)
         .orElseThrow(() -> UserNotFoundException.withId(receiverId));
-    Notification notification = new Notification(receiver, title, content);
+    Notification notification = new Notification(
+        receiver,
+        truncate(title, NOTIFICATION_TITLE_MAX_LENGTH),
+        truncate(content, NOTIFICATION_CONTENT_MAX_LENGTH)
+    );
     notificationRepository.save(notification);
     log.info("알림 생성 완료: id={}, receiverId={}", notification.getId(), receiverId);
     return notificationMapper.toDto(notification);
@@ -79,5 +86,12 @@ public class BasicNotificationService implements NotificationService {
     if (cache != null) {
       cache.evict(receiverId);
     }
+  }
+
+  private String truncate(String value, int maxLength) {
+    if (value.length() <= maxLength) {
+      return value;
+    }
+    return value.substring(0, maxLength - 3) + "...";
   }
 }
