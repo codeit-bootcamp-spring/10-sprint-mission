@@ -11,6 +11,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  cache:
+    type: simple
   sql:
     init:
       mode: never
