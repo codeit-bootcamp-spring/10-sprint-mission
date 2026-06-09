@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,7 +67,12 @@ public class BasicNotificationService implements NotificationService {
         Notification notification = notificationRepository.findByIdAndReceiverId(notificationId, receiverId)
                 .orElseThrow(() -> new NotificationNotFoundException(notificationId));
 
-        log.info("[NOTIFICATION_DELETE_SUCCESS] 알림 삭제 성공: notificationId={}", notificationId);
+        if (!notification.getReceiver().getId().equals(receiverId)) {
+            throw new AccessDeniedException("해당 알림을 삭제할 권한이 없습니다.");
+        }
+
         notificationRepository.delete(notification);
+
+        log.info("[NOTIFICATION_DELETE_SUCCESS] 알림 삭제 성공: notificationId={}", notificationId);
     }
 }

@@ -9,6 +9,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -27,6 +28,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtRegistry jwtRegistry;
 
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     public void onAuthenticationSuccess(
             HttpServletRequest request,
             HttpServletResponse response,

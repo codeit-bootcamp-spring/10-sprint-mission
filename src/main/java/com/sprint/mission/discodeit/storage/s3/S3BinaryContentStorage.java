@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentException;
 import com.sprint.mission.discodeit.service.NotificationService;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
@@ -42,7 +44,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
     private final S3StorageProperties props;
-    private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Retryable(
             retryFor = BinaryContentException.class,
@@ -139,15 +141,11 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     public UUID recover(BinaryContentException e, UUID binaryContentId, byte[] bytes) {
         String requestId = MDC.get("requestId");
 
-        notificationService.notifyAdmin(
-                "S3 바이너리 저장 실패",
-                """
-                        작업: S3_BINARYCONTENT_SAVE
-                        RequestId: %s
-                        BinaryContentId: %s
-                        Error: %s
-                        """.formatted(requestId, binaryContentId, e.getMessage())
-        );
+        eventPublisher.publishEvent(new S3UploadFailedEvent(
+                requestId,
+                binaryContentId,
+                e.getMessage()
+        ));
 
         log.error(
                 "[BINARYCONTENT_S3_SAVE_RECOVER] S3 파일 저장 최종 실패: binaryContentId={}, error={}",

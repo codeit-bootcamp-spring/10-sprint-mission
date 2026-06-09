@@ -14,6 +14,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -31,6 +32,7 @@ public class BasicAuthService implements AuthService {
     private final JwtRegistry jwtRegistry;
 
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     public JwtDto refresh(String refreshToken, HttpServletResponse response) {
         if (
                 refreshToken == null
