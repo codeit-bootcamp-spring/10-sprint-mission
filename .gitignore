@@ -40,3 +40,13 @@ bin/
 
 ### Discodeit ###
 .discodeit
+
+### 숨김 파일 ###
+.*
+!.gitignore
+!.dockerignore
+!.github
+
+discodeit.env
+*.pkg
+*.pem
