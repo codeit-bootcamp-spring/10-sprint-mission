@@ -18,11 +18,20 @@ public class AsyncConfig {
 
   @Bean
   public TaskExecutor taskExecutor() {
+    return threadPoolTaskExecutor("discodeit-async-");
+  }
+
+  @Bean
+  public TaskExecutor eventTaskExecutor() {
+    return threadPoolTaskExecutor("discodeit-event-");
+  }
+
+  private TaskExecutor threadPoolTaskExecutor(String threadNamePrefix) {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(4);
     executor.setMaxPoolSize(8);
     executor.setQueueCapacity(100);
-    executor.setThreadNamePrefix("discodeit-async-");
+    executor.setThreadNamePrefix(threadNamePrefix);
     executor.setTaskDecorator(contextPropagatingTaskDecorator());
     executor.initialize();
     return executor;
