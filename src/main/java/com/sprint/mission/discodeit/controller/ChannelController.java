@@ -172,7 +172,8 @@ public class ChannelController {
           binary.id(),
           binary.fileName(),
           binary.size(),
-          binary.contentType()
+          binary.contentType(),
+          binary.status()
       );
     }
 

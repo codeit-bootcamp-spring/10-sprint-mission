@@ -179,7 +179,8 @@ public class UserController {
           binary.id(),
           binary.fileName(),
           binary.size(),
-          binary.contentType()
+          binary.contentType(),
+          binary.status()
       );
     }
 
