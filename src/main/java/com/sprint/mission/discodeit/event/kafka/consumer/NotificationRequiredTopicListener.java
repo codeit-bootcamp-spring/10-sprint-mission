@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.BinaryContentFailedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.file.FileUploadFailException;
@@ -109,11 +110,11 @@ public class NotificationRequiredTopicListener {
         }
     }
 
-    @KafkaListener(topics = "discodeit.BinaryContentCreatedEvent", groupId = "discodeit-group")
+    @KafkaListener(topics = "discodeit.BinaryContentFailedEvent", groupId = "discodeit-group")
     public void consumeProfileUpload(String kafkaEvent,
                                      @Header(value = "requestId", required = false) String requestId){
         try{
-            BinaryContentCreatedEvent event = objectMapper.readValue(kafkaEvent, BinaryContentCreatedEvent.class);
+            BinaryContentFailedEvent event = objectMapper.readValue(kafkaEvent, BinaryContentFailedEvent.class);
             UUID binaryContentId = event.getBinaryContentId();
             if (requestId != null) {
                 MDC.put("requestId", requestId);
@@ -121,35 +122,23 @@ public class NotificationRequiredTopicListener {
 
             Cache notificationsCache = cacheManager.getCache("userNotifications");
 
-            try{
-                log.info("비동기 s3 업로드 시작: id = {}", binaryContentId);
-                s3BinaryContentStorage.put(binaryContentId, event.getBytes());
-                binaryContentService.updateStatus(binaryContentId, BinaryContentStatus.SUCCESS);
-                log.info("비동기 s3 업로드 완료: id = {}", binaryContentId);
-            } catch (FileUploadFailException e){
-                log.error("비동기 s3 업로드 최종 실패 처리 로직: id = {}, requestId = {}", binaryContentId, requestId);
-                // DB 상태 변경
-                binaryContentService.updateStatus(binaryContentId, BinaryContentStatus.FAIL);
-                try {
-                    User admin = userRepository.findByEmail(adminEmail)
-                            .orElseThrow(() -> new UserNotFoundException(adminEmail));
+            try {
+                User admin = userRepository.findByEmail(adminEmail)
+                        .orElseThrow(() -> new UserNotFoundException(adminEmail));
 
-                    // 캐시 비우기
-                    if(notificationsCache != null){
-                        notificationsCache.evict(admin.getId());
-                    }
-
-                    notificationRepository.save(new Notification(
-                            admin,
-                            "S3 파일 업로드 실패",
-                            String.format("RequestId: %s\nBinaryContentId: %s\nError: %s",
-                                    requestId, binaryContentId, e.getErrorCode().getMessage())
-                    ));
-                } catch (Exception ex) {
-                    log.error("관리자 알림 전송 실패", ex);
+                // 캐시 비우기
+                if(notificationsCache != null){
+                    notificationsCache.evict(admin.getId());
                 }
-            } finally{
-                event.clear();
+
+                notificationRepository.save(new Notification(
+                        admin,
+                        "S3 파일 업로드 실패",
+                        String.format("RequestId: %s\nBinaryContentId: %s\nError: %s",
+                                requestId, binaryContentId, event.getError().getMessage())
+                ));
+            } catch (Exception ex) {
+                log.error("관리자 알림 전송 실패", ex);
             }
         } catch (JsonProcessingException e){
             log.error("[Kafka 소비 실패] 메시지 파싱 또는 처리 중 에러 발생", e);
