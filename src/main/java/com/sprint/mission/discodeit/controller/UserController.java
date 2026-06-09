@@ -103,17 +103,6 @@ public class UserController {
         return ResponseEntity.ok(updated);
     }
 
-    @RequestMapping(value = "/{userId}/userStatus", method = RequestMethod.PATCH)
-    public ResponseEntity updateUserStatus(
-            @PathVariable UUID userId,
-            @RequestBody @Valid UpdateUserStatusRequestDTO dto
-    ) {
-        log.debug("[USER_STATUS_UPDATE_REQUEST] 유저 상태 수정 요청: userId={}", userId);
-        UserDto updated = userService.updateUserStatus(userId, dto);
-
-        return ResponseEntity.ok(updated);
-    }
-
     @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
     public ResponseEntity deleteUser(
             @PathVariable UUID userId

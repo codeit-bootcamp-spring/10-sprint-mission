@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentException;
 import com.sprint.mission.discodeit.service.MessageService;
+import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class MessageController {
 
     private final MessageService messageService;
 
+    @Timed("message.create.async")
     @RequestMapping(
             method = RequestMethod.POST,
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE

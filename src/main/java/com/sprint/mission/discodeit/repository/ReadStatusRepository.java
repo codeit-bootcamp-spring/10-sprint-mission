@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,7 +20,13 @@ public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
     @EntityGraph(attributePaths = {"user", "channel"})      // n+1 문제 해결
     List<ReadStatus> findAllByChannel_IdIn(List<UUID> channelIds);
 
+    List<ReadStatus> findByChannelAndNotificationEnabledTrue(Channel channel);
+
+    List<ReadStatus> findByChannelIdAndNotificationEnabledTrue(UUID channelId);
+
     Optional<ReadStatus> findByUser_IdAndChannel_Id(UUID userId, UUID channelId);
 
     boolean existsByUser_IdAndChannel_Id(UUID userId, UUID channelId);
+
+    void deleteAllByChannel_Id(UUID channelId);
 }

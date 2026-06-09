@@ -1,30 +1,35 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
-import com.sprint.mission.discodeit.dto.user.UpdateUserStatusRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UpdateUserRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.global.DuplicateResourceException;
 import com.sprint.mission.discodeit.exception.global.InvalidInputException;
 import com.sprint.mission.discodeit.exception.global.UnchangedValueException;
-import com.sprint.mission.discodeit.exception.status.user.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -33,14 +38,18 @@ import java.util.*;
 @Slf4j
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
 
     private final UserMapper userMapper;
     private final BinaryContentMapper binaryContentMapper;
 
+    private final PasswordEncoder passwordEncoder;
+    private final JwtRegistry jwtRegistry;
+
+    private final ApplicationEventPublisher eventPublisher;
+
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto createUser(CreateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
         if (userRepository.existsByUsername(dto.username())) {
             log.warn("[USER_CREATE_FAIL_BY_USERNAME] 이미 사용중인 이름으로 유저 생성 실패: username={}", dto.username());
@@ -56,8 +65,10 @@ public class BasicUserService implements UserService {
             );
         }
 
+        String encodedPassword = passwordEncoder.encode(dto.password());
+
         // userId를 받아오기 위해 우선 객체 생성
-        User user = new User(dto.username(), dto.email(), dto.password(), null);
+        User user = new User(dto.username(), dto.email(), encodedPassword, null);
 
         if (profileImage != null) {
             BinaryContent profile = binaryContentMapper.toEntity(profileImage);
@@ -66,34 +77,35 @@ public class BasicUserService implements UserService {
             user.updateProfile(profile);
         }
 
-        UserStatus status = new UserStatus(user, Instant.now());
-        user.updateStatus(status);
-
         User savedUser = userRepository.saveAndFlush(user);
 
         if (profileImage != null && savedUser.getProfile() != null) {
-            binaryContentStorage.put(savedUser.getProfile().getId(), profileImage.bytes());
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(savedUser.getProfile(), profileImage));
         }
 
         log.info("[USER_CREATE_SUCCESS] 유저 생성 성공: userId={}", savedUser.getId());
-        return userMapper.toDto(savedUser);
+        return userMapper.toDto(savedUser, jwtRegistry.hasActiveJwtInformationByUserId(savedUser.getId()));
     }
 
     @Override
+    @Cacheable(value = "users", key = "'all'")
     @Transactional(readOnly = true)
     public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
 
-        return userMapper.toDtoList(users);
+        log.info("[BasicUserService] findAll 실행!");
+        return userMapper.toDtoList(users, jwtRegistry::hasActiveJwtInformationByUserId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserDto findByUserId(UUID userId) {
-        return userMapper.toDto(findUserOrThrow(userId));
+        return userMapper.toDto(findUserOrThrow(userId), jwtRegistry.hasActiveJwtInformationByUserId(userId));
     }
 
+    @PreAuthorize("#userId == authentication.principal.id")
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto updateUserInfo(UUID userId, UpdateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
         User user = findUserOrThrow(userId);
 
@@ -109,32 +121,44 @@ public class BasicUserService implements UserService {
         if (profileImage != null) {
             // binaryConent는 수정불가 -> 요구사항
             BinaryContent profile = binaryContentMapper.toEntity(profileImage);
-            BinaryContent savedProfile = binaryContentRepository.save(profile);
-            user.updateProfile(savedProfile);
+            user.updateProfile(profile);
 
             userRepository.saveAndFlush(user); // 여기서 cascade로 profile도 저장되고 id 생성
 
-            binaryContentStorage.put(savedProfile.getId(), profileImage.bytes());
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(profile, profileImage));
         }
 
         log.info("[USER_UPDATE_SUCCESS] 유저 정보 수정 성공: userId={}", user.getId());
-        return userMapper.toDto(user);
+        return userMapper.toDto(user, jwtRegistry.hasActiveJwtInformationByUserId(user.getId()));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
-    public UserDto updateUserStatus(UUID userId, UpdateUserStatusRequestDTO dto) {
-        User user = findUserOrThrow(userId);
-        UserStatus status = userStatusRepository.findByUser_Id(userId)
-                .orElseThrow(() -> new UserStatusNotFoundException(user.getUserStatus().getId()));
+    @CacheEvict(value = "users", allEntries = true)
+    public UserDto updateRole(UserRoleUpdateRequest dto) {
+        User user = findUserOrThrow(dto.userId());
+        Role oldRole = user.getRole();
 
-        // 갱신
-        status.updateLastActiveAt(dto.newLastActiveAt());
+        if (oldRole == dto.newRole()) {
+            throw new UnchangedValueException(
+                    ErrorCode.ROLE_UNCHANGED,
+                    Map.of("role", dto.newRole())
+            );
+        }
 
-        log.info("[USER_STATUS_UPDATE_SUCCESS] 유저 상태 수정 성공: userId={}", user.getId());
-        return userMapper.toDto(user);
+        user.updateRole(dto.newRole());
+        eventPublisher.publishEvent(
+                new RoleUpdatedEvent(user, oldRole, dto.newRole())
+        );
+        jwtRegistry.invalidateJwtInformationByUserId(user.getId());
+
+        log.info("[USER_ROLE_UPDATE_SUCCESS] 유저 역할 수정 성공: userId={}, role={}", user.getId(), user.getRole());
+        return userMapper.toDto(user, jwtRegistry.hasActiveJwtInformationByUserId(user.getId()));
     }
 
+    @PreAuthorize("#userId == authentication.principal.id")
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     public void deleteUser(UUID userId) {
         User user = findUserOrThrow(userId);
 
@@ -145,6 +169,22 @@ public class BasicUserService implements UserService {
 
         log.info("[USER_DELETE_SUCCESS] 유저 삭제 성공: userId={}", user.getId());
         userRepository.deleteById(userId);
+    }
+
+    // === DiscodeitUserDetailsService에서 사용할 메서드 ===
+    @Override
+    public User findByUsername(String username) {
+        if (username.isBlank()) {
+            throw new InvalidInputException(
+                    ErrorCode.USERNAME_CAN_NOT_BE_BLANK, Map.of("username", "username is blank")
+            );
+        }
+
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> {
+                    log.warn("[USER_NOT_FOUND] 유저가 존재하지 않음: username={}", username);
+                    return new UserNotFoundException(username);
+                });
     }
 
     // === 여기부터 내부 메서드 ===
@@ -201,6 +241,7 @@ public class BasicUserService implements UserService {
     }
 
     private void updatePassword(UpdateUserRequestDTO dto, User user) {
-        user.updatePassword(dto.newPassword());
+        String encodedPassword = passwordEncoder.encode(dto.newPassword());
+        user.updatePassword(encodedPassword);
     }
 }

@@ -21,7 +21,8 @@ public abstract class AuthMapper {
                 user.getUsername(),
                 user.getEmail(),
                 binaryContentMapper.toDto(user.getProfile()),
-                true
+                true,
+                user.getRole()
         );
     }
 }

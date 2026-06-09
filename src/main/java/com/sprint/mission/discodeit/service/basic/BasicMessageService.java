@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.global.InvalidInputException;
@@ -21,12 +23,14 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,10 +48,13 @@ public class BasicMessageService implements MessageService {
 
     private final MessageMapper messageMapper;
     private final BinaryContentMapper binaryContentMapper;
-    private final BinaryContentStorage binaryContentStorage;
     private final PageResponseMapper pageResponseMapper;
 
+    private final ApplicationEventPublisher eventPublisher;
+
+    @Transactional
     @Override
+    @CacheEvict(value = "channels", allEntries = true)
     public MessageDto createMessage(CreateMessageRequestDTO dto, List<CreateBinaryContentPayloadDTO> attachments) {
         User user = findUserOrThrow(dto.authorId());
         Channel channel = findChannelOrThrow(dto.channelId());
@@ -62,19 +69,22 @@ public class BasicMessageService implements MessageService {
 
         Message message = new Message(user, channel, dto.content(), attachmentEntities);
 
-        user.getUserStatus().updateLastActiveAt(Instant.now());
         // id를 만들기 위해 저장
         Message savedMessage = messageRepository.saveAndFlush(message);
         // storage에 반영
         if (attachments != null && !attachments.isEmpty()) {
             List<BinaryContent> savedAttachments = savedMessage.getAttachments();
             for (int i = 0; i < attachments.size(); i++) {
-                binaryContentStorage.put(
-                        savedAttachments.get(i).getId(),
-                        attachments.get(i).bytes()
+                eventPublisher.publishEvent(
+                        new BinaryContentCreatedEvent(
+                                savedAttachments.get(i),
+                                attachments.get(i)
+                        )
                 );
             }
         }
+
+        eventPublisher.publishEvent(new MessageCreatedEvent(savedMessage));
 
         log.info("[MESSAGE_CREATE_SUCCESS] 메시지 생성 성공: messageId={}", message.getId());
         return messageMapper.toDto(savedMessage);
@@ -138,7 +148,9 @@ public class BasicMessageService implements MessageService {
         return messageMapper.toDto(findMessageOrThrow(messageId));
     }
 
+    @PreAuthorize("@messageSecurity.isOwner(#messageId, authentication.principal.id)")
     @Override
+    @CacheEvict(value = "channels", allEntries = true)
     public MessageDto updateMessage(UUID messageId, UpdateMessageRequestDTO dto) {
         Message message = findMessageOrThrow(messageId);
 
@@ -155,7 +167,9 @@ public class BasicMessageService implements MessageService {
         return messageMapper.toDto(message);
     }
 
+    @PreAuthorize("@messageSecurity.isOwner(#messageId, authentication.principal.id)")
     @Override
+    @CacheEvict(value = "channels", allEntries = true)
     public void deleteMessage(UUID messageId) {
         findMessageOrThrow(messageId).getAttachments();
 

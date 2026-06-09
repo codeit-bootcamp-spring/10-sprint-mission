@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 )
 public interface BinaryContentMapper {
 
+    @Mapping(target = "status", constant = "PROCESSING")
     BinaryContent toEntity(CreateBinaryContentPayloadDTO dto);
 
     BinaryContentDto toDto(BinaryContent binaryContent);

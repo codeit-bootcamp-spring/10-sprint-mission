@@ -8,7 +8,9 @@ import lombok.Getter;
 public enum ErrorCode {
 
     // Auth
-    LOGIN_FAIL(400, "A400", "로그인에 실패했습니다."),
+    LOGIN_FAIL(401, "A401", "로그인에 실패했습니다."),
+    UNAUTHORIZED(401, "A402", "인증이 필요합니다."),
+    ACCESS_DENIED(403, "A403", "접근 권한이 없습니다."),
 
     // User
     USER_NOT_FOUND(404, "U100", "유저를 찾을 수 없습니다."),
@@ -17,6 +19,7 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXISTS(409, "U202", "이미 사용중인 email입니다."),
     USERNAME_UNCHANGED(400, "U301", "현재 사용중인 username과 동일합니다."),
     EMAIL_UNCHANGED(400, "U302", "현재 사용중인 email과 동일합니다."),
+    ROLE_UNCHANGED(400, "U303", "현재 부여된 Role과 동일합니다."),
 
     // Channel
     CHANNEL_NOT_FOUND(404, "C100", "채널을 찾을 수 없습니다."),
@@ -44,15 +47,16 @@ public enum ErrorCode {
     READ_STATUS_ALREADY_EXISTS(400, "RS200", "이미 존재하는 ReadStatus입니다."),
     LAST_READ_AT_IS_NULL(400, "RS300", "lastReadAt은 null값일 수 없습니다."),
 
-    // UserStatus
-    USER_STATUS_NOT_FOUND(404, "US100", "UserStatus를 찾을 수 없습니다."),
+    // Notification
+    NOTIFICATION_NOT_FOUND(404, "N100", "알림을 찾을 수 없습니다."),
 
     // Invalid input
     ID_CAN_NOT_BE_NULL(400, "I100", "id값은 null일 수 없습니다."),
     DTO_CAN_NOT_BE_NULL(400, "I101", "dto는 null일 수 없습니다."),
+    USERNAME_CAN_NOT_BE_BLANK(400, "I102", "username은 공백일 수 없습니다."),
     ;
 
     private final int status;
-    private final String errorType;
+    private final String code;
     private final String message;
 }

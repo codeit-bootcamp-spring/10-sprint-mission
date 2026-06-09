@@ -50,6 +50,22 @@ dependencies {
 
 	// discodeit.env 파일 읽는 라이브러리
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+
+	// Spring security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	// JWT
+	implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+
+	// Spring retry
+	implementation 'org.springframework.retry:spring-retry'
+
+	// Cache
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// Kafka
+	implementation 'org.springframework.kafka:spring-kafka'
 }
 
 tasks.named('test') {

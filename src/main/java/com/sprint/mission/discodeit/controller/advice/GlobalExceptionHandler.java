@@ -2,7 +2,10 @@ package com.sprint.mission.discodeit.controller.advice;
 
 import com.sprint.mission.discodeit.controller.dto.ErrorResponseDTO;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -22,7 +25,7 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponseDTO(
                         e.getTimestamp(),
                         e.getErrorCode().getStatus(),
-                        e.getErrorCode().getErrorType(),
+                        e.getErrorCode().getCode(),
                         e.getErrorCode().getMessage(),
                         e.getDetails(),
                         e.getClass().getSimpleName()
@@ -64,5 +67,25 @@ public class GlobalExceptionHandler {
                         Map.of(),
                         "INTERNAL_SERVER_ERROR"
                 ));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAccessDeniedException(
+            AccessDeniedException ex
+    ) {
+        ErrorCode errorCode = ErrorCode.ACCESS_DENIED;
+
+        ErrorResponseDTO response = new ErrorResponseDTO(
+                Instant.now(),
+                errorCode.getStatus(),
+                errorCode.getCode(),
+                errorCode.getMessage(),
+                Map.of(),
+                ex.getClass().getSimpleName()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(response);
     }
 }
