@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -29,7 +30,6 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +41,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.SliceImpl;
@@ -62,13 +63,13 @@ class BasicMessageServiceTest {
   private MessageMapper messageMapper;
 
   @Mock
-  private BinaryContentStorage binaryContentStorage;
-
-  @Mock
   private BinaryContentRepository binaryContentRepository;
 
   @Mock
   private PageResponseMapper pageResponseMapper;
+
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
 
   @InjectMocks
   private BasicMessageService messageService;
@@ -139,7 +140,7 @@ class BasicMessageServiceTest {
     // then
     assertThat(result).isEqualTo(messageDto);
     verify(messageRepository).save(any(Message.class));
-    verify(binaryContentStorage).put(eq(attachment.getId()), any(byte[].class));
+    verify(eventPublisher).publishEvent(any(BinaryContentCreatedEvent.class));
   }
 
   @Test

@@ -7,6 +7,8 @@ spring:
     username: discodeit_user
     password: discodeit1234
   jpa:
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true

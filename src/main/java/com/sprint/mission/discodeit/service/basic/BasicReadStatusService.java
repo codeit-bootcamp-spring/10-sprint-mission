@@ -52,7 +52,8 @@ public class BasicReadStatusService implements ReadStatusService {
         });
 
     Instant lastReadAt = request.lastReadAt();
-    ReadStatus readStatus = readStatusRepository.save(new ReadStatus(user, channel, lastReadAt));
+    ReadStatus readStatus = readStatusRepository.save(
+        new ReadStatus(user, channel, lastReadAt, false));
 
     log.info("읽음 상태 생성 완료: id={}, userId={}, channelId={}", 
         readStatus.getId(), userId, channelId);
@@ -86,7 +87,7 @@ public class BasicReadStatusService implements ReadStatusService {
     
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> ReadStatusNotFoundException.withId(readStatusId));
-    readStatus.update(request.newLastReadAt());
+    readStatus.update(request.newLastReadAt(), request.newNotificationEnabled());
     
     log.info("읽음 상태 수정 완료: id={}", readStatusId);
     return readStatusMapper.toDto(readStatus);

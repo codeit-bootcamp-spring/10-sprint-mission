@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +44,8 @@ class S3BinaryContentStorageTest {
                 "test-access-key", "test-secret-key", "ap-northeast-2", "test-bucket", 600
         );
 
-        storage = new S3BinaryContentStorage(properties);
+        ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
+        storage = new S3BinaryContentStorage(properties, eventPublisher);
 
         // mock 객체로 교체
         var s3ClientField = S3BinaryContentStorage.class.getDeclaredField("s3Client");

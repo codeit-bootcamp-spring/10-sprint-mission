@@ -17,7 +17,6 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +26,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -43,10 +43,10 @@ class BasicUserServiceTest {
   private BinaryContentRepository binaryContentRepository;
 
   @Mock
-  private BinaryContentStorage binaryContentStorage;
+  private PasswordEncoder passwordEncoder;
 
   @Mock
-  private PasswordEncoder passwordEncoder;
+  private ApplicationEventPublisher eventPublisher;
 
   @InjectMocks
   private BasicUserService userService;

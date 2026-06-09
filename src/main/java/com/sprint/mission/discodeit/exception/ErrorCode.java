@@ -30,6 +30,10 @@ public enum ErrorCode {
     DUPLICATE_READ_STATUS("이미 존재하는 읽음 상태입니다."),
     READ_STATUS_ALREADY_EXISTS("이미 존재하는 읽음 상태입니다."),
 
+    // Notification 관련 에러 코드
+    NOTIFICATION_NOT_FOUND("알림을 찾을 수 없습니다."),
+    NOTIFICATION_FORBIDDEN("해당 알림에 접근할 권한이 없습니다."),
+
     // Server 에러 코드
     INTERNAL_SERVER_ERROR("서버 내부 오류가 발생했습니다."),
     INTERNAL_ERROR("서버 내부 오류가 발생했습니다."),

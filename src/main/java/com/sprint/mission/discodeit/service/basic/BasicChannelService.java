@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.config.CacheNames;
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
@@ -18,6 +19,10 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +38,9 @@ public class BasicChannelService implements ChannelService {
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
   private final ChannelMapper channelMapper;
+  private final CacheManager cacheManager;
 
+  @CacheEvict(cacheNames = CacheNames.CHANNELS, allEntries = true)
   @Transactional
   @Override
   public ChannelDto create(PublicChannelCreateRequest request) {
@@ -55,9 +62,11 @@ public class BasicChannelService implements ChannelService {
     channelRepository.save(channel);
 
     List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
-        .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
+        .map(user -> new ReadStatus(user, channel, channel.getCreatedAt(), true))
         .toList();
     readStatusRepository.saveAll(readStatuses);
+
+    evictChannelsCache(request.participantIds());
 
     log.info("채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
     return channelMapper.toDto(channel);
@@ -71,6 +80,7 @@ public class BasicChannelService implements ChannelService {
         .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
   }
 
+  @Cacheable(cacheNames = CacheNames.CHANNELS, key = "#userId")
   @Transactional(readOnly = true)
   @Override
   public List<ChannelDto> findAllByUserId(UUID userId) {
@@ -85,6 +95,7 @@ public class BasicChannelService implements ChannelService {
         .toList();
   }
 
+  @CacheEvict(cacheNames = CacheNames.CHANNELS, allEntries = true)
   @Transactional
   @Override
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
@@ -105,14 +116,37 @@ public class BasicChannelService implements ChannelService {
   @Override
   public void delete(UUID channelId) {
     log.debug("채널 삭제 시작: id={}", channelId);
-    if (!channelRepository.existsById(channelId)) {
-      throw ChannelNotFoundException.withId(channelId);
+    Channel channel = channelRepository.findById(channelId)
+        .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
+
+    List<UUID> participantIds = null;
+    if (channel.getType() == ChannelType.PRIVATE) {
+      participantIds = readStatusRepository.findAllByChannelIdWithUser(channelId).stream()
+          .map(rs -> rs.getUser().getId())
+          .toList();
     }
 
     messageRepository.deleteAllByChannelId(channelId);
     readStatusRepository.deleteAllByChannelId(channelId);
-
     channelRepository.deleteById(channelId);
-    log.info("채널 삭제 완료: id={}", channelId);
+
+    if (channel.getType() == ChannelType.PUBLIC) {
+      Cache cache = cacheManager.getCache(CacheNames.CHANNELS);
+      if (cache != null) {
+        cache.clear();
+      }
+    } else {
+      evictChannelsCache(participantIds);
+    }
+
+    log.info("채널 삭제 완료: id={}, type={}", channelId, channel.getType());
+  }
+
+  private void evictChannelsCache(List<UUID> userIds) {
+    Cache cache = cacheManager.getCache(CacheNames.CHANNELS);
+    if (cache == null || userIds == null) {
+      return;
+    }
+    userIds.forEach(cache::evict);
   }
 }

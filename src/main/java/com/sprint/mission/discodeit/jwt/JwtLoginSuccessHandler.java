@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.config.CacheNames;
 import com.sprint.mission.discodeit.config.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
@@ -13,6 +14,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -26,6 +29,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper objectMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
+    private final CacheManager cacheManager;
 
     @Value("${discodeit.jwt.refresh-token-validity-seconds}")
     private long refreshTokenValiditySeconds;
@@ -57,6 +61,11 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write(objectMapper.writeValueAsString(jwtDto));
+
+        Cache usersCache = cacheManager.getCache(CacheNames.USERS);
+        if (usersCache != null) {
+            usersCache.clear();
+        }
 
         log.info("로그인 성공 (JWT): userId={}, username={}", userId, username);
     }

@@ -2,7 +2,9 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -15,6 +17,7 @@ import com.sprint.mission.discodeit.service.AuthService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +30,7 @@ public class BasicAuthService implements AuthService {
   private final UserMapper userMapper;
   private final JwtTokenProvider jwtTokenProvider;
   private final JwtRegistry jwtRegistry;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   @Override
@@ -36,10 +40,17 @@ public class BasicAuthService implements AuthService {
     User user = userRepository.findById(request.userId())
         .orElseThrow(() -> UserNotFoundException.withId(request.userId()));
 
-    user.updateRole(request.role());
+    Role oldRole = user.getRole();
+    Role newRole = request.role();
+
+    user.updateRole(newRole);
     userRepository.save(user);
 
     jwtRegistry.invalidateJwtInformationByUserId(request.userId());
+
+    if (oldRole != newRole) {
+      eventPublisher.publishEvent(new RoleUpdatedEvent(request.userId(), oldRole, newRole));
+    }
 
     log.info("사용자 역할 변경 완료: userId={}, newRole={}", request.userId(), request.role());
     return userMapper.toDto(user);
