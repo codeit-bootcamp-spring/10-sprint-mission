@@ -14,9 +14,13 @@ spring:
 logging:
   level:
     com.sprint.mission.discodeit: info
-    org.hibernate.SQL: info
+    org.hibernate.SQL: warn
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
   endpoint:
     health:
       show-details: never

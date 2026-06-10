@@ -13,6 +13,9 @@ spring:
         format_sql: true
   cache:
     type: simple
+  kafka:
+    listener:
+      auto-startup: false
   sql:
     init:
       mode: never
