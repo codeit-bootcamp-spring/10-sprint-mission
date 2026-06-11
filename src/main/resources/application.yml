@@ -50,11 +50,15 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,info,metrics,loggers"
+        include: "health" # 공통 설정에서는 health만 최소한으로 노출
 
   endpoint:
     health:
-      show-details: always # 상세한 DB 연결 상태 등을 보고 싶을 때 사용
+      show-details: never
+
+  observations:
+    annotations:
+      enabled: true
 
 info:
   app:

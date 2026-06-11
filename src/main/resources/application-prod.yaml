@@ -23,3 +23,12 @@ spring:
 logging:
   level:
     com.sprint.mission.discodeit: info # 운영 환경은 info
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,metrics"
+  endpoint:
+    health:
+      show-details: never # 운영 서버의 내부 상세 구조는 외부로 절대 유출하지 않음
