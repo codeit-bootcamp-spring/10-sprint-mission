@@ -18,7 +18,7 @@ public class AsyncConfig {
     executor.setQueueCapacity(100); // 스레드가 꽉 찼을 때 대기할 큐 사이즈
     executor.setThreadNamePrefix("AsyncEvent-"); // 로그 추적용 접두사
 
-    executor.setTaskDecorator(new MdcSecurityContextTaskDecorator());
+    executor.setTaskDecorator(new MDCSecurityContextTaskDecorator());
     executor.initialize();
 
     return executor;

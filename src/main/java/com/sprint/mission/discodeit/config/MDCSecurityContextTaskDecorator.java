@@ -7,7 +7,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 // MDC의 Request ID, SecurityContext의 인증 정보가 비동기 스레드에서도 유지되도록 하는 클래스
-public class MdcSecurityContextTaskDecorator implements TaskDecorator {
+public class MDCSecurityContextTaskDecorator implements TaskDecorator {
 
   @Override
   public Runnable decorate(Runnable runnable) {
