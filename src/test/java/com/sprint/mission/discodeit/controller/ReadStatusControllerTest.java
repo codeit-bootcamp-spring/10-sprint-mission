@@ -3,10 +3,10 @@ package com.sprint.mission.discodeit.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,12 +22,19 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(ReadStatusController.class)
+@WebMvcTest(value = ReadStatusController.class,
+    excludeFilters = @ComponentScan.Filter(
+        type = FilterType.REGEX,
+        pattern = ".*\\.security\\.jwt\\..*"))
+@AutoConfigureMockMvc(addFilters = false)
 class ReadStatusControllerTest {
 
   @Autowired
@@ -46,7 +53,7 @@ class ReadStatusControllerTest {
     UUID userId = UUID.randomUUID();
     UUID channelId = UUID.randomUUID();
     Instant lastReadAt = Instant.now();
-    
+
     ReadStatusCreateRequest createRequest = new ReadStatusCreateRequest(
         userId,
         channelId,
@@ -58,7 +65,8 @@ class ReadStatusControllerTest {
         readStatusId,
         userId,
         channelId,
-        lastReadAt
+        lastReadAt,
+        false
     );
 
     given(readStatusService.create(any(ReadStatusCreateRequest.class)))
@@ -67,7 +75,8 @@ class ReadStatusControllerTest {
     // When & Then
     mockMvc.perform(post("/api/readStatuses")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(createRequest)))
+            .content(objectMapper.writeValueAsString(createRequest))
+            .with(csrf()))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(readStatusId.toString()))
         .andExpect(jsonPath("$.userId").value(userId.toString()))
@@ -88,7 +97,8 @@ class ReadStatusControllerTest {
     // When & Then
     mockMvc.perform(post("/api/readStatuses")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(invalidRequest)))
+            .content(objectMapper.writeValueAsString(invalidRequest))
+            .with(csrf()))
         .andExpect(status().isBadRequest());
   }
 
@@ -100,14 +110,15 @@ class ReadStatusControllerTest {
     UUID userId = UUID.randomUUID();
     UUID channelId = UUID.randomUUID();
     Instant newLastReadAt = Instant.now();
-    
-    ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(newLastReadAt);
+
+    ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(newLastReadAt, true);
 
     ReadStatusDto updatedReadStatus = new ReadStatusDto(
         readStatusId,
         userId,
         channelId,
-        newLastReadAt
+        newLastReadAt,
+        true
     );
 
     given(readStatusService.update(eq(readStatusId), any(ReadStatusUpdateRequest.class)))
@@ -116,7 +127,8 @@ class ReadStatusControllerTest {
     // When & Then
     mockMvc.perform(patch("/api/readStatuses/{readStatusId}", readStatusId)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(updateRequest)))
+            .content(objectMapper.writeValueAsString(updateRequest))
+            .with(csrf()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(readStatusId.toString()))
         .andExpect(jsonPath("$.userId").value(userId.toString()))
@@ -130,8 +142,8 @@ class ReadStatusControllerTest {
     // Given
     UUID nonExistentId = UUID.randomUUID();
     Instant newLastReadAt = Instant.now();
-    
-    ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(newLastReadAt);
+
+    ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(newLastReadAt, null);
 
     given(readStatusService.update(eq(nonExistentId), any(ReadStatusUpdateRequest.class)))
         .willThrow(ReadStatusNotFoundException.withId(nonExistentId));
@@ -139,7 +151,8 @@ class ReadStatusControllerTest {
     // When & Then
     mockMvc.perform(patch("/api/readStatuses/{readStatusId}", nonExistentId)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(updateRequest)))
+            .content(objectMapper.writeValueAsString(updateRequest))
+            .with(csrf()))
         .andExpect(status().isNotFound());
   }
 
@@ -151,10 +164,10 @@ class ReadStatusControllerTest {
     UUID channelId1 = UUID.randomUUID();
     UUID channelId2 = UUID.randomUUID();
     Instant now = Instant.now();
-    
+
     List<ReadStatusDto> readStatuses = List.of(
-        new ReadStatusDto(UUID.randomUUID(), userId, channelId1, now.minusSeconds(60)),
-        new ReadStatusDto(UUID.randomUUID(), userId, channelId2, now)
+        new ReadStatusDto(UUID.randomUUID(), userId, channelId1, now.minusSeconds(60), true),
+        new ReadStatusDto(UUID.randomUUID(), userId, channelId2, now, true)
     );
 
     given(readStatusService.findAllByUserId(userId)).willReturn(readStatuses);
