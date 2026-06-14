@@ -1,63 +1,79 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.auth.InvalidPasswordException;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.jwt.TokenRefreshResult;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
-import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+@Slf4j
 @RequiredArgsConstructor
+@Service
 public class BasicAuthService implements AuthService {
 
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
+  private final JwtTokenProvider jwtTokenProvider;
+  private final JwtRegistry jwtRegistry;
+  private final ApplicationEventPublisher eventPublisher;
 
-    @Override
-    @Transactional
-    public UserDto login(LoginRequest request) {
-        validateUsername(request);
-        User user = getUserOrThrow(request);
+  @Transactional
+  @Override
+  public UserDto updateRole(UserRoleUpdateRequest request) {
+    log.debug("사용자 역할 변경 시작: userId={}, newRole={}", request.userId(), request.role());
 
-        validatePassword(request, user);
+    User user = userRepository.findById(request.userId())
+        .orElseThrow(() -> UserNotFoundException.withId(request.userId()));
 
-        UserStatus userStatus = user.getStatus();
-        userStatus.markActive();
+    Role oldRole = user.getRole();
+    Role newRole = request.role();
 
-        return userMapper.toDto(user);
+    user.updateRole(newRole);
+    userRepository.save(user);
+
+    jwtRegistry.invalidateJwtInformationByUserId(request.userId());
+
+    if (oldRole != newRole) {
+      eventPublisher.publishEvent(new RoleUpdatedEvent(request.userId(), oldRole, newRole));
     }
 
-    private void validateUsername(LoginRequest request) {
-        if (!userRepository.existsByUsername(request.username())) {
-            throw new UserNotFoundException(
-                    "존재하지 않은 username 입니다 username: " + request.username(),
-                    Map.of("username", request.username())
-            );
-        }
+    log.info("사용자 역할 변경 완료: userId={}, newRole={}", request.userId(), request.role());
+    return userMapper.toDto(user);
+  }
+
+  @Override
+  public TokenRefreshResult refresh(String refreshToken) {
+    if (refreshToken == null
+        || !jwtTokenProvider.validateRefreshToken(refreshToken)
+        || !jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
+      throw new DiscodeitException(ErrorCode.INVALID_REFRESH_TOKEN);
     }
 
-    private User getUserOrThrow(LoginRequest request) {
-        return userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new UserNotFoundException(
-                        "사용자를 찾을 수 없습니다 username: " + request.username(),
-                        Map.of("username", request.username())
-                ));
-    }
+    UUID userId = jwtTokenProvider.getUserId(refreshToken);
+    String username = jwtTokenProvider.getUsername(refreshToken);
+    String role = jwtTokenProvider.getRole(refreshToken);
 
-    private void validatePassword(LoginRequest request, User user) {
-        if (!user.getPassword().equals(request.password())) {
-            throw new InvalidPasswordException(
-                    "일치하지않은 비밀번호 입니다. username: " + request.username(),
-                    Map.of("username", request.username())
-            );
-        }
-    }
+    String newAccessToken = jwtTokenProvider.generateAccessToken(userId, username, role);
+    String newRefreshToken = jwtTokenProvider.generateRefreshToken(userId, username, role);
+
+    jwtRegistry.rotateJwtInformation(newAccessToken, newRefreshToken);
+
+    log.info("토큰 재발급: userId={}, username={}", userId, username);
+    return new TokenRefreshResult(newAccessToken, newRefreshToken);
+  }
 }

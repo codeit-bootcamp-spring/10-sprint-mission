@@ -1,237 +1,232 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelDto;
-import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.user.UserDto;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
-import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.ReadStatusService;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import java.time.Instant;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.BDDMockito.willThrow;
 
 @ExtendWith(MockitoExtension.class)
 class BasicChannelServiceTest {
 
-    @Mock
-    private ChannelRepository channelRepository;
+  @Mock
+  private ChannelRepository channelRepository;
 
-    @Mock
-    private ReadStatusService readStatusService;
+  @Mock
+  private ReadStatusRepository readStatusRepository;
 
-    @Mock
-    private MessageService messageService;
+  @Mock
+  private MessageRepository messageRepository;
 
-    @Mock
-    private UserMapper userMapper;
+  @Mock
+  private UserRepository userRepository;
 
-    @Mock
-    private ChannelMapper channelMapper;
+  @Mock
+  private ChannelMapper channelMapper;
 
-    @InjectMocks
-    private BasicChannelService channelService;
+  @Mock
+  private CacheManager cacheManager;
 
-    @Test
-    @DisplayName("PUBLIC 채널 생성 성공")
-    void createPublicChannel_success() {
-        PublicChannelCreateRequest request = new PublicChannelCreateRequest("공지", "전체 공지");
-        ChannelDto expected = new ChannelDto(
-                UUID.randomUUID(),
-                ChannelType.PUBLIC,
-                "공지",
-                "전체 공지",
-                List.of(),
-                null
-        );
+  @InjectMocks
+  private BasicChannelService channelService;
 
-        given(channelMapper.toDto(any(Channel.class), eq(List.of()))).willReturn(expected);
+  private UUID channelId;
+  private UUID userId;
+  private String channelName;
+  private String channelDescription;
+  private Channel channel;
+  private ChannelDto channelDto;
+  private User user;
 
-        ChannelDto result = channelService.createPublicChannel(request);
+  @BeforeEach
+  void setUp() {
+    channelId = UUID.randomUUID();
+    userId = UUID.randomUUID();
+    channelName = "testChannel";
+    channelDescription = "testDescription";
 
-        assertThat(result).isEqualTo(expected);
-        then(channelRepository).should().save(any(Channel.class));
-    }
+    channel = new Channel(ChannelType.PUBLIC, channelName, channelDescription);
+    ReflectionTestUtils.setField(channel, "id", channelId);
+    channelDto = new ChannelDto(channelId, ChannelType.PUBLIC, channelName, channelDescription,
+        List.of(), Instant.now());
+    user = new User("testUser", "test@example.com", "password", null);
+  }
 
-    @Test
-    @DisplayName("PUBLIC 채널 생성 실패")
-    void createPublicChannel_fail_whenSaveThrows() {
-        PublicChannelCreateRequest request = new PublicChannelCreateRequest("공지", "전체 공지");
-        willThrow(new IllegalStateException("save failed")).given(channelRepository).save(any(Channel.class));
+  @Test
+  @DisplayName("공개 채널 생성 성공")
+  void createPublicChannel_Success() {
+    // given
+    PublicChannelCreateRequest request = new PublicChannelCreateRequest(channelName,
+        channelDescription);
+    given(channelMapper.toDto(any(Channel.class))).willReturn(channelDto);
 
-        assertThatThrownBy(() -> channelService.createPublicChannel(request))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("save failed");
-    }
+    // when
+    ChannelDto result = channelService.create(request);
 
-    @Test
-    @DisplayName("PRIVATE 채널 생성 성공")
-    void createPrivateChannel_success() {
-        UUID userId = UUID.randomUUID();
-        PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(Set.of(userId));
-        ChannelDto expected = new ChannelDto(
-                UUID.randomUUID(),
-                ChannelType.PRIVATE,
-                null,
-                null,
-                List.of(),
-                null
-        );
+    // then
+    assertThat(result).isEqualTo(channelDto);
+    verify(channelRepository).save(any(Channel.class));
+  }
 
-        given(channelMapper.toDto(any(Channel.class), eq(List.of()))).willReturn(expected);
+  @Test
+  @DisplayName("비공개 채널 생성 성공")
+  void createPrivateChannel_Success() {
+    // given
+    List<UUID> participantIds = List.of(userId);
+    PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(participantIds);
+    given(userRepository.findAllById(eq(participantIds))).willReturn(List.of(user));
+    given(channelMapper.toDto(any(Channel.class))).willReturn(channelDto);
 
-        ChannelDto result = channelService.createPrivateChannel(request);
+    // when
+    ChannelDto result = channelService.create(request);
 
-        assertThat(result).isEqualTo(expected);
-        then(channelRepository).should().save(any(Channel.class));
-        then(readStatusService).should().createInitialReadStatuses(any(), eq(Set.of(userId)), any(Instant.class));
-    }
+    // then
+    assertThat(result).isEqualTo(channelDto);
+    verify(channelRepository).save(any(Channel.class));
+    verify(readStatusRepository).<ReadStatus>saveAll(anyList());
+  }
 
-    @Test
-    @DisplayName("PRIVATE 채널 생성 실패")
-    void createPrivateChannel_fail_whenCreateInitialReadStatusesThrows() {
-        UUID userId = UUID.randomUUID();
-        PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(Set.of(userId));
-        willThrow(new IllegalArgumentException("read status failed"))
-                .given(readStatusService)
-                .createInitialReadStatuses(any(), eq(Set.of(userId)), any(Instant.class));
+  @Test
+  @DisplayName("채널 조회 성공")
+  void findChannel_Success() {
+    // given
+    given(channelRepository.findById(eq(channelId))).willReturn(Optional.of(channel));
+    given(channelMapper.toDto(any(Channel.class))).willReturn(channelDto);
 
-        assertThatThrownBy(() -> channelService.createPrivateChannel(request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("read status failed");
-    }
+    // when
+    ChannelDto result = channelService.find(channelId);
 
-    @Test
-    @DisplayName("PUBLIC 채널 정보 수정 성공")
-    void updateChannelInfo_success() {
-        UUID channelId = UUID.randomUUID();
-        Channel channel = Channel.buildPublic("old", "desc");
-        setId(channel, channelId);
-        PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("new", "updated");
-        ChannelDto expected = new ChannelDto(channelId, ChannelType.PUBLIC, "new", "updated", List.of(), null);
+    // then
+    assertThat(result).isEqualTo(channelDto);
+  }
 
-        given(channelRepository.findById(channelId)).willReturn(java.util.Optional.of(channel));
-        given(channelMapper.toDto(channel, List.of())).willReturn(expected);
+  @Test
+  @DisplayName("존재하지 않는 채널 조회 시 실패")
+  void findChannel_WithNonExistentId_ThrowsException() {
+    // given
+    given(channelRepository.findById(eq(channelId))).willReturn(Optional.empty());
 
-        ChannelDto result = channelService.updateChannelInfo(channelId, request);
+    // when & then
+    assertThatThrownBy(() -> channelService.find(channelId))
+        .isInstanceOf(ChannelNotFoundException.class);
+  }
 
-        assertThat(result).isEqualTo(expected);
-        assertThat(channel.getName()).isEqualTo("new");
-        assertThat(channel.getDescription()).isEqualTo("updated");
-    }
+  @Test
+  @DisplayName("사용자별 채널 목록 조회 성공")
+  void findAllByUserId_Success() {
+    // given
+    List<ReadStatus> readStatuses = List.of(new ReadStatus(user, channel, Instant.now(), false));
+    given(readStatusRepository.findAllByUserId(eq(userId))).willReturn(readStatuses);
+    given(channelRepository.findAllByTypeOrIdIn(eq(ChannelType.PUBLIC), eq(List.of(channel.getId()))))
+        .willReturn(List.of(channel));
+    given(channelMapper.toDto(any(Channel.class))).willReturn(channelDto);
 
-    @Test
-    @DisplayName("PRIVATE 채널 정보 수정 시 예외 발생")
-    void updateChannelInfo_fail_whenChannelIsPrivate() {
-        UUID channelId = UUID.randomUUID();
-        Channel channel = Channel.buildPrivate();
-        setId(channel, channelId);
-        given(channelRepository.findById(channelId)).willReturn(java.util.Optional.of(channel));
+    // when
+    List<ChannelDto> result = channelService.findAllByUserId(userId);
 
-        assertThatThrownBy(() -> channelService.updateChannelInfo(
-                channelId,
-                new PublicChannelUpdateRequest("new", "updated")
-        )).isInstanceOf(PrivateChannelUpdateException.class);
-    }
+    // then
+    assertThat(result).containsExactly(channelDto);
+  }
 
-    @Test
-    @DisplayName("채널 삭제 성공")
-    void deleteChannel_success() {
-        UUID channelId = UUID.randomUUID();
-        UUID messageId = UUID.randomUUID();
-        UUID readStatusId = UUID.randomUUID();
+  @Test
+  @DisplayName("공개 채널 수정 성공")
+  void updatePublicChannel_Success() {
+    // given
+    String newName = "newChannelName";
+    String newDescription = "newDescription";
+    PublicChannelUpdateRequest request = new PublicChannelUpdateRequest(newName, newDescription);
 
-        Channel channel = Channel.buildPublic("general", "desc");
-        setId(channel, channelId);
-        User user = new User("dustle", "1234", "dustle@test.com");
-        Message message = new Message(user, channel, "hello");
-        setId(message, messageId);
-        ReadStatus readStatus = new ReadStatus(user, channel, Instant.now());
-        setId(readStatus, readStatusId);
+    given(channelRepository.findById(eq(channelId))).willReturn(Optional.of(channel));
+    given(channelMapper.toDto(any(Channel.class))).willReturn(channelDto);
 
-        given(channelRepository.findById(channelId)).willReturn(java.util.Optional.of(channel));
+    // when
+    ChannelDto result = channelService.update(channelId, request);
 
-        channelService.deleteChannel(channelId);
+    // then
+    assertThat(result).isEqualTo(channelDto);
+  }
 
-        then(messageService).should().deleteMessage(messageId);
-        then(readStatusService).should().deleteReadStatus(readStatusId);
-        then(channelRepository).should().delete(channel);
-    }
+  @Test
+  @DisplayName("비공개 채널 수정 시도 시 실패")
+  void updatePrivateChannel_ThrowsException() {
+    // given
+    Channel privateChannel = new Channel(ChannelType.PRIVATE, null, null);
+    PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("newName",
+        "newDescription");
+    given(channelRepository.findById(eq(channelId))).willReturn(Optional.of(privateChannel));
 
-    @Test
-    @DisplayName("존재하지 않는 채널 삭제 실패")
-    void deleteChannel_fail_whenChannelNotFound() {
-        UUID channelId = UUID.randomUUID();
-        given(channelRepository.findById(channelId)).willReturn(java.util.Optional.empty());
+    // when & then
+    assertThatThrownBy(() -> channelService.update(channelId, request))
+        .isInstanceOf(PrivateChannelUpdateException.class);
+  }
 
-        assertThatThrownBy(() -> channelService.deleteChannel(channelId))
-                .isInstanceOf(ChannelNotFoundException.class);
-    }
+  @Test
+  @DisplayName("존재하지 않는 채널 수정 시도 시 실패")
+  void updateChannel_WithNonExistentId_ThrowsException() {
+    // given
+    PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("newName",
+        "newDescription");
+    given(channelRepository.findById(eq(channelId))).willReturn(Optional.empty());
 
-    @Test
-    @DisplayName("유저별 Visible 채널 조회")
-    void findAllChannelsByUserId_success() {
-        UUID requesterId = UUID.randomUUID();
-        UUID channelId = UUID.randomUUID();
+    // when & then
+    assertThatThrownBy(() -> channelService.update(channelId, request))
+        .isInstanceOf(ChannelNotFoundException.class);
+  }
 
-        Channel channel = Channel.buildPublic("general", "desc");
-        setId(channel, channelId);
-        User participant = new User("dustle", "1234", "dustle@test.com");
-        setId(participant, UUID.randomUUID());
-        ReadStatus readStatus = new ReadStatus(participant, channel, Instant.now());
-        UserDto participantDto = new UserDto((UUID) ReflectionTestUtils.getField(participant, "id"), "dustle", "dustle@test.com", null, null);
-        ChannelDto expected = new ChannelDto(channelId, ChannelType.PUBLIC, "general", "desc", List.of(participantDto), null);
+  @Test
+  @DisplayName("채널 삭제 성공")
+  void deleteChannel_Success() {
+    // given
+    given(channelRepository.findById(eq(channelId))).willReturn(Optional.of(channel));
 
-        given(channelRepository.findVisibleChannels(requesterId, ChannelType.PUBLIC, ChannelType.PRIVATE))
-                .willReturn(List.of(channel));
-        given(userMapper.toDto(participant)).willReturn(participantDto);
-        given(channelMapper.toDto(channel, List.of(participantDto))).willReturn(expected);
+    // when
+    channelService.delete(channelId);
 
-        List<ChannelDto> result = channelService.findAllChannelsByUserId(requesterId);
+    // then
+    verify(messageRepository).deleteAllByChannelId(eq(channelId));
+    verify(readStatusRepository).deleteAllByChannelId(eq(channelId));
+    verify(channelRepository).deleteById(eq(channelId));
+  }
 
-        assertThat(result).containsExactly(expected);
-    }
+  @Test
+  @DisplayName("존재하지 않는 채널 삭제 시도 시 실패")
+  void deleteChannel_WithNonExistentId_ThrowsException() {
+    // given
+    given(channelRepository.findById(eq(channelId))).willReturn(Optional.empty());
 
-    @Test
-    @DisplayName("유저별 Visible 채널 조회 실패")
-    void findAllChannelsByUserId_fail_whenRepositoryThrows() {
-        UUID requesterId = UUID.randomUUID();
-        willThrow(new RuntimeException("lookup failed"))
-                .given(channelRepository)
-                .findVisibleChannels(requesterId, ChannelType.PUBLIC, ChannelType.PRIVATE);
-
-        assertThatThrownBy(() -> channelService.findAllChannelsByUserId(requesterId))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("lookup failed");
-    }
-
-    private static void setId(Object target, UUID id) {
-        ReflectionTestUtils.setField(target, "id", id);
-    }
-}
+    // when & then
+    assertThatThrownBy(() -> channelService.delete(channelId))
+        .isInstanceOf(ChannelNotFoundException.class);
+  }
+} 

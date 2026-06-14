@@ -1,48 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
-import com.sprint.mission.discodeit.exception.binarycontent.InvalidContentTypeException;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import java.util.Map;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "binary_contents")
-public class BinaryContent extends BaseEntity {
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class BinaryContent extends BaseUpdatableEntity {
 
-    @Column(name = "file_name", nullable = false)
+    @Column(nullable = false)
     private String fileName;
-
-    @Column(name = "size", nullable = false)
+    @Column(nullable = false)
     private Long size;
-
-    @Column(name = "content_type", nullable = false, length = 100)
+    @Column(length = 100, nullable = false)
     private String contentType;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private BinaryContentStatus status;
 
-    public BinaryContent(
-            String fileName,
-            Long size,
-            String contentType
-    ) {
-        validateContentType(contentType);
-
+    public BinaryContent(String fileName, Long size, String contentType) {
         this.fileName = fileName;
         this.size = size;
         this.contentType = contentType;
+        this.status = BinaryContentStatus.PROCESSING;
     }
 
-    private void validateContentType(String contentType) {
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new InvalidContentTypeException(
-                    "이미지만 업로드 가능합니다",
-                    Map.of("contentType", contentType == null ? "null" : contentType)
-            );
-        }
+    public void updateStatus(BinaryContentStatus status) {
+        this.status = status;
     }
 }
