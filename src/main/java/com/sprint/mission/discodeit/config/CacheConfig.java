@@ -17,24 +17,24 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 public class CacheConfig {
 
   // CacheConfig
-  @Bean
-  public RedisCacheConfiguration redisCacheConfiguration(ObjectMapper objectMapper) {
-    ObjectMapper redisObjectMapper = objectMapper.copy();
-    redisObjectMapper.activateDefaultTyping(
-        LaissezFaireSubTypeValidator.instance,
-        DefaultTyping.EVERYTHING,
-        As.PROPERTY
-    );
-
-    return RedisCacheConfiguration.defaultCacheConfig()
-        .serializeValuesWith(
-            RedisSerializationContext.SerializationPair.fromSerializer(
-                new GenericJackson2JsonRedisSerializer(redisObjectMapper)
-            )
-        )
-        .prefixCacheNameWith("discodeit:")
-        .entryTtl(Duration.ofSeconds(600))
-        .disableCachingNullValues();
-  }
+//  @Bean
+//  public RedisCacheConfiguration redisCacheConfiguration(ObjectMapper objectMapper) {
+//    ObjectMapper redisObjectMapper = objectMapper.copy();
+//    redisObjectMapper.activateDefaultTyping(
+//        LaissezFaireSubTypeValidator.instance,
+//        DefaultTyping.EVERYTHING,
+//        As.PROPERTY
+//    );
+//
+//    return RedisCacheConfiguration.defaultCacheConfig()
+//        .serializeValuesWith(
+//            RedisSerializationContext.SerializationPair.fromSerializer(
+//                new GenericJackson2JsonRedisSerializer(redisObjectMapper)
+//            )
+//        )
+//        .prefixCacheNameWith("discodeit:")
+//        .entryTtl(Duration.ofSeconds(600))
+//        .disableCachingNullValues();
+//  }
 
 }

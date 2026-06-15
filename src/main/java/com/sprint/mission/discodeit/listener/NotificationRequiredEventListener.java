@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-//@Component
+@Component
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationRequiredEventListener {
@@ -38,12 +38,13 @@ public class NotificationRequiredEventListener {
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void on(MessageCreatedEvent event) {
     log.debug("[NOTIFICATION] 메시지 생성 이벤트 수신: messageId={}", event.messageId());
-    String title = String.format("%s (#%s)", event.authorName(), event.channelName());
-    String content = event.messageContent();
+    String title = String.format("%s (#%s)", event.messageDto().author().username(),
+        event.channelName());
+    String content = event.messageDto().content();
     List<Notification> notifications = readStatusRepository.findAllByChannelIdAndNotificationEnabledTrue(
-            event.channelId())
+            event.messageDto().channelId())
         .stream()
-        .filter(rs -> !rs.getUser().getId().equals(event.authorId()))
+        .filter(rs -> !rs.getUser().getId().equals(event.messageDto().author().id()))
         .map(rs -> new Notification(
             rs.getUser(),
             title,
