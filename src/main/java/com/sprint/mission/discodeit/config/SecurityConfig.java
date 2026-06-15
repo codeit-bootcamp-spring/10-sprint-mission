@@ -57,6 +57,7 @@ public class SecurityConfig {
         .csrf(csrf -> csrf
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+            .ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/ws/**"))
         )
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
