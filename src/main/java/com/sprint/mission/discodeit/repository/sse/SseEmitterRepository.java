@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.repository;
+package com.sprint.mission.discodeit.repository.sse;
 
 import java.util.List;
 import java.util.Map;
