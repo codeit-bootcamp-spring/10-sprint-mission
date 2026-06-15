@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.exception;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -11,6 +11,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestControllerAdvice
@@ -51,7 +53,7 @@ public class GlobalExceptionHandler {
     ErrorResponse response = new ErrorResponse(
         Instant.now(),
         "VALIDATION_ERROR",
-        "요청 데이터 유효성 검사에 실패했습니다.",
+        "요청 데이터 유효성 검사에 실패했습니다",
         validationErrors,
         ex.getClass().getSimpleName(),
         HttpStatus.BAD_REQUEST.value()
@@ -69,7 +71,7 @@ public class GlobalExceptionHandler {
     ErrorResponse response = new ErrorResponse(
         Instant.now(),
         "AUTHORIZATION_DENIED",
-        "요청에 대한 권한이 없습니다.",
+        "요청에 대한 권한이 없습니다",
         null,
         ex.getClass().getSimpleName(),
         HttpStatus.FORBIDDEN.value()
@@ -86,6 +88,7 @@ public class GlobalExceptionHandler {
            READ_STATUS_NOT_FOUND, NOTIFICATION_NOT_FOUND -> HttpStatus.NOT_FOUND;
       case DUPLICATE_USER, DUPLICATE_READ_STATUS -> HttpStatus.CONFLICT;
       case INVALID_USER_CREDENTIALS, INVALID_TOKEN, INVALID_USER_DETAILS -> HttpStatus.UNAUTHORIZED;
+      case NOTIFICATION_FORBIDDEN -> HttpStatus.FORBIDDEN;
       case PRIVATE_CHANNEL_UPDATE, INVALID_REQUEST -> HttpStatus.BAD_REQUEST;
       case INTERNAL_SERVER_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
     };

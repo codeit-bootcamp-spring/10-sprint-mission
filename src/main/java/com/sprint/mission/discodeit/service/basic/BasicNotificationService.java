@@ -1,16 +1,14 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.config.CacheNames;
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.notification.NotificationForbiddenException;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
-import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,78 +18,75 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
-@Service
 @RequiredArgsConstructor
+@Service
 public class BasicNotificationService implements NotificationService {
 
-  private static final int NOTIFICATION_TITLE_MAX_LENGTH = 100;
-  private static final int NOTIFICATION_CONTENT_MAX_LENGTH = 500;
-
   private final NotificationRepository notificationRepository;
-  private final UserRepository userRepository;
   private final NotificationMapper notificationMapper;
   private final CacheManager cacheManager;
 
-  @CacheEvict(cacheNames = CacheNames.NOTIFICATIONS, key = "#receiverId")
-  @Transactional
-  @Override
-  public NotificationDto create(UUID receiverId, String title, String content) {
-    User receiver = userRepository.findById(receiverId)
-        .orElseThrow(() -> UserNotFoundException.withId(receiverId));
-    Notification notification = new Notification(
-        receiver,
-        truncate(title, NOTIFICATION_TITLE_MAX_LENGTH),
-        truncate(content, NOTIFICATION_CONTENT_MAX_LENGTH)
-    );
-    notificationRepository.save(notification);
-    log.info("알림 생성 완료: id={}, receiverId={}", notification.getId(), receiverId);
-    return notificationMapper.toDto(notification);
-  }
-
-  @Transactional(readOnly = true)
-  @Override
-  public NotificationDto find(UUID notificationId) {
-    return notificationRepository.findById(notificationId)
-        .map(notificationMapper::toDto)
-        .orElseThrow(() -> NotificationNotFoundException.withId(notificationId));
-  }
-
-  @Cacheable(cacheNames = CacheNames.NOTIFICATIONS, key = "#receiverId")
-  @Transactional(readOnly = true)
+  @Cacheable(value = "notifications", key = "#receiverId", unless = "#result.isEmpty()")
+  @PreAuthorize("principal.userDto.id == #receiverId")
   @Override
   public List<NotificationDto> findAllByReceiverId(UUID receiverId) {
-    return notificationRepository.findAllByReceiverId(receiverId).stream()
+    log.debug("알림 목록 조회 시작: receiverId={}", receiverId);
+    List<NotificationDto> notifications = notificationRepository.findAllByReceiverIdOrderByCreatedAtDesc(
+            receiverId)
+        .stream()
         .map(notificationMapper::toDto)
         .toList();
+    log.info("알림 목록 조회 완료: receiverId={}, 조회된 항목 수={}", receiverId, notifications.size());
+    return notifications;
   }
 
-  @PreAuthorize("principal.userDto.id == @basicNotificationService.find(#notificationId).receiverId")
+  @CacheEvict(value = "notifications", key = "#receiverId")
+  @PreAuthorize("principal.userDto.id == #receiverId")
   @Transactional
   @Override
-  public void delete(UUID notificationId) {
+  public void delete(UUID notificationId, UUID receiverId) {
+    log.debug("알림 삭제 시작: id={}, receiverId={}", notificationId, receiverId);
     Notification notification = notificationRepository.findById(notificationId)
         .orElseThrow(() -> NotificationNotFoundException.withId(notificationId));
-    UUID receiverId = notification.getReceiver().getId();
-
+    if (!notification.getReceiverId().equals(receiverId)) {
+      log.warn("알림 삭제 권한 없음: id={}, receiverId={}", notificationId, receiverId);
+      throw NotificationForbiddenException.withId(notificationId, receiverId);
+    }
     notificationRepository.delete(notification);
-    evictNotificationsByReceiver(receiverId);
-    log.info("알림 확인 완료: id={}", notificationId);
   }
 
-  private void evictNotificationsByReceiver(UUID receiverId) {
-    Cache cache = cacheManager.getCache(CacheNames.NOTIFICATIONS);
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Override
+  public void create(Set<UUID> receiverIds, String title, String content) {
+    if (receiverIds.isEmpty()) {
+      log.warn("알림 생성 요청이 비어있음: receiverIds={}", receiverIds);
+      return;
+    }
+    log.debug("새 알림 생성 시작: receiverIds={}", receiverIds);
+    List<Notification> notifications = receiverIds.stream()
+        .map(receiverId -> new Notification(
+            receiverId,
+            title,
+            content
+        )).toList();
+    notificationRepository.saveAll(notifications);
+    evictNotificationCache(receiverIds);
+    log.info("새 알림 생성 완료: receiverIds={}", receiverIds);
+  }
+
+  private void evictNotificationCache(Set<UUID> receiverIds) {
+    Cache cache = cacheManager.getCache("notifications");
     if (cache != null) {
-      cache.evict(receiverId);
+      for (UUID receiverId : receiverIds) {
+        cache.evict(receiverId);
+      }
+      log.debug("알림 캐시를 제거했습니다: receiverIds={}", receiverIds);
+    } else {
+      log.warn("알림 캐시가 존재하지 않습니다.");
     }
   }
-
-  private String truncate(String value, int maxLength) {
-    if (value.length() <= maxLength) {
-      return value;
-    }
-    return value.substring(0, maxLength - 3) + "...";
-  }
-}
+} 

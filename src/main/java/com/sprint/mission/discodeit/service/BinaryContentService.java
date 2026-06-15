@@ -14,7 +14,7 @@ public interface BinaryContentService {
 
   List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds);
 
-  BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status);
-
   void delete(UUID binaryContentId);
+
+  BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status);
 }

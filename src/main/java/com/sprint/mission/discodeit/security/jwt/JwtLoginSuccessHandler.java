@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
-import com.sprint.mission.discodeit.config.CacheNames;
 import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
@@ -12,10 +11,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -23,26 +20,12 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
   private final ObjectMapper objectMapper;
   private final JwtTokenProvider tokenProvider;
   private final JwtRegistry jwtRegistry;
-  private final CacheManager cacheManager;
-
-  @Autowired
-  public JwtLoginSuccessHandler(ObjectMapper objectMapper, JwtTokenProvider tokenProvider,
-      JwtRegistry jwtRegistry, CacheManager cacheManager) {
-    this.objectMapper = objectMapper;
-    this.tokenProvider = tokenProvider;
-    this.jwtRegistry = jwtRegistry;
-    this.cacheManager = cacheManager;
-  }
-
-  public JwtLoginSuccessHandler(ObjectMapper objectMapper, JwtTokenProvider tokenProvider,
-      JwtRegistry jwtRegistry) {
-    this(objectMapper, tokenProvider, jwtRegistry, null);
-  }
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request,
@@ -76,7 +59,6 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 refreshToken
             )
         );
-        evictUsersCache();
 
         log.info("JWT access and refresh tokens issued for user: {}", userDetails.getUsername());
 
@@ -99,13 +81,4 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     }
   }
 
-  private void evictUsersCache() {
-    if (cacheManager == null) {
-      return;
-    }
-    Cache cache = cacheManager.getCache(CacheNames.USERS);
-    if (cache != null) {
-      cache.clear();
-    }
-  }
 }

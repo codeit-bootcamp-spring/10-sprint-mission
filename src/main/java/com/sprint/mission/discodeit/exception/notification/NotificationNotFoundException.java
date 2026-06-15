@@ -14,4 +14,4 @@ public class NotificationNotFoundException extends NotificationException {
     exception.addDetail("notificationId", notificationId);
     return exception;
   }
-}
+} 

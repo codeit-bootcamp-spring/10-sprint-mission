@@ -23,8 +23,9 @@ public class BinaryContent extends BaseUpdatableEntity {
   @Column(length = 100, nullable = false)
   private String contentType;
   @Enumerated(EnumType.STRING)
-  @Column(length = 20, nullable = false)
+  @Column(nullable = false)
   private BinaryContentStatus status = BinaryContentStatus.PROCESSING;
+
 
   public BinaryContent(String fileName, Long size, String contentType) {
     this.fileName = fileName;
@@ -32,9 +33,7 @@ public class BinaryContent extends BaseUpdatableEntity {
     this.contentType = contentType;
   }
 
-  public void updateStatus(BinaryContentStatus newStatus) {
-    if (newStatus != null && !newStatus.equals(this.status)) {
-      this.status = newStatus;
-    }
+  public void updateStatus(BinaryContentStatus status) {
+    this.status = status;
   }
 }

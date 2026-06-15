@@ -206,18 +206,18 @@ class UserApiIntegrationTest {
     // Given
     // 존재하지 않는 UUID를 사용하여 DiscodeitUserDetails 생성
     UUID nonExistentUserId = UUID.fromString("00000000-0000-0000-0000-000000000999");
-
+    
     // 가짜 UserDto 생성 (인증용)
     UserDto fakeUser = new UserDto(
         nonExistentUserId,
-        "fakeuser",
-        "fake@example.com",
-        null,
-        false,
-        Role.USER
+        "fakeuser", 
+        "fake@example.com", 
+        null, 
+        false, 
+Role.USER
     );
     DiscodeitUserDetails userDetails = new DiscodeitUserDetails(fakeUser, "Password1!");
-
+    
     UserUpdateRequest updateRequest = new UserUpdateRequest(
         "updateduser",
         "updated@example.com",
@@ -278,15 +278,15 @@ class UserApiIntegrationTest {
     // Given
     // 존재하지 않는 UUID를 사용하여 DiscodeitUserDetails 생성
     UUID nonExistentUserId = UUID.fromString("00000000-0000-0000-0000-000000000999");
-
+    
     // 가짜 UserDto 생성 (인증용)
     UserDto fakeUser = new UserDto(
         nonExistentUserId,
-        "fakeuser",
-        "fake@example.com",
-        null,
-        false,
-        Role.USER
+        "fakeuser", 
+        "fake@example.com", 
+        null, 
+        false, 
+Role.USER
     );
     DiscodeitUserDetails userDetails = new DiscodeitUserDetails(fakeUser, "Password1!");
 

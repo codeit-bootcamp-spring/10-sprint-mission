@@ -1,17 +1,14 @@
 package com.sprint.mission.discodeit.storage.s3;
 
-import com.sprint.mission.discodeit.config.MDCLoggingInterceptor;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
-import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
+import com.sprint.mission.discodeit.event.message.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
@@ -43,10 +40,11 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   private final String secretKey;
   private final String region;
   private final String bucket;
-  private final ApplicationEventPublisher eventPublisher;
 
   @Value("${discodeit.storage.s3.presigned-url-expiration:600}") // 기본값 10분
   private long presignedUrlExpirationSeconds;
+
+  private final ApplicationEventPublisher eventPublisher;
 
   public S3BinaryContentStorage(
       @Value("${discodeit.storage.s3.access-key}") String accessKey,
@@ -62,12 +60,13 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     this.eventPublisher = eventPublisher;
   }
 
-  @Override
+
   @Retryable(
-      retryFor = RuntimeException.class,
+      retryFor = S3Exception.class,
       maxAttempts = 3,
       backoff = @Backoff(delay = 1000, multiplier = 2)
   )
+  @Override
   public UUID put(UUID binaryContentId, byte[] bytes) {
     String key = binaryContentId.toString();
     try {
@@ -79,29 +78,23 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
           .build();
 
       s3Client.putObject(request, RequestBody.fromBytes(bytes));
-      log.info("S3 파일 업로드 성공: {}", key);
+      log.info("S3에 파일 업로드 성공: {}", key);
 
       return binaryContentId;
     } catch (S3Exception e) {
-      log.warn("S3 파일 업로드 실패, 재시도 예정: key={}, error={}", key, e.getMessage());
-      throw new RuntimeException("S3 파일 업로드 실패: " + key, e);
+      log.error("S3에 파일 업로드 실패: {}", e.getMessage());
+      throw e;
     }
   }
 
   @Recover
-  public UUID recover(RuntimeException exception, UUID binaryContentId, byte[] bytes) {
-    String requestId = Optional.ofNullable(MDC.get(MDCLoggingInterceptor.REQUEST_ID))
-        .orElse("N/A");
+  public UUID recover(S3Exception e, UUID binaryContentId, byte[] bytes) {
+    log.error("S3 업로드 재시도 실패: {}, key={}", e.getMessage(), binaryContentId);
+    eventPublisher.publishEvent(
+        new S3UploadFailedEvent(binaryContentId, e)
+    );
 
-    eventPublisher.publishEvent(new S3UploadFailedEvent(
-        binaryContentId,
-        requestId,
-        exception.getMessage()
-    ));
-
-    log.error("S3 파일 업로드 최종 실패: requestId={}, binaryContentId={}",
-        requestId, binaryContentId, exception);
-    throw exception;
+    throw new RuntimeException(e);
   }
 
   @Override
@@ -118,7 +111,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
       byte[] bytes = s3Client.getObjectAsBytes(request).asByteArray();
       return new ByteArrayInputStream(bytes);
     } catch (S3Exception e) {
-      log.error("S3 파일 다운로드 실패: {}", e.getMessage());
+      log.error("S3에서 파일 다운로드 실패: {}", e.getMessage());
       throw new NoSuchElementException("File with key " + key + " does not exist");
     }
   }
@@ -140,7 +133,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
       String key = metaData.id().toString();
       String presignedUrl = generatePresignedUrl(key, metaData.contentType());
 
-      log.info("Presigned URL 생성 완료: {}", presignedUrl);
+      log.info("생성된 Presigned URL: {}", presignedUrl);
 
       return ResponseEntity
           .status(HttpStatus.FOUND)
@@ -180,4 +173,4 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         )
         .build();
   }
-}
+} 
