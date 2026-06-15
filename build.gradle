@@ -3,10 +3,11 @@ plugins {
     id 'org.springframework.boot' version '3.5.10'
     id "io.spring.dependency-management" version '1.1.6'
     id "com.autonomousapps.dependency-analysis" version "3.6.1"
+    id 'jacoco'
 }
 
 group = 'com.sprint.mission'
-version = '1.2-M8'
+version = '2.2-M11'
 
 repositories {
     mavenCentral()
@@ -29,9 +30,12 @@ dependencies {
     implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui')
     implementation('org.springframework.boot:spring-boot-starter-data-jpa')
     implementation('org.springframework.boot:spring-boot-starter-aop')
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation('software.amazon.awssdk:s3')
     implementation('org.flywaydb:flyway-core')
     implementation('org.flywaydb:flyway-database-postgresql')
+    implementation("com.nimbusds:nimbus-jose-jwt:10.9")
+    implementation('org.springframework.retry:spring-retry')
 
     implementation 'io.github.openfeign.querydsl:querydsl-jpa:7.1'
     annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:7.1:jpa'
@@ -51,15 +55,76 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation('org.springframework.boot:spring-boot-starter-test')
-    testImplementation('com.h2database:h2')
+    testImplementation 'org.springframework.security:spring-security-test'
     testImplementation('org.testcontainers:postgresql')
     testImplementation('org.testcontainers:junit-jupiter')
-
-    testImplementation platform('org.instancio:instancio-bom:6.0.0-RC2')
-    testImplementation('org.instancio:instancio-core')
-    testImplementation('org.instancio:instancio-junit')
 }
 
-test {
+tasks.register('copyFrontApiJson', Copy) {
+    from "${project.rootDir}/discodeit-front/api.json"
+    into "${project.projectDir}/src/main/resources/static"
+}
+
+tasks.named('processResources') {
+    dependsOn copyFrontApiJson
+}
+
+tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = true
+    }
+    classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it).exclude { element ->
+            def path = element.relativePath.pathString.replace('\\', '/')
+            if (path.contains("/mapper/") || path.contains("/dto/")) return true
+            if (path.contains("Discodeit.class")) return true
+            if (path.contains("Interceptor") || path.contains("Filter")) return true
+            if (path.matches(".*Q[A-Z].*")) return true
+
+            if (path.contains("/common/")) {
+                return !path.contains("/common/support/")
+            }
+
+            if (path.contains("/global/")) {
+                return !(path.contains("/global/security/") || path.contains("/global/infra/") || path.contains("/global/validation/"))
+            }
+
+            if (path.contains("/domain/entity/")) {
+                if (path.endsWith("UserCredential.class") || path.endsWith("RefreshToken.class") ||
+                    path.endsWith("User.class") || path.endsWith("Message.class")) {
+                    return false
+                }
+                return true
+            }
+
+            if (path.contains("/domain/")) {
+                return true
+            }
+
+            return false
+        }
+    }))
+}
+
+import java.awt.Desktop
+
+jacocoTestReport {
+    doLast {
+        boolean isBuildTaskRun = gradle.startParameter.taskNames.contains('build')
+
+        if (isBuildTaskRun) {
+            def reportFile = file("${layout.buildDirectory.get()}/reports/jacoco/test/html/index.html")
+            if (reportFile.exists() && Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(reportFile.toURI())
+            }
+        }
+    }
 }

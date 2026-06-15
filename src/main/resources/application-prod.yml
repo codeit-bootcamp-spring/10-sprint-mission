@@ -18,7 +18,7 @@ spring:
     defer-datasource-initialization: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
         jdbc.batch_size: 100
         order_inserts: true
         order_updates: true
@@ -31,14 +31,3 @@ logging:
     com.sprint.mission.discodeit: info
     org.hibernate.orm.jdbc.bind: warn
     org.hibernate.SQL: warn
-
-  file:
-    name: .logs/discodeit.log
-  logback:
-    rollingpolicy:
-      file-name-pattern: ${LOG_FILE}.%d{yyyy-MM-dd}.%i.log
-      max-file-size: 10MB
-      clean-history-on-start: true
-      max-history: 30
-  pattern:
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
