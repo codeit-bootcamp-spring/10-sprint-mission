@@ -21,5 +21,4 @@ public class MessageDto {
     private Instant updatedAt;
     private List<BinaryContentDto> attachments;
     private String content;
-
 }

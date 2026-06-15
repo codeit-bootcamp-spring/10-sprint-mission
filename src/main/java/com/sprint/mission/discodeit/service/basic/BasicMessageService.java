@@ -61,21 +61,23 @@ public class BasicMessageService implements MessageService {
             attachments = new ArrayList<>();
         }
 
-        attachments.forEach(bc -> {
-            BinaryContent binaryContent;
-            try {
-                binaryContent = new BinaryContent(
-                        bc.getSize(),
-                        bc.getOriginalFilename(),
-                        bc.getContentType());
-                binaryContent = binaryContentRepository.save(binaryContent);
-                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bc.getBytes()));
-            } catch (IOException e) {
-                throw new FileUploadFailException();
-            }
-            message.addAttachment(binaryContent);
-            // 바이너리 컨텐츠는 조인 테이블의 casecade.All로 인해서 저장안해도됨
-        });
+        if(!attachments.isEmpty()){
+            attachments.forEach(bc -> {
+                BinaryContent binaryContent;
+                try {
+                    binaryContent = new BinaryContent(
+                            bc.getSize(),
+                            bc.getOriginalFilename(),
+                            bc.getContentType());
+                    binaryContent = binaryContentRepository.save(binaryContent);
+                    applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bc.getBytes()));
+                } catch (IOException e) {
+                    throw new FileUploadFailException();
+                }
+                message.addAttachment(binaryContent);
+                // 바이너리 컨텐츠는 조인 테이블의 casecade.All로 인해서 저장안해도됨
+            });
+        }
 
         // 데이터에 정보 저장
         Message savedMessage = messageRepository.save(message);
