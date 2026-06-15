@@ -22,7 +22,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         /// 클라이언트가 연결할 WebSocket 엔드포인트 정의
-        registry.addEndpoint("/ws-stomp")
+        registry.addEndpoint("/ws")
 
                 // CORS 허용
                 // 다른 Origin에서도 WebSocket 허용
