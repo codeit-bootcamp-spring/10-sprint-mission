@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.security.login.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.logout.JwtLogoutHandler;
 import com.sprint.mission.discodeit.security.login.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -69,6 +70,7 @@ public class SecurityConfig {
             .requestMatchers("/api/binaryContents//{binaryContentId}/download").permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
             .requestMatchers("/ws/**").permitAll()
+            .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
             .anyRequest().authenticated()
         )
         .exceptionHandling(e -> e
