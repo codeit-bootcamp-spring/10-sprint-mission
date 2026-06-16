@@ -1,6 +1,7 @@
-package com.sprint.mission.discodeit.security;
+package com.sprint.mission.discodeit.security.logout;
 
 import com.sprint.mission.discodeit.registry.JwtRegistry;
+import com.sprint.mission.discodeit.security.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;

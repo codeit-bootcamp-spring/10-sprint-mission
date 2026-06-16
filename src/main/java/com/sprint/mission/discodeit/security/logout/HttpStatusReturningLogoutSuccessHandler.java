@@ -1,5 +1,6 @@
-package com.sprint.mission.discodeit.security;
+package com.sprint.mission.discodeit.security.logout;
 
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
