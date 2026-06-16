@@ -21,11 +21,28 @@ public class SseService {
     private final static long TIMEOUT = 60L * 60L * 1000L;
 
     public SseEmitter connect(UUID receiverId, UUID lastEventId) {
-        SseEmitter sseEmitter = new SseEmitter();
+        SseEmitter sseEmitter = new SseEmitter(TIMEOUT);
+        sseEmitter.onCompletion(() -> {
+            log.info("SSE 연결 완료. receiverId = {}", receiverId);
+            emitterRepository.remove(receiverId, sseEmitter);
+        });
+        sseEmitter.onTimeout(() -> {
+            log.info("SSE 연결 타임아웃. receiverId = {}", receiverId);
+            emitterRepository.remove(receiverId, sseEmitter);
+        });
+        sseEmitter.onError(e -> {
+            log.info("SSE 연결 에러. receiverId = {}", receiverId);
+            emitterRepository.remove(receiverId, sseEmitter);
+        });
+
         emitterRepository.add(receiverId, sseEmitter);
+        log.info("SSE emitter 등록 완료. receiverId = {}, lastEventId = {}", receiverId, lastEventId);
 
         // 연결 직후 메시지를 보내 통로를 열어둠
-        ping(sseEmitter);
+        boolean isAlive = ping(sseEmitter);
+        if(!isAlive){
+            emitterRepository.remove(receiverId, sseEmitter);
+        }
         return sseEmitter;
     }
 
@@ -39,7 +56,7 @@ public class SseService {
                                     .name(eventName)
                                     .data(data)
                     );
-                } catch (IOException e){
+                } catch (Exception e){
                     log.info("sseEmiter연결이 끊겼습니다. receiverId = {}", receiverId);
                     emitterRepository.remove(receiverId, emitter);
                 }

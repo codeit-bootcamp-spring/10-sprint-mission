@@ -79,8 +79,6 @@ public class BasicChannelService implements ChannelService {
         channel.setType(ChannelType.PRIVATE);
         channelRepository.save(channel);
 
-        ChannelDto dto = channelMapper.toDto(channel);
-        List<SseDto>  sseDtos = new ArrayList<>();
 
         // 입력으로 들어온 유저 당 readStatus도 생성 후 저장
         // n+1 수정해야함
@@ -88,14 +86,21 @@ public class BasicChannelService implements ChannelService {
                 .map(id -> userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id)))
                 .forEach(user ->{
                     readStatusRepository.save(new ReadStatus(user, channel, true));
-                    sseDtos.add(new SseDto(user.getId(), "channels.created",dto));
                 });
+
+        // readStatus 생성 이후로 만들어야함.
+        ChannelDto dto = channelMapper.toDto(channel);
+        List<SseDto>  sseDtos = new ArrayList<>();
+
+        for(UUID userId : request.getParticipantIds()){
+            sseDtos.add(new SseDto(userId, "channels.created",dto));
+        }
 
         applicationEventPublisher.publishEvent(new ChannelUpdatedEvent(sseDtos));
 
         clearPrivateChannelCacheForUsers(request.getParticipantIds());
         log.info("개인 채널 생성 성공: 채널 id = {}", channel.getId());
-        return channelMapper.toDto(channel);
+        return dto;
     }
 
     @Override
