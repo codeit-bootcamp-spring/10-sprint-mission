@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -24,6 +25,7 @@ public class SseMessageRepository {
     private final String eventId;
     private final String eventName;
     private final Object data;
+    private final Collection<UUID> receiverIds;
   }
 
   public void save(UUID eventId, SseMessage message) {
@@ -38,13 +40,18 @@ public class SseMessageRepository {
     }
   }
 
-  public List<SseMessage> findAllAfter(UUID lastEventId) {
+  public List<SseMessage> findAllAfter(UUID lastEventId, UUID targetReceiverId) {
     List<SseMessage> missingMessages = new ArrayList<>();
     boolean found = false;
+
+    if (lastEventId != null && !messages.containsKey(lastEventId)) {
+      found = true;
+    }
+
     for (UUID eventId : eventIdQueue) {
       if (found) {
         SseMessage message = messages.get(eventId);
-        if (message != null) {
+        if (message != null && isMessageForReceiver(message, targetReceiverId)) {
           missingMessages.add(message);
         }
       } else if (eventId.equals(lastEventId)) {
@@ -52,5 +59,12 @@ public class SseMessageRepository {
       }
     }
     return missingMessages;
+  }
+
+  private boolean isMessageForReceiver(SseMessage message, UUID targetReceiverId) {
+    if (message.getReceiverIds() == null || message.getReceiverIds().isEmpty()) {
+      return true;
+    }
+    return message.getReceiverIds().contains(targetReceiverId);
   }
 }

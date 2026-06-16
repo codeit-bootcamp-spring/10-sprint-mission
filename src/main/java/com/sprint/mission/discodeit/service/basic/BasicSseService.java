@@ -68,7 +68,7 @@ public class BasicSseService implements SseService {
     SseEmitter emitter = new SseEmitter(TIMEOUT);
     sseEmitterRepository.save(receiverId, emitter);
     if (lastEventId != null) {
-      for (SseMessage message : sseMessageRepository.findAllAfter(lastEventId)) {
+      for (SseMessage message : sseMessageRepository.findAllAfter(lastEventId, receiverId)) {
         sendToEmitter(
             receiverId,
             emitter,
@@ -91,7 +91,7 @@ public class BasicSseService implements SseService {
   @Override
   public void send(Collection<UUID> receiverIds, String eventName, Object data) {
     log.info("[SSE] SSE send 요청 receiverCount={}", receiverIds.size());
-    String eventIdStr = saveMessageAndGetId(eventName, data).toString();
+    String eventIdStr = saveMessageAndGetId(eventName, data, receiverIds).toString();
     for (UUID receiverId : receiverIds) {
       for (SseEmitter emitter : sseEmitterRepository.findByReceiverId(receiverId)) {
         sendToEmitter(receiverId, emitter, eventIdStr, eventName, data);
@@ -102,7 +102,7 @@ public class BasicSseService implements SseService {
   @Override
   public void broadcast(String eventName, Object data) {
     log.info("[SSE] SSE broadcast 요청");
-    String eventIdStr = saveMessageAndGetId(eventName, data).toString();
+    String eventIdStr = saveMessageAndGetId(eventName, data, null).toString();
     sseEmitterRepository.findAll().forEach((receiverId, emitters) -> {
       for (SseEmitter emitter : emitters) {
         sendToEmitter(receiverId, emitter, eventIdStr, eventName, data);
@@ -140,9 +140,10 @@ public class BasicSseService implements SseService {
     });
   }
 
-  private UUID saveMessageAndGetId(String eventName, Object data) {
+  private UUID saveMessageAndGetId(String eventName, Object data, Collection<UUID> receiverIds) {
     UUID eventId = UUID.randomUUID();
-    sseMessageRepository.save(eventId, new SseMessage(eventId.toString(), eventName, data));
+    sseMessageRepository.save(eventId,
+        new SseMessage(eventId.toString(), eventName, data, receiverIds));
     return eventId;
   }
 
