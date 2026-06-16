@@ -27,7 +27,18 @@ spring:
       hibernate:
         default_batch_fetch_size: 100
   cache:
-    type: caffeine
+    cache:
+      type: redis
+      cache-names:
+        - channels
+        - notifications
+        - users
+      redis:
+        enable-statistics: true
+      data:
+        redis:
+          host: ${REDIS_HOST:localhost}
+          port: ${REDIS_PORT:6379}
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
