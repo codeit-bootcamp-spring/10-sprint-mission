@@ -3,10 +3,12 @@ package com.sprint.mission.discodeit.listener;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.sse.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -15,6 +17,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -31,6 +34,8 @@ public class NotificationRequiredEventListener {
   private final ReadStatusRepository readStatusRepository;
   private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
+  private final NotificationMapper notificationMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   @CacheEvict(value = "notifications", allEntries = true)
   @Async("eventTaskExecutor")
@@ -52,6 +57,9 @@ public class NotificationRequiredEventListener {
         ))
         .toList();
     notificationRepository.saveAll(notifications);
+    eventPublisher.publishEvent(new NotificationCreatedEvent(notifications.stream()
+        .map(notificationMapper::toDto)
+        .toList()));
   }
 
   @CacheEvict(value = "notifications", allEntries = true)
@@ -70,6 +78,8 @@ public class NotificationRequiredEventListener {
         content
     );
     notificationRepository.save(notification);
+    eventPublisher.publishEvent(
+        new NotificationCreatedEvent(List.of(notificationMapper.toDto(notification))));
   }
 
   @CacheEvict(value = "notifications", allEntries = true)
@@ -90,5 +100,8 @@ public class NotificationRequiredEventListener {
         ))
         .toList();
     notificationRepository.saveAll(notifications);
+    eventPublisher.publishEvent(new NotificationCreatedEvent(notifications.stream()
+        .map(notificationMapper::toDto)
+        .toList()));
   }
 }
