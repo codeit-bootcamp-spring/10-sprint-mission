@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,7 @@ public class BasicNotificationService implements NotificationService {
   private final NotificationMapper notificationMapper;
 
   // 알림 목록 조회
+  @Cacheable(value = "notifications", key = "#receiverId")
   @Override
   public List<Notification> findAllByReceiverId(UUID receiverId) {
     log.debug("알림 목록 조회 요청: 사용자 ID = {}", receiverId);
@@ -32,6 +35,7 @@ public class BasicNotificationService implements NotificationService {
   }
 
   // 알림 확인 및 삭제
+  @CacheEvict(value = "notifications", key = "#requesterId")
   @Override
   @Transactional
   public void deleteById(UUID notificationId, UUID requesterId) {
