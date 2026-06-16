@@ -102,4 +102,12 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         .removeIf(info -> jwtTokenProvider.isExpired(info.refreshToken()))
     );
   }
+
+  @Override
+  public JwtInformation getJwtInformationByUserIdAndRefreshToken(UUID userId, String refreshToken) {
+    return origin.get(userId).stream()
+        .filter(info -> info.refreshToken().equals(refreshToken))
+        .findFirst()
+        .orElse(null);
+  }
 }

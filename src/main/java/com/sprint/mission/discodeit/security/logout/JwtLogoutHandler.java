@@ -1,6 +1,11 @@
 package com.sprint.mission.discodeit.security.logout;
 
+import com.sprint.mission.discodeit.dto.jwt.JwtInformation;
+import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.event.sse.UserChangedEvent;
+import com.sprint.mission.discodeit.event.sse.UserChangedEvent.Action;
 import com.sprint.mission.discodeit.registry.JwtRegistry;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -24,6 +30,7 @@ public class JwtLogoutHandler implements LogoutHandler {
   private final JwtRegistry jwtRegistry;
   private final JwtTokenProvider jwtTokenProvider;
   private final CacheManager cacheManager;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public void logout(HttpServletRequest request, HttpServletResponse response,
@@ -31,7 +38,6 @@ public class JwtLogoutHandler implements LogoutHandler {
     if (request.getCookies() == null) {
       return;
     }
-
     Arrays.stream(request.getCookies())
         .filter(cookie -> cookie.getName().equals(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME))
         .findFirst()
@@ -50,6 +56,18 @@ public class JwtLogoutHandler implements LogoutHandler {
           try {
             if (jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
               UUID userId = UUID.fromString(jwtTokenProvider.getSubject(refreshToken));
+              UserDto userDto = jwtRegistry.getJwtInformationByUserIdAndRefreshToken(
+                  userId, refreshToken).userDto();
+              UserDto logoutDto = new UserDto(
+                  userDto.id(),
+                  userDto.username(),
+                  userDto.email(),
+                  userDto.profile(),
+                  false,
+                  userDto.role()
+              );
+              eventPublisher.publishEvent(
+                  new UserChangedEvent(logoutDto, Action.UPDATED));
               jwtRegistry.invalidateJwtInformationByUserId(userId);
             }
           } catch (Exception e) {
