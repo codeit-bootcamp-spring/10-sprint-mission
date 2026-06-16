@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.listener;
 
 import com.sprint.mission.discodeit.dto.notification.NotificationDto;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.sse.BinaryContentUpdateEvent;
 import com.sprint.mission.discodeit.event.sse.ChannelChangedEvent;
 import com.sprint.mission.discodeit.event.sse.NotificationCreatedEvent;
@@ -42,6 +43,13 @@ public class SseEventListener {
 
   @Async("eventTaskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void on(RoleUpdatedEvent event) {
+    log.info("[SSE] 권한 변경 감지, 유저 SSE 연결 강제 종료 userId={}", event.userId());
+    sseService.disconnect(event.userId());
+  }
+
+  @Async("eventTaskExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void on(BinaryContentUpdateEvent event) {
     log.debug("[SSE] 파일 업로드 상태 변경 이벤트 수신: binaryContentId={}", event.binaryContentDto().id());
     sseService.broadcast(
@@ -61,7 +69,7 @@ public class SseEventListener {
   }
 
   @Async("eventTaskExecutor")
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
   public void on(UserChangedEvent event) {
     log.debug("[SSE] 사용자 갱신 이벤트 수신: channelId={}", event.userDto().id());
     sseService.broadcast(

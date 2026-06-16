@@ -121,6 +121,25 @@ public class BasicSseService implements SseService {
     });
   }
 
+  @Override
+  public void disconnect(UUID receiverId) {
+    log.info("[SSE] 유저 강제 연결 종료 요청: userId={}", receiverId);
+
+    sseEmitterRepository.findByReceiverId(receiverId).forEach(emitter -> {
+      try {
+        SseEventBuilder event = SseEmitter.event()
+            .name("auth.expired")
+            .data("권한 변경 로그아웃", MediaType.TEXT_PLAIN);
+        emitter.send(event);
+      } catch (IOException e) {
+        log.warn("[SSE] 강제 종료 이벤트 전송 실패: userId={}", receiverId);
+      } finally {
+        emitter.complete();
+        sseEmitterRepository.delete(receiverId, emitter);
+      }
+    });
+  }
+
   private UUID saveMessageAndGetId(String eventName, Object data) {
     UUID eventId = UUID.randomUUID();
     sseMessageRepository.save(eventId, new SseMessage(eventId.toString(), eventName, data));

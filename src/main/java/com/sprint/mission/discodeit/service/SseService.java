@@ -13,4 +13,6 @@ public interface SseService {
   void broadcast(String eventName, Object data);
 
   void cleanUp();
+
+  void disconnect(UUID receiverId);
 }
