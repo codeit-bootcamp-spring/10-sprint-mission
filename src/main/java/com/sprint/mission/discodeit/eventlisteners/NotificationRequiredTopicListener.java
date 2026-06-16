@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.eventlisteners;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.notificationdto.NotificationDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.Notification;
@@ -16,6 +17,10 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.sse.SseMessageRepository;
+import com.sprint.mission.discodeit.service.ReadStatusService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.SseService;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,6 +30,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -36,24 +43,19 @@ public class NotificationRequiredTopicListener {
   private final NotificationRepository notificationRepository;
   private final MessageRepository messageRepository;
   private final ReadStatusRepository readStatusRepository;
+  private final ReadStatusService readStatusService;
+  private final SseService sseService;
 
-  @KafkaListener(topics = "discodeit.MessageCreatedEvent", groupId = "discodeit-group")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   @Caching(evict = {
       @CacheEvict(cacheNames = "channelsByUser", allEntries = true),
       // 메시지 생성 시 채널 목록 dto가 최신 메시지 시간을 포함->캐시 무효화 필요
       @CacheEvict(cacheNames = "notificationsByUser", allEntries = true)
       // 메시지 생성 시 알림 생성 -> 알림 캐시 무효화 필요ㅕ
   })
-  public void onMessageCreatedEvent(String kafkaEvent) {
-    MessageCreatedEvent event;
+  public void onMessageCreatedEvent(MessageCreatedEvent event) {
 
     // String의 kafkaEvent를 MessageCreatedEvent로 역직렬화
-    try {
-      event = objectMapper.readValue(kafkaEvent,
-          MessageCreatedEvent.class);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
 
     Optional<Message> optMessage = messageRepository.findById(event.messageId());
     Message message = optMessage.orElse(null); // 메시지
@@ -69,11 +71,25 @@ public class NotificationRequiredTopicListener {
         continue; // 메시지 작성자와 알림 수신 대상자가 같으면 무시
       }
 
-      notificationRepository.save(new Notification(
+      Notification notification = notificationRepository.save(new Notification(
           rs.getUser(),
           author.getUsername() + " (#" + channel.getName() + ")",
           message.getContent()
       ));
+
+      NotificationDto dto = new NotificationDto(
+          notification.getId(),
+          notification.getCreatedAt(),
+          notification.getReceiver().getId(),
+          notification.getTitle(),
+          notification.getContent()
+      );
+
+      sseService.send(List.of(receiver.getId()),
+          "notifications.created",
+          dto
+      );
+
     }
   }
 
@@ -95,12 +111,26 @@ public class NotificationRequiredTopicListener {
     User receiver = userRepository.findById(event.userId())
         .orElseThrow(() -> new UserNotFoundException(event.userId()));
 
-    // 알림 객체 생성
-    notificationRepository.save(new Notification(
+    // 알림 객체 생성 및 알림 생성 이벤트 전송
+    Notification notification = notificationRepository.save(new Notification(
         receiver,
         "권한이 변경되었습니다.",
         event.previousRole().name() + " -> " + event.newRole().name()
     ));
+
+    NotificationDto notificationDto = new NotificationDto(
+        notification.getId(),
+        notification.getCreatedAt(),
+        notification.getReceiver().getId(),
+        notification.getTitle(),
+        notification.getContent()
+    );
+
+    sseService.send(
+        List.of(receiver.getId()),
+        "notifications.created",
+        notificationDto
+    );
 
   }
 
@@ -131,11 +161,25 @@ public class NotificationRequiredTopicListener {
     List<User> admins = userRepository.findAllByRole(Role.ADMIN);
     // 유저 리스트를 순회하면서 알림 객체 생성 및 저장
     for (User admin : admins) {
-      notificationRepository.save(new Notification(
+      Notification notification = notificationRepository.save(new Notification(
           admin,
           "작업 실패: " + "S3 파일 업로드 실패",
           content
       ));
+
+      NotificationDto notificationDto = new NotificationDto(
+          notification.getId(),
+          notification.getCreatedAt(),
+          notification.getReceiver().getId(),
+          notification.getTitle(),
+          notification.getContent()
+      );
+
+      sseService.send(
+          List.of(admin.getId()),
+          "notifications.created",
+          notificationDto
+      );
     }
 
 

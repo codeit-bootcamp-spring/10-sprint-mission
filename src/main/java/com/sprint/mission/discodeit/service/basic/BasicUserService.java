@@ -8,6 +8,9 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.enums.Role;
 import com.sprint.mission.discodeit.events.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.events.UserCreatedEvent;
+import com.sprint.mission.discodeit.events.UserDeletedEvent;
+import com.sprint.mission.discodeit.events.UserUpdatedEvent;
 import com.sprint.mission.discodeit.exception.FieldNotValidException;
 import com.sprint.mission.discodeit.exception.RequestNullException;
 import com.sprint.mission.discodeit.exception.user.UserEmailDuplicateException;
@@ -104,7 +107,10 @@ public class BasicUserService implements UserService {
     // 사용자 생성 성공 로그
     log.info("사용자 생성 및 영속화 완료: userId={}", savedUser.getId());
 
-    return userMapper.toDto(savedUser); // entities -> DTO
+    UserDto userDto = userMapper.toDto(savedUser);
+    eventPublisher.publishEvent(new UserCreatedEvent(userDto));
+
+    return userDto; // entities -> DTO
   }
 
   // 유저 ID로 해당 유저가 레포내에 존재하는지 찾고 UserResponseDTO를 반환하는 메소드
@@ -217,7 +223,10 @@ public class BasicUserService implements UserService {
 
     log.debug("영속화 된 user 정보: userId={}", savedUser.getId());
     log.info("유저 업데이트 성공: username={}", savedUser.getUsername());
-    return userMapper.toDto(savedUser); // Entities -> DTO 후 리
+    UserDto userDto = userMapper.toDto(savedUser);
+    eventPublisher.publishEvent(new UserUpdatedEvent(userDto));
+
+    return userDto;
   }
 
   // 지우고자 하는 유저를 지우면서 관련된 객체와 정보(채널 가입 여부 및 메시지)도 같이 삭제하는 메소드
@@ -236,8 +245,10 @@ public class BasicUserService implements UserService {
     // 존재 검증 후 예외 처리 결정
     User user = getUser(userId);
     // 해당 유저 ID가 레포지토리 내에 존재하는지 확인하고 없으면 예외 던짐.
+    UserDto userDto = userMapper.toDto(user);
     userRepository.delete(user);
     userRepository.flush();
+    eventPublisher.publishEvent(new UserDeletedEvent(userDto));
 
     // 삭제 성공 로그
     log.info("[User] 유저 삭제 성공: userId={}", userId);

@@ -79,7 +79,8 @@ public class SecurityConfig {
                 "/api/auth/logout",
                 "/api/auth/refresh",
                 "/api/channels/**",
-                "/api/users/**")
+                "/api/users/**",
+                "/ws/**")
 
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
@@ -110,6 +111,7 @@ public class SecurityConfig {
                 "/assets/**",
                 "/static/**",
                 "/favicon.ico",
+                "/ws/**",
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
                 "/actuator/**"
@@ -129,6 +131,7 @@ public class SecurityConfig {
             // 읽기 정보 관련 요청은 인증된 사용자만 접근 가능
             .requestMatchers("/api/readStatuses/**").authenticated()
             .requestMatchers("/api/notifications/**").authenticated()
+            .requestMatchers("/api/sse").authenticated()
             // 공용 채널 생성은 어드민이나 채널 매니저만 요청 가능
             .requestMatchers(HttpMethod.POST, "/api/channels/public")
             .hasAnyRole("CHANNEL_MANAGER", "ADMIN")

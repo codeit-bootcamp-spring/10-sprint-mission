@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.enums.binarycontents.BinaryContentStatus;
 import com.sprint.mission.discodeit.events.AdminBinaryContentUploadFailedEvent;
 import com.sprint.mission.discodeit.events.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.events.BinaryContentUpdatedEvent;
 import com.sprint.mission.discodeit.exception.FieldNotValidException;
 import com.sprint.mission.discodeit.exception.RequestNullException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
@@ -140,7 +141,13 @@ public class BasicBinaryContentService implements BinaryContentService {
     BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId).orElseThrow(
         () -> new BinaryContentNotFoundException(binaryContentId)
     );
+    BinaryContentStatus previousStatus = binaryContent.getStatus();
     binaryContent.updateStatus(status);
+
+    BinaryContentDto binaryContentDto = binaryContentMapper.toDto(binaryContent);
+    if (previousStatus != status) {
+      eventPublisher.publishEvent(new BinaryContentUpdatedEvent(binaryContentDto));
+    }
 
     return toDtoWithBytes(binaryContent);
   }

@@ -45,7 +45,11 @@ public class BasicNotificationService implements NotificationService {
 
     // 알림 객체를 레포지토리로부터 가져옴
     Notification notification = notificationRepository.findById(notificationId)
-        .orElseThrow(() -> new NotificationNotFoundException(notificationId)); // 404
+        .orElse(null);
+
+    if (notification == null) {
+      return;
+    }
 
     if (!notification.getReceiver().getId().equals(currentUserId)) {
       throw new AccessDeniedException("다른 유저의 알림을 삭제할 수 없음"); // 403 exception

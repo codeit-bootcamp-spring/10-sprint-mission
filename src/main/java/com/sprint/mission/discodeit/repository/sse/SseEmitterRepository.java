@@ -20,8 +20,7 @@ public class SseEmitterRepository {
 
   // 수신자 ID를 통해 SseEmitter 목록을 반환하는 메서드
   public List<SseEmitter> findByReceiverId(UUID receiverId) {
-    List<SseEmitter> emitters = data.get(receiverId);
-    return emitters.isEmpty() ? null : emitters;
+    return data.getOrDefault(receiverId, List.of());
   }
 
   // 레포지토리 내 Map 자료구조에 receiverId가 없으면 새로운 리스트를 생성,

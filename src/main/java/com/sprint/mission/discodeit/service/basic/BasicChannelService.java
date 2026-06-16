@@ -9,6 +9,9 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.events.ChannelCreatedEvent;
+import com.sprint.mission.discodeit.events.ChannelDeletedEvent;
+import com.sprint.mission.discodeit.events.ChannelUpdatedEvent;
 import com.sprint.mission.discodeit.exception.FieldNotValidException;
 import com.sprint.mission.discodeit.exception.RequestNullException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNameDuplicationException;
@@ -33,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -50,6 +54,7 @@ public class BasicChannelService implements ChannelService {
   private final UserRepository userRepository;
   private final MessageRepository messageRepository;
   private final ChannelMapper channelMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   @Transactional
@@ -81,7 +86,10 @@ public class BasicChannelService implements ChannelService {
     Channel saved = channelRepository.save(channel);
     log.info("[Channel] 공개 채널 생성 및 영속화 완료: channelId={}", saved.getId());
 
-    return channelMapper.toDto(saved, null);
+    ChannelDto channelDto = channelMapper.toDto(saved, null);
+    eventPublisher.publishEvent(new ChannelCreatedEvent(channelDto));
+
+    return channelDto;
   }
 
   @Transactional
@@ -136,7 +144,12 @@ public class BasicChannelService implements ChannelService {
 
     log.info("사설 채널 생성 및 영속화 성공");
 
-    return channelMapper.toDto(savedWithParticipants, null);
+    ChannelDto channelDto = channelMapper.toDto(savedWithParticipants, null);
+
+    // 채널 생성 이벤트 발행
+    eventPublisher.publishEvent(new ChannelCreatedEvent(channelDto));
+
+    return channelDto;
   }
 
   @Transactional(readOnly = true)
@@ -228,7 +241,10 @@ public class BasicChannelService implements ChannelService {
     log.info("채널 수정 완료: channelNewName={}, channelNewDescription={}",
         channel.getName(), channel.getDescription());
 
-    return channelMapper.toDto(channel, lastMessage);
+    ChannelDto channelDto = channelMapper.toDto(channel, lastMessage);
+    eventPublisher.publishEvent(new ChannelUpdatedEvent(channelDto));
+
+    return channelDto;
   }
 
   @Override
@@ -293,7 +309,9 @@ public class BasicChannelService implements ChannelService {
     log.debug("[Channel] 삭제 할 채널 정보: channelId={}", channelId);
 
     // 채널 삭제
+    ChannelDto channelDto = channelMapper.toDto(channel, null);
     channelRepository.delete(channel);
+    eventPublisher.publishEvent(new ChannelDeletedEvent(channelDto));
 
     log.info("공개 채널 삭제 성공: channelName={}", channel.getName());
   }
@@ -310,7 +328,9 @@ public class BasicChannelService implements ChannelService {
     }
 
     log.debug("[Channel] 삭제 할 비공개 채널 정보: channelId={}", channelId);
+    ChannelDto channelDto = channelMapper.toDto(channel, null);
     channelRepository.delete(channel);
+    eventPublisher.publishEvent(new ChannelDeletedEvent(channelDto));
     log.info("비공개 채널 삭제 성공: channelName={}", channel.getName());
   }
 

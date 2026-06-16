@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.RefreshToken;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.enums.Role;
 import com.sprint.mission.discodeit.events.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.events.UserUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.registry.JwtRegistry;
@@ -53,11 +54,13 @@ public class BasicAuthService implements AuthService {
     Role previousRole = user.getRole();
     user.updateRole(req.newRole());
     // jwtRegistry에 기존에 존재하던 정보를 삭제
-    jwtRegistry.removeJwtInformationByUserId(req.userId());
     // 권한 업데이트 시 이벤트 생성
     eventPublisher.publishEvent(new RoleUpdatedEvent(user.getId(), previousRole, req.newRole()));
 
-    return userMapper.toDto(user);
+    UserDto userDto = userMapper.toDto(user);
+    eventPublisher.publishEvent(new UserUpdatedEvent(userDto));
+
+    return userDto;
   }
 
   @Transactional
