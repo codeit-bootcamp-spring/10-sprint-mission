@@ -121,7 +121,7 @@ public class JwtTokenProvider {
     Map<String, Object> claims = new HashMap<>();
     claims.put("username", userDto.username());
     claims.put("email", userDto.email());
-    claims.put("roles", userDto.role().getDbKey());
+    claims.put("roles", userDto.role().name());
     claims.put("userId", userDto.id());
 
     String subject = userDto.id().toString();

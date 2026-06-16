@@ -152,8 +152,8 @@ public class BasicUserService implements UserService {
     if (user.getRole() == request.newRole()) {
       return userMapper.toDto(user, false);
     }
-    String beforeRole = user.getRole().getDbKey();
-    String afterRole = request.newRole().getDbKey();
+    String beforeRole = user.getRole().name();
+    String afterRole = request.newRole().name();
     user.updateRole(request.newRole());
     authService.expireUserSessions(user.getId());
     eventPublisher.publishEvent(new RoleUpdatedEvent(user.getId(), beforeRole, afterRole));
