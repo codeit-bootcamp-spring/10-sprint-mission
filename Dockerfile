@@ -28,6 +28,6 @@ ENV JVM_OPTS=""
 
 COPY --from=builder /app/build/libs/*.jar /app/discodeit-1.2-M8.jar
 
-EXPOSE 80
+EXPOSE 8080
 
 ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} -jar /app/discodeit-1.2-M8.jar"]
