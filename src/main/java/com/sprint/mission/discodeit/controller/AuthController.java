@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.auth.jwt.JwtCookieManager;
 import com.sprint.mission.discodeit.auth.jwt.JwtInformation;
+import com.sprint.mission.discodeit.auth.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.JwtDto;
 import com.sprint.mission.discodeit.dto.UserDto;
@@ -27,6 +29,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 인증 및 권한 관련 요청을 처리하는 컨트롤러 클래스입니다.
+ * CSRF 토큰 발급, 권한 변경, 토큰 재발급 기능을 담당합니다.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
@@ -35,19 +41,11 @@ public class AuthController implements AuthApi {
 
   private final UserService userService;
   private final AuthService authService;
+  private final JwtCookieManager jwtCookieManager;
 
-//  // 현재 인증된 세션의 사용자 정보 반환
-//  @GetMapping("/me")
-//  public ResponseEntity<UserDto.Response> me(
-//      @AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-//    return ResponseEntity.ok(userDetails.getUserDto());
-//  }
-
-  // SPA 클라이언트를 위한 CSRF 토큰 발급 및 쿠키 생성 엔드포인트
-  @GetMapping("/csrf-token")
+  @Override
   public ResponseEntity<Map<String, String>> getCsrfToken(CsrfToken csrfToken) {
-    // 지연 로딩(Deferred Token) 구조이므로 getToken()을 호출해야 실 토큰이 생성되고 쿠키가 발급됨
-    log.debug("CSRF 토큰 발급 완료: {}", csrfToken.getHeaderName());
+    log.debug("[Auth] CSRF 토큰 발급 완료: {}", csrfToken.getHeaderName());
 
     return ResponseEntity
         .status(HttpStatus.NON_AUTHORITATIVE_INFORMATION)
@@ -57,37 +55,24 @@ public class AuthController implements AuthApi {
         ));
   }
 
-  // 사용자 권한 변경 API
-  @PutMapping("/role")
-  public ResponseEntity<UserDto.Response> updateRole(
-      @RequestBody @Valid UserRoleUpdateRequest request) {
+  @Override
+  public ResponseEntity<UserDto.Response> updateRole(UserRoleUpdateRequest request) {
+    log.info("[Auth] 사용자 권한 변경 요청: UserId={}, Role={}", request.userId(), request.newRole());
     return ResponseEntity.ok(userService.updateRole(request.userId(), request.newRole()));
   }
 
-  // Access Token 재발급
-  @PostMapping("/refresh")
-  public ResponseEntity<JwtDto> refresh(
-      @CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken,
-      HttpServletResponse response) {
+  @Override
+  public ResponseEntity<JwtDto> refresh(String refreshToken, HttpServletResponse response) {
     if (refreshToken == null || refreshToken.isBlank()) {
       throw AuthenticationRequiredException.withDetails("리프레시 토큰 쿠키가 없습니다.");
     }
 
-    // 1. 서비스 호출 및 결과 추출
     JwtInformation info = authService.refreshToken(refreshToken);
-    String newAccessToken = info.getAccessToken();
-    String newRefreshToken = info.getRefreshToken();
-    UserDto.Response userDto = info.getUserDto();
+    
+    // 전용 매니저를 통해 쿠키 설정 (보안 정책 통일)
+    jwtCookieManager.addRefreshTokenCookie(response, info.getRefreshToken());
 
-    // 2. 신규 리프레시 토큰 쿠키 설정 (Rotation)
-    Cookie cookie = new Cookie("REFRESH_TOKEN", newRefreshToken);
-    cookie.setHttpOnly(true);
-    cookie.setSecure(false); // 로컬 테스트용 (운영은 true)
-    cookie.setPath("/");
-    cookie.setMaxAge(7 * 24 * 60 * 60);
-    response.addCookie(cookie);
-
-    // 3. 바디에 userDto와 accessToken을 담아 응답
-    return ResponseEntity.ok(new JwtDto(userDto, newAccessToken));
+    log.info("[Auth] 액세스 토큰 재발급 완료: UserId={}", info.getUserDto().id());
+    return ResponseEntity.ok(new JwtDto(info.getUserDto(), info.getAccessToken()));
   }
 }

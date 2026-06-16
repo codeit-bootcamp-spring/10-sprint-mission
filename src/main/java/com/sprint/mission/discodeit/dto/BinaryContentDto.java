@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,7 +25,8 @@ public class BinaryContentDto {
             UUID id,
             String fileName,
             long size,
-            String contentType
+            String contentType,
+            BinaryContentStatus status
     ) {}
 
 }

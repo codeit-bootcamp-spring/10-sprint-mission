@@ -3,6 +3,9 @@ spring:
     activate:
       on-profile: dev
 
+  cache:
+    type: caffeine
+
   h2:
     console:
       enabled: true      # H2 콘솔 활성화
@@ -32,3 +35,4 @@ logging:
     com.sprint.mission.discodeit: debug
     org.hibernate.orm.queries: debug
     org.springframework.security: TRACE
+    org.springframework.cache: TRACE

@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.given;
 import com.sprint.mission.discodeit.config.AwsProperties;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.etc.S3DownloadException;
 import com.sprint.mission.discodeit.exception.etc.S3UploadException;
@@ -91,7 +92,7 @@ class S3BinaryContentStorageTest {
             // Given
             UUID id = UUID.randomUUID();
             byte[] data = "TDD 시작!".getBytes();
-            BinaryContent content = new BinaryContent("test.txt", "text/plain", data.length);
+            BinaryContent content = new BinaryContent("test.txt", "text/plain", data.length, BinaryContentStatus.SUCCESS);
             
             given(repository.findById(id)).willReturn(Optional.of(content));
 
@@ -114,7 +115,7 @@ class S3BinaryContentStorageTest {
             // Given
             UUID id = UUID.randomUUID();
             byte[] data = "test data".getBytes();
-            BinaryContent content = new BinaryContent("test.txt", "text/plain", data.length);
+            BinaryContent content = new BinaryContent("test.txt", "text/plain", data.length, BinaryContentStatus.SUCCESS);
             given(repository.findById(id)).willReturn(Optional.of(content));
 
             String originalBucket = awsProperties.getBucket();
@@ -136,7 +137,7 @@ class S3BinaryContentStorageTest {
             // Given
             UUID id = UUID.randomUUID();
             byte[] data = "test data".getBytes();
-            BinaryContent content = new BinaryContent("test.txt", "text/plain", data.length);
+            BinaryContent content = new BinaryContent("test.txt", "text/plain", data.length, BinaryContentStatus.SUCCESS);
             given(repository.findById(id)).willReturn(Optional.of(content));
 
             S3Client badS3Client = S3Client.builder()
@@ -163,7 +164,7 @@ class S3BinaryContentStorageTest {
             // Given
             UUID id = UUID.randomUUID();
             byte[] data = null; // null 데이터를 전달하여 NullPointerException (기본 예외) 유도
-            BinaryContent content = new BinaryContent("test.txt", "text/plain", 10);
+            BinaryContent content = new BinaryContent("test.txt", "text/plain", 10, BinaryContentStatus.SUCCESS);
             given(repository.findById(id)).willReturn(Optional.of(content));
 
             // When & Then
@@ -275,7 +276,7 @@ class S3BinaryContentStorageTest {
             // Given
             UUID id = UUID.randomUUID();
             BinaryContentDto.Response response = new BinaryContentDto.Response(
-                    id, "test-download.txt", 100L, "text/plain"
+                    id, "test-download.txt", 100L, "text/plain", BinaryContentStatus.SUCCESS
             );
             
             // When
@@ -295,7 +296,7 @@ class S3BinaryContentStorageTest {
             // Given
             UUID id = UUID.randomUUID();
             BinaryContentDto.Response response = new BinaryContentDto.Response(
-                    id, "error.txt", 0L, "text/plain"
+                    id, "error.txt", 0L, "text/plain", BinaryContentStatus.SUCCESS
             );
 
             // bucket을 null로 설정하여 IllegalArgumentException 유도

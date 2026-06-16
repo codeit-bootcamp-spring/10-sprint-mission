@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * 채널 관련 요청을 처리하는 컨트롤러 클래스입니다.
+ * 모든 요청 매핑 및 Swagger 문서는 ChannelApi 인터페이스에 정의되어 있습니다.
+ */
 @RestController
 @RequestMapping("/api/channels")
 @RequiredArgsConstructor
@@ -20,56 +24,38 @@ public class ChannelController implements ChannelApi {
     private final ChannelService channelService;
 
     @Override
-    @RequestMapping(method = RequestMethod.POST, value = "/public")
-    public ResponseEntity<ChannelDto.Response> createPublicChannel(
-            @RequestBody @Valid ChannelDto.PublicChannelCreateRequest request) {
-        ChannelDto.Response response = channelService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<ChannelDto.Response> createPublicChannel(ChannelDto.PublicChannelCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(channelService.create(request));
     }
 
     @Override
-    @RequestMapping(method = RequestMethod.POST, value = "/private")
-    public ResponseEntity<ChannelDto.Response> createPrivateChannel(
-            @RequestBody @Valid ChannelDto.PrivateChannelCreateRequest request) {
-        ChannelDto.Response response = channelService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<ChannelDto.Response> createPrivateChannel(ChannelDto.PrivateChannelCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(channelService.create(request));
     }
 
     @Override
-    @RequestMapping(method = RequestMethod.PATCH, value = "/{channelId}")
-    public ResponseEntity<ChannelDto.Response> updateChannel(
-            @PathVariable("channelId") UUID channelId,
-            @RequestBody @Valid ChannelDto.UpdatePublicRequest request) {
-        ChannelDto.Response response = channelService.update(channelId, request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ChannelDto.Response> updateChannel(UUID channelId, ChannelDto.UpdatePublicRequest request) {
+        return ResponseEntity.ok(channelService.update(channelId, request));
     }
 
     @Override
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{channelId}")
-    public ResponseEntity<Void> deleteChannel(@PathVariable("channelId") UUID channelId) {
+    public ResponseEntity<Void> deleteChannel(UUID channelId) {
         channelService.delete(channelId);
         return ResponseEntity.noContent().build();
     }
 
     @Override
-    @RequestMapping(method = RequestMethod.GET, value = "/{channelId}")
-    public ResponseEntity<ChannelDto.Response> findChannel(@PathVariable("channelId") UUID channelId) {
-        ChannelDto.Response response = channelService.find(channelId);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ChannelDto.Response> findChannel(UUID channelId) {
+        return ResponseEntity.ok(channelService.find(channelId));
     }
 
     @Override
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<ChannelDto.Response>> findAllByUser(@RequestParam("userId") UUID userId) {
-        List<ChannelDto.Response> response = channelService.findAllByUserId(userId);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<ChannelDto.Response>> findAllByUser(UUID userId) {
+        return ResponseEntity.ok(channelService.findAllByUserId(userId));
     }
 
     @Override
-    @RequestMapping(method = RequestMethod.GET, value = "/findAll")
     public ResponseEntity<List<ChannelDto.Response>> findAllChannels() {
-        List<ChannelDto.Response> response = channelService.findAll();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(channelService.findAll());
     }
-
 }

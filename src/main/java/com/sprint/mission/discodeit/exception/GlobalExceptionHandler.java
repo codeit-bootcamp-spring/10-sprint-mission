@@ -8,11 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -55,7 +57,7 @@ public class GlobalExceptionHandler {
     // URL 파라미터 예외
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
-            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException e) {
+            MethodArgumentTypeMismatchException e) {
         log.warn("MethodArgumentTypeMismatchException: {}", e.getMessage());
 
         String fieldName = e.getName();
@@ -121,6 +123,32 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(status)
                 .body(ErrorResponse.of(e, "PAYLOAD_TOO_LARGE", message, status.value(), details));
+    }
+
+    // 보안 권한 예외 (Spring Security @PreAuthorize 등)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
+        log.warn("AccessDeniedException: {}", e.getMessage());
+        ErrorCode errorCode = ErrorCode.ACCESS_DENIED;
+        
+        Map<String, Object> details = Map.of(
+                "reason", "해당 작업을 수행할 충분한 권한이 없습니다.",
+                "exceptionMessage", e.getMessage()
+        );
+
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ErrorResponse.of(e, errorCode.getCode(), errorCode.getMessage(), errorCode.getStatusValue(), details));
+    }
+
+    // 리소스를 찾을 수 없는 예외 (404)
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFoundException(NoResourceFoundException e) {
+        log.warn("NoResourceFoundException: {}", e.getMessage());
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        return ResponseEntity
+                .status(status)
+                .body(ErrorResponse.of(e, "RESOURCE_NOT_FOUND", "요청하신 리소스를 찾을 수 없습니다.", status.value(), null));
     }
 
     // 그 외 알수 없는 예외

@@ -3,6 +3,9 @@ spring:
     activate:
       on-profile: prod
 
+  cache:
+    type: redis
+
   datasource:
     url: jdbc:postgresql://localhost:5432/discodeit
     username: ${POSTGRES_USER}

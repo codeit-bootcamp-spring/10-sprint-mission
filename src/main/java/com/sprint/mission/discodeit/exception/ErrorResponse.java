@@ -37,11 +37,18 @@ public class ErrorResponse {
     // 그 외 Exception
     public static ErrorResponse of(Exception e, String code, String message, int status,
             Map<String, Object> details) {
+        Map<String, Object> finalDetails = details;
+        if (finalDetails == null) {
+            finalDetails = (status >= 500)
+                    ? Map.of("error", "서버 내부 오류 발생")
+                    : Map.of("error", "요청을 처리할 수 없습니다.");
+        }
+
         return new ErrorResponse(
                 Instant.now(),
                 code,
                 message,
-                details == null ? Map.of("error", "서버 내부 오류 발생") : details,
+                finalDetails,
                 e.getClass().getSimpleName(),
                 status
         );

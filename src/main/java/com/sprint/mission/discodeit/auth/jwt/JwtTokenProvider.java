@@ -16,6 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+/**
+ * JWT 토큰의 생성 및 유효성 검증을 담당하는 컴포넌트입니다.
+ * Nimbus JOSE + JWT 라이브러리를 사용합니다.
+ */
 @Slf4j
 @Component
 public class JwtTokenProvider {
@@ -39,14 +43,16 @@ public class JwtTokenProvider {
     byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
 
     if (keyBytes.length < 32) {
-      throw new IllegalArgumentException("JWT 비밀키는 최소 32바이트(256비트) 이상이어야 합니다.");
+      throw new IllegalArgumentException("JWT 비밀키는 최소 32바이트 이상이어야 합니다. (현재 길이: " + keyBytes.length + ")");
     }
 
     this.signer = new MACSigner(keyBytes);
     this.verifier = new MACVerifier(keyBytes);
   }
 
-  // Access Token 생성
+  /**
+   * 액세스 토큰 생성 (사용자 ID 및 권한 포함)
+   */
   public String generateAccessToken(Map<String, Object> claims, String subject) {
     try {
       Date expiration = new Date(System.currentTimeMillis() + accessTokenExpirationMinutes * 60 * 1000L);
@@ -54,26 +60,25 @@ public class JwtTokenProvider {
           .subject(subject)
           .expirationTime(expiration)
           .issueTime(new Date())
-          .issuer("example.com");
+          .issuer("discodeit.com");
 
       if (claims != null && claims.containsKey("roles")) {
           claimsSetBuilder.claim("roles", claims.get("roles"));
       }
 
-      SignedJWT signedJWT = new SignedJWT(
-          new JWSHeader(JWSAlgorithm.HS256),
-          claimsSetBuilder.build()
-      );
-
+      SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSetBuilder.build());
       signedJWT.sign(signer);
       return signedJWT.serialize();
 
     } catch (Exception e) {
-      throw new RuntimeException("JWT 발급 실패", e);
+      log.error("Access Token 생성 중 오류 발생: {}", e.getMessage());
+      throw new RuntimeException("토큰 생성 실패", e);
     }
   }
 
-  // Refresh Token 생성
+  /**
+   * 리프레시 토큰 생성 (Subject만 포함)
+   */
   public String generateRefreshToken(String subject) {
     try {
       Date now = new Date();
@@ -86,52 +91,51 @@ public class JwtTokenProvider {
           .build();
 
       SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
-
       signedJWT.sign(signer);
       return signedJWT.serialize();
 
     } catch (Exception e) {
-      throw new RuntimeException("JWT Refresh Token 발급 실패", e);
+      log.error("Refresh Token 생성 중 오류 발생: {}", e.getMessage());
+      throw new RuntimeException("리프레시 토큰 생성 실패", e);
     }
   }
 
-  // 토큰 유효성 검증
+  /**
+   * 토큰 유효성 및 만료 여부 확인
+   */
   public boolean validateToken(String token) {
     try {
       SignedJWT signedJWT = SignedJWT.parse(token);
 
-      // 서명 검증
       if (!signedJWT.verify(verifier)) {
-        log.warn("JWT 서명 검증 실패: 위변조된 토큰일 가능성이 있습니다.");
+        log.warn("JWT 서명 검증 실패");
         return false;
       }
 
-      // 만료 시간 검증
-      JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
-      Date expirationTime = claimsSet.getExpirationTime();
-
+      Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
       if (expirationTime == null || expirationTime.before(new Date())) {
-        log.info("JWT 만료: 만료된 토큰입니다. (만료시간: {})", expirationTime);
+        log.debug("JWT 만료됨: {}", expirationTime);
         return false;
       }
 
       return true;
 
-
     } catch (Exception e) {
-      // 파싱 실패 또는 검증 중 오류 발생 시 유효하지 않은 토큰으로 간주
-      log.error("JWT 검증 중 예외 발생: {}", e.getMessage());
+      log.debug("JWT 검증 실패: {}", e.getMessage());
       return false;
     }
   }
 
-  // 토큰에서 사용자 아이디(subject) 추출
+  /**
+   * 토큰에서 사용자 ID(Subject) 추출
+   */
   public String getUsername(String token) {
     try {
       SignedJWT signedJWT = SignedJWT.parse(token);
       return signedJWT.getJWTClaimsSet().getSubject();
     } catch (Exception e) {
-      throw new RuntimeException("JWT 파싱 실패", e);
+      log.error("JWT 파싱 실패: {}", e.getMessage());
+      throw new RuntimeException("토큰 해석 실패", e);
     }
   }
 }

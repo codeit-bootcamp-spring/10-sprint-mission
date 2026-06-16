@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.*;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -99,7 +100,7 @@ class BasicUserServiceTest {
         void create_Success_WithProfile() {
             // given
             BinaryContent profile = mock(BinaryContent.class);
-            BinaryContentDto.Response profileResponse = new BinaryContentDto.Response(profileId, "test.jpg", 1L, "");
+            BinaryContentDto.Response profileResponse = new BinaryContentDto.Response(profileId, "test.jpg", 1L, "", BinaryContentStatus.SUCCESS);
             UserDto.Response expectedUserResponse = new UserDto.Response(userId, "tester", "test@test.com", profileResponse, true, Role.USER);
 
             given(binaryContentRepository.findById(profileId)).willReturn(Optional.of(profile));

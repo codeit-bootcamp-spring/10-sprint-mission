@@ -21,11 +21,13 @@ public class ReadStatusDto {
             UUID id,
             UUID userId,
             UUID channelId,
-            Instant lastReadAt
+            Instant lastReadAt,
+            boolean notificationEnabled
     ) {}
 
     @Schema(name = "ReadStatusUpdateRequest", description = "수정할 읽음 상태 정보")
     public record UpdateRequest(
-            Instant newLastReadAt
+            Instant newLastReadAt,
+            Boolean newNotificationEnabled
     ) {}
 }

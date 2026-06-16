@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * 바이너리 컨텐츠 관련 요청을 처리하는 컨트롤러 클래스입니다.
+ */
 @RestController
 @RequestMapping("/api/binaryContents")
 @RequiredArgsConstructor
@@ -19,23 +22,18 @@ public class BinaryContentController implements BinaryContentApi {
     private final BinaryContentStorage binaryContentStorage;
 
     @Override
-    @RequestMapping(method = RequestMethod.GET, value = "/{binaryContentId}")
-    public ResponseEntity<BinaryContentDto.Response> findBinaryContent(@PathVariable("binaryContentId") UUID binaryContentId) {
-        BinaryContentDto.Response response = binaryContentService.find(binaryContentId);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<BinaryContentDto.Response> findBinaryContent(UUID binaryContentId) {
+        return ResponseEntity.ok(binaryContentService.find(binaryContentId));
     }
 
     @Override
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<BinaryContentDto.Response>> findAll(@RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
-        List<BinaryContentDto.Response> response = binaryContentService.findAllByIn(binaryContentIds);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<BinaryContentDto.Response>> findAll(List<UUID> binaryContentIds) {
+        return ResponseEntity.ok(binaryContentService.findAllByIn(binaryContentIds));
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/{binaryContentId}/download")
-    public ResponseEntity<?> download(@PathVariable("binaryContentId") UUID binaryContentId) {
+    @Override
+    public ResponseEntity<?> download(UUID binaryContentId) {
         BinaryContentDto.Response response = binaryContentService.find(binaryContentId);
         return binaryContentStorage.download(response);
     }
-
 }

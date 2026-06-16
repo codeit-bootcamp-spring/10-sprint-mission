@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
-import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 import com.sprint.mission.discodeit.auth.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.auth.handler.DiscodeitAccessDeniedHandler;
@@ -33,8 +33,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
+/**
+ * 시스템 전반의 보안 정책(인증/인가)을 설정하는 설정 클래스입니다.
+ */
 @Configuration
-@EnableMethodSecurity
+@EnableMethodSecurity // @PreAuthorize 활성화
 public class SecurityConfig {
 
   @Bean
@@ -50,78 +53,54 @@ public class SecurityConfig {
   ) throws Exception {
 
     http
-        // SPA 환경을 위한 Cookie 기반 CSRF 및 Plain Token 검증 설정
+        // 1. CSRF 설정: SPA 환경에 맞춰 Cookie 기반 및 커스텀 요청 핸들러 사용
         .csrf(csrf -> csrf
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-            .ignoringRequestMatchers(toH2Console())
+            .ignoringRequestMatchers(antMatcher("/h2-console/**"))
         )
 
-        // 인가(Authorization) 규칙 설정
+        // 2. 인가 규칙: 정적 리소스 및 일부 공용 API는 전체 허용, 나머지는 인증 필수
         .authorizeHttpRequests(auth -> auth
-            // 내부 Forward 및 Error Dispatcher 허용
             .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
-
-            // 시스템 및 개발 도구 전용 엔드포인트
-            .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-            .requestMatchers("/actuator/**").hasRole("ADMIN")
-            .requestMatchers(toH2Console()).permitAll()
-
-            // 인증/회원 관련 API
+            .requestMatchers("/actuator/**").permitAll()
+            .requestMatchers(antMatcher("/h2-console/**")).permitAll()
             .requestMatchers(HttpMethod.GET, "/api/auth/csrf-token").permitAll()
-            .requestMatchers(HttpMethod.POST,
-                "/api/users",
-                "/api/auth/login",
-                "/api/auth/logout",
-                "/api/auth/refresh"
-            ).permitAll()
-
-            // 정적 리소스 및 문서 뷰 (API 제외 모든 GET 요청)
-            .requestMatchers(HttpMethod.GET, "/").permitAll()
-            .requestMatchers(HttpMethod.GET, "/index.html", "/favicon.ico", "/assets/**").permitAll()
-
+            .requestMatchers(HttpMethod.GET, "/api/binaryContents/*").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/users", "/api/auth/login", "/api/auth/refresh").permitAll()
+            .requestMatchers(HttpMethod.GET, "/", "/index.html", "/favicon.ico", "/assets/**").permitAll()
             .anyRequest().authenticated()
         )
 
-        // 폼 로그인 인프라 구축 (성공/실패 핸들러는 API 응답형 커스텀 빈 사용)
+        // 3. 로그인/로그아웃: API 기반 처리를 위해 커스텀 핸들러 연결
         .formLogin(form -> form
             .loginProcessingUrl("/api/auth/login")
             .successHandler(jwtLoginSuccessHandler)
             .failureHandler(loginFailureHandler)
             .permitAll()
         )
-
-        // 토큰 기반 자동 로그인(Remember-Me) 설정
-        .rememberMe(remember -> remember
-            .key("my-remember-key")
-            .tokenValiditySeconds(7 * 24 * 60 * 60) // 7일 만료
-            .rememberMeParameter("remember-me")
-            .userDetailsService(discodeitUserDetailsService)
-        )
-
-        // 로그아웃 설정 (성공 시 204 No Content 반환)
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
             .addLogoutHandler(jwtlogoutHandler)
+            .logoutSuccessHandler((request, response, authentication) -> {
+                response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_NO_CONTENT);
+            })
             .permitAll()
         )
 
-        // API 커스텀 예외 처리 (401 Unauthorized / 403 Forbidden)
+        // 4. 예외 처리: 401(인증실패), 403(권한부족) 응답 커스터마이징
         .exceptionHandling(exception -> exception
             .authenticationEntryPoint(authenticationEntryPoint)
             .accessDeniedHandler(accessDeniedHandler)
         )
 
-        // H2 콘솔 정상 작동을 위한 iframe 허용
-        .headers(headers -> headers
-            .frameOptions(FrameOptionsConfig::sameOrigin)
-        )
+        // 5. 세션 정책: JWT 사용을 위해 무상태(STATELESS)로 설정
+        .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-        // 동시성 세션 제어 정책
-        .sessionManagement(management -> management
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        // 6. 필터 순서: UsernamePasswordAuthenticationFilter 이전에 JWT 필터 배치
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+
+        .headers(headers -> headers.frameOptions(FrameOptionsConfig::sameOrigin));
 
     return http.build();
   }
@@ -133,20 +112,10 @@ public class SecurityConfig {
 
   @Bean
   public PasswordEncoder passwordEncoder() {
-    // 기본 bcrypt 알고리즘 기반의 위임형 패스워드 인코더 반환
     return PasswordEncoderFactories.createDelegatingPasswordEncoder();
   }
 
-  @Bean
-  public SessionRegistry sessionRegistry() {
-    return new SessionRegistryImpl();
-  }
-
-  @Bean
-  public HttpSessionEventPublisher httpSessionEventPublisher() {
-    return new HttpSessionEventPublisher();
-  }
-
+  // 계층형 권한 설정 (ADMIN은 자동으로 모든 하위 권한을 가짐)
   @Bean
   public RoleHierarchy roleHierarchy() {
     return RoleHierarchyImpl.fromHierarchy("""

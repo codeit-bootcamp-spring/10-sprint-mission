@@ -12,41 +12,32 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * 채널별 읽음 상태 관련 요청을 처리하는 컨트롤러 클래스입니다.
+ */
 @RestController
 @RequestMapping("/api/readStatuses")
 @RequiredArgsConstructor
 public class ReadStatusController implements ReadStatusApi {
     private final ReadStatusService readStatusService;
 
-
     @Override
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<ReadStatusDto.Response> createReadStatus(
-            @RequestBody @Valid ReadStatusDto.CreateRequest request) {
-        ReadStatusDto.Response response = readStatusService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<ReadStatusDto.Response> createReadStatus(ReadStatusDto.CreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(readStatusService.create(request));
     }
 
     @Override
-    @RequestMapping(method = RequestMethod.PATCH, value = "/{readStatusId}")
-    public ResponseEntity<ReadStatusDto.Response> updateReadStatus(
-            @PathVariable("readStatusId") UUID readStatusId,
-            @RequestBody @Valid ReadStatusDto.UpdateRequest request) {
-        ReadStatusDto.Response response = readStatusService.update(readStatusId, request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ReadStatusDto.Response> updateReadStatus(UUID readStatusId, ReadStatusDto.UpdateRequest request) {
+        return ResponseEntity.ok(readStatusService.update(readStatusId, request));
     }
 
     @Override
-    @RequestMapping(method = RequestMethod.GET, value = "/{readStatusId}")
-    public ResponseEntity<ReadStatusDto.Response> findReadStatus(@PathVariable("readStatusId") UUID readStatusId) {
-        ReadStatusDto.Response response = readStatusService.find(readStatusId);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ReadStatusDto.Response> findReadStatus(UUID readStatusId) {
+        return ResponseEntity.ok(readStatusService.find(readStatusId));
     }
 
     @Override
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<ReadStatusDto.Response>> findAllByUserId(@RequestParam("userId") UUID userId) {
-        List<ReadStatusDto.Response> response = readStatusService.findAllByUserId(userId);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<ReadStatusDto.Response>> findAllByUserId(UUID userId) {
+        return ResponseEntity.ok(readStatusService.findAllByUserId(userId));
     }
 }

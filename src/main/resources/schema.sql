@@ -1,9 +1,11 @@
 CREATE TABLE IF NOT EXISTS binary_contents (
     id UUID PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at timestamp with time zone,
     file_name VARCHAR(255) NOT NULL,
     size BIGINT NOT NULL,
-    content_type VARCHAR(100) NOT NULL
+    content_type VARCHAR(100) NOT NULL,
+    status VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -55,6 +57,7 @@ CREATE TABLE IF NOT EXISTS read_statuses (
     user_id UUID NOT NULL,
     channel_id UUID NOT NULL,
     last_read_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    notification_enabled BOOLEAN NOT NULL DEFAULT TRUE,
 
     CONSTRAINT uq_read_statuses_user_channel
         UNIQUE (user_id, channel_id),
@@ -103,3 +106,16 @@ CREATE TABLE IF NOT EXISTS message_attachments (
         REFERENCES binary_contents(id)
         ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    receive_id UUID NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+
+    CONSTRAINT fk_notifications_user
+        FOREIGN KEY (receive_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+    );

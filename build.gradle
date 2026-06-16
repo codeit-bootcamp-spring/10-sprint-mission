@@ -38,6 +38,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'   // 비밀번호 암호화 등
     implementation 'com.nimbusds:nimbus-jose-jwt:10.3'                       // JWT 토큰 생성
     implementation 'software.amazon.awssdk:s3:2.31.7'                        // AWS S3 파일 업로드 관련
+    implementation 'org.springframework.kafka:spring-kafka'                  // 이벤트 기반 알림 발행
+
 
     // 4. View & Documentation (화면 구성 및 API 명세)
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'  // 타임리프 템플릿 엔진
@@ -52,6 +54,14 @@ dependencies {
     // 6. Test Environment (테스트 관련)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // 7. Retry (고가용성)
+    implementation 'org.springframework.retry:spring-retry'
+
+    // 8. Cache (Caffeine, Redis)
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 test {

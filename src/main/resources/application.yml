@@ -21,6 +21,33 @@ spring:
     init:
       mode: embedded # H2 같은 내장 DB일 때만 초기화 스크립트 실행
 
+  cache:
+    cache-names:
+      - usersCache
+      - userChannelsCache
+      - userNotificationsCache
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
 server:
   tomcat:
     max-swallow-size: 50MB
@@ -53,10 +80,13 @@ management:
    endpoints:
      web:
        exposure:
-         include: "health,info,metrics,loggers"
+         include: "health,info,metrics,loggers,caches"
    info:
      env:
        enabled: true # 환경 변수 정보를 info에 포함하도록 설정
+   observations:
+     annotations:
+       enabled: true
 
  # Actuator info에 노출될 애플리케이션 정보
 info:

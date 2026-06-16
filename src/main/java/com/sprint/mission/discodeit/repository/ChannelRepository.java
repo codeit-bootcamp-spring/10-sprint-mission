@@ -25,4 +25,15 @@ public interface ChannelRepository extends JpaRepository<Channel, UUID> {
     WHERE c.type = 'PUBLIC' OR rs.user.id = :userId
     """)
     List<Channel> findAllAccessibleByUserId(@Param("userId") UUID userId);
+
+    @Query("""
+    SELECT c FROM Channel c
+    JOIN ReadStatus rs ON rs.channel = c
+    WHERE c.type = 'PRIVATE'
+    AND rs.user.id IN :participantIds
+    GROUP BY c.id
+    HAVING COUNT(rs.user.id) = :participantCount
+    AND COUNT(rs.user.id) = (SELECT COUNT(rs2) FROM ReadStatus rs2 WHERE rs2.channel = c)
+    """)
+    List<Channel> findPrivateChannelByParticipants(@Param("participantIds") java.util.Collection<UUID> participantIds, @Param("participantCount") long participantCount);
 }

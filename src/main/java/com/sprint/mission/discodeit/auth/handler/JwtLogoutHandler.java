@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.auth.handler;
 
 import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.auth.DiscodeitUserDetailsService;
+import com.sprint.mission.discodeit.auth.jwt.JwtCookieManager;
 import com.sprint.mission.discodeit.auth.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.auth.jwt.JwtTokenProvider;
 import jakarta.servlet.http.Cookie;
@@ -9,25 +10,31 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
 
+/**
+ * JWT 기반 로그아웃을 처리하는 핸들러입니다.
+ * 레지스트리에서 세션을 무효화하고 클라이언트의 쿠키를 삭제합니다.
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtLogoutHandler implements LogoutHandler {
 
   private final JwtRegistry jwtRegistry;
   private final JwtTokenProvider jwtTokenProvider;
-  private final DiscodeitUserDetailsService userDetailsService;
-
+  private final CacheManager cacheManager;
+  private final JwtCookieManager jwtCookieManager;
 
   @Override
   public void logout(HttpServletRequest request, HttpServletResponse response,
       Authentication authentication) {
 
-    // 1. 요청 쿠키에서 REFRESH_TOKEN을 찾아 무효화 로직 수행
+    // 1. 요청 쿠키에서 리프레시 토큰 추출 및 무효화
     if (request.getCookies() != null) {
       Arrays.stream(request.getCookies())
           .filter(cookie -> cookie.getName().equals(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME))
@@ -35,25 +42,24 @@ public class JwtLogoutHandler implements LogoutHandler {
           .ifPresent(cookie -> {
             String refreshToken = cookie.getValue();
 
-            // 토큰이 유효하고, 실제 레지스트리에 활성화된 토큰인 경우에만 ID를 추출하여 Registry에서 삭제
-            if (jwtTokenProvider.validateToken(refreshToken) && jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
-              String username = jwtTokenProvider.getUsername(refreshToken);
-              DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailsService.loadUserByUsername(username);
-
-              jwtRegistry.invalidateJwtInformationByUserId(userDetails.getUserDto().id());
+            // 유효한 토큰인 경우 레지스트리에서 즉시 삭제 (DB 조회 없이 최적화)
+            if (jwtTokenProvider.validateToken(refreshToken)) {
+              jwtRegistry.invalidateJwtInformationByRefreshToken(refreshToken);
+              evictUsersCache(); // 유저 목록 실시간 상태 갱신
             }
           });
     }
 
-    // 2. 브라우저 쿠키 삭제 (MaxAge=0)
-    Cookie refreshCookie = new Cookie("REFRESH_TOKEN", "");
-    refreshCookie.setHttpOnly(true);
-    refreshCookie.setSecure(false);
-    refreshCookie.setPath("/");
-    refreshCookie.setMaxAge(0);
-    response.addCookie(refreshCookie);
+    // 2. 전용 매니저를 통해 쿠키 삭제
+    jwtCookieManager.deleteRefreshTokenCookie(response);
 
-    // 3. 응답 상태 코드 설정
     response.setStatus(HttpStatus.NO_CONTENT.value());
+  }
+
+  private void evictUsersCache() {
+    Cache cache = cacheManager.getCache("usersCache");
+    if (cache != null) {
+      cache.clear();
+    }
   }
 }

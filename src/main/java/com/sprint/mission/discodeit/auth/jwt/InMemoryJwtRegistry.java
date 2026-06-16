@@ -7,11 +7,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 
+/**
+ * 메모리(ConcurrentHashMap)를 기반으로 활성 세션을 관리하는 구현체입니다.
+ */
 @RequiredArgsConstructor
 public class InMemoryJwtRegistry implements JwtRegistry {
 
-  // 단일 세션 정책: 사용자별 하나의 활성 토큰 정보만 유지
+  // 단일 세션 정책: 사용자별 하나의 활성 세션만 허용 (userId -> 세션정보)
   private final Map<UUID, JwtInformation> origin = new ConcurrentHashMap<>();
+  
+  // 빠른 조회를 위한 토큰 인덱스
   private final Set<String> accessTokenIndexes = ConcurrentHashMap.newKeySet();
   private final Set<String> refreshTokenIndexes = ConcurrentHashMap.newKeySet();
 
@@ -37,6 +42,17 @@ public class InMemoryJwtRegistry implements JwtRegistry {
   }
 
   @Override
+  public void invalidateJwtInformationByRefreshToken(String refreshToken) {
+    origin.values().removeIf(info -> {
+      if (info.getRefreshToken().equals(refreshToken)) {
+        removeTokenIndex(info.getAccessToken(), info.getRefreshToken());
+        return true;
+      }
+      return false;
+    });
+  }
+
+  @Override
   public boolean hasActiveJwtInformationByUserId(UUID userId) {
     return origin.containsKey(userId);
   }
@@ -54,6 +70,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
   @Override
   public void rotateJwtInformation(String refreshToken, JwtInformation newInfo) {
     origin.computeIfPresent(newInfo.getUserDto().id(), (key, oldInfo) -> {
+      // 전달받은 리프레시 토큰이 현재 저장된 것과 일치할 때만 로테이션 (보안)
       if (oldInfo.getRefreshToken().equals(refreshToken)) {
         removeTokenIndex(oldInfo.getAccessToken(), oldInfo.getRefreshToken());
         addTokenIndex(newInfo.getAccessToken(), newInfo.getRefreshToken());
@@ -63,6 +80,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     });
   }
 
+  // 주기적으로 만료된 토큰 정리 (메모리 누수 방지)
   @Scheduled(fixedDelay = 1000 * 60 * 5)
   @Override
   public void clearExpiredJwtInformation() {

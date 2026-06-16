@@ -16,42 +16,44 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
-    @EntityGraph(attributePaths = {"author", "author.status", "author.profile", "channel"})
-    Page<Message> findAllByChannelId(UUID channelId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"author", "author.status", "author.profile", "channel"})
-    Optional<Message> findById(@NonNull UUID messageId);
+  @EntityGraph(attributePaths = {"author", "author.status", "author.profile", "channel"})
+  Page<Message> findAllByChannelId(UUID channelId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"author", "author.status", "author.profile", "channel"})
-    @Query("""
-    select m
-    from Message m
-    where m.channel.id = :channelId
-    order by m.createdAt desc
-    """)
-    Slice<Message> findLatestByChannelId(UUID channelId, Pageable pageable);
+  @EntityGraph(attributePaths = {"author", "author.status", "author.profile", "channel"})
+  Optional<Message> findById(@NonNull UUID messageId);
 
-    @EntityGraph(attributePaths = {"author", "author.status", "author.profile", "channel"})
-    @Query("""
-    select m
-    from Message m
-    where m.channel.id = :channelId
-        and m.createdAt < :cursor
-    order by m.createdAt desc
-    """)
-    Slice<Message> findAllUseCursorByChannelId(@Param("channelId")UUID channelId, @Param("cursor") Instant Cursor, Pageable pageable);
+  @EntityGraph(attributePaths = {"author", "author.status", "author.profile", "channel"})
+  @Query("""
+      select m
+      from Message m
+      where m.channel.id = :channelId
+      order by m.createdAt desc
+      """)
+  Slice<Message> findLatestByChannelId(UUID channelId, Pageable pageable);
 
-    @Query("""
-    select m.id, a
-    from Message m
-    left join m.attachments a
-    where m.id in :messageIds
-    """)
-    List<Object[]> findAttachmentsByMessageIds(@Param("messageIds") List<UUID> messageIds);
+  @EntityGraph(attributePaths = {"author", "author.status", "author.profile", "channel"})
+  @Query("""
+      select m
+      from Message m
+      where m.channel.id = :channelId
+          and m.createdAt < :cursor
+      order by m.createdAt desc
+      """)
+  Slice<Message> findAllUseCursorByChannelId(@Param("channelId") UUID channelId,
+      @Param("cursor") Instant Cursor, Pageable pageable);
 
-    Optional<Message> findFirstByChannelIdOrderByCreatedAtDesc(UUID channelId);
+  @Query("""
+      select m.id, a
+      from Message m
+      left join m.attachments a
+      where m.id in :messageIds
+      """)
+  List<Object[]> findAttachmentsByMessageIds(@Param("messageIds") List<UUID> messageIds);
 
-    void deleteByChannelId(UUID channelId);
+  Optional<Message> findFirstByChannelIdOrderByCreatedAtDesc(UUID channelId);
+
+  void deleteByChannelId(UUID channelId);
 
   boolean existsByIdAndAuthor_Id(UUID messageId, UUID userId);
 }

@@ -9,5 +9,6 @@ import org.mapstruct.Mapping;
 public interface ReadStatusMapper {
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "channelId", source = "channel.id")
+    @Mapping(target = "notificationEnabled", expression = "java(readStatus.isNotificationEnabled())")
     ReadStatusDto.Response toResponse(ReadStatus readStatus);
 }
