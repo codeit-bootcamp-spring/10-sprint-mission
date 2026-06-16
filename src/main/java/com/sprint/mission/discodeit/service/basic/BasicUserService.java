@@ -12,6 +12,8 @@ import com.sprint.mission.discodeit.service.UserService;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,6 +34,7 @@ public class BasicUserService implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final JwtRegistry jwtRegistry;
 
+  @CacheEvict(value = "users", allEntries = true)
   @Override
   @Transactional
   public User create(String username, String email, String password, MultipartFile profileFile) {
@@ -91,6 +94,7 @@ public class BasicUserService implements UserService {
     return user;
   }
 
+  @Cacheable(value = "users")
   @Override
   public List<User> findAll() {
     log.info("Fetching all users list"); // 유저 전체 조회 시작 로그
@@ -101,6 +105,7 @@ public class BasicUserService implements UserService {
     return users;
   }
 
+  @CacheEvict(value = "users", allEntries = true)
   @Override
   @Transactional
   @PreAuthorize("#id == authentication.principal.id") // 수정하려는 타겟 ID와 현재 로그인한 사람의 ID가 일치할 때만 실행
@@ -161,6 +166,7 @@ public class BasicUserService implements UserService {
     return user;
   }
 
+  @CacheEvict(value = "users", allEntries = true)
   @Override
   @Transactional
   @PreAuthorize("hasRole('ADMIN')") // 권한 검사
@@ -186,6 +192,7 @@ public class BasicUserService implements UserService {
     return user;
   }
 
+  @CacheEvict(value = "users", allEntries = true)
   @Override
   @Transactional
   @PreAuthorize("#id == authentication.principal.id") // 수정하려는 타겟 ID와 현재 로그인한 사람의 ID가 일치할 때만 실행
