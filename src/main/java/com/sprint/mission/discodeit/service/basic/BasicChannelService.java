@@ -12,6 +12,8 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,7 @@ public class BasicChannelService implements ChannelService {
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
 
+  @CacheEvict(value = "channels", allEntries = true)
   @Override
   @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER')") // 권한 검사
@@ -43,6 +46,7 @@ public class BasicChannelService implements ChannelService {
     return savedChannel;
   }
 
+  @CacheEvict(value = "channels", allEntries = true)
   @Override
   @Transactional
   public Channel createPrivateChannel(List<UUID> participantIds) {
@@ -78,6 +82,7 @@ public class BasicChannelService implements ChannelService {
     return channel;
   }
 
+  @Cacheable(value = "channels", key = "#userId")
   @Override
   public List<Channel> findAllByUserId(UUID userId) {
     log.info("Fetching all channels for user ID: {}", userId); // 특정 유저가 참여한 채널 조회 시작 로그
@@ -97,6 +102,7 @@ public class BasicChannelService implements ChannelService {
     return allChannels;
   }
 
+  @CacheEvict(value = "channels", allEntries = true)
   @Override
   @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER')") // 권한 검사
@@ -128,6 +134,7 @@ public class BasicChannelService implements ChannelService {
     return channel;
   }
 
+  @CacheEvict(value = "channels", allEntries = true)
   @Override
   @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER')") // 권한 검사
