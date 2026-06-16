@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.filter.jwt;
 
+import com.sprint.mission.discodeit.auth.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.auth.jwt.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,6 +21,7 @@ import java.io.IOException;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtRegistry jwtRegistry;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // 요청 헤더가 조건에 맞는지 확인
@@ -27,13 +29,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 알맞은 헤더이면 토큰을 검증함
         if (token != null && jwtTokenProvider.validateToken(token)) {
-            // 검증 완료된 토큰에서 인증된 Authentication 추출
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
+            if(jwtRegistry.hasActiveJwtInformationByAccessToken(token)){
+                // 검증 완료된 토큰에서 인증된 Authentication 추출
+                Authentication authentication = jwtTokenProvider.getAuthentication(token);
 
-            // SecurityContextHolder에 Authentication 저장해서 요청에 맞게 사용
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                // SecurityContextHolder에 Authentication 저장해서 요청에 맞게 사용
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            log.info("SecurityContext에 '{}' 인증 정보를 저장 완료.", authentication.getName());
+                log.info("SecurityContext에 '{}' 인증 정보를 저장 완료.", authentication.getName());
+            }else{
+                log.warn("유효한 토큰이지만 Registry에 존재하지 않습니다 (강제 로그아웃됨).");
+            }
         }
 
         // 다음 필터로 요청 넘김

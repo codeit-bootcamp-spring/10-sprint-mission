@@ -44,6 +44,11 @@ public class SecurityConfig {
         http
                 // csrf 설정
                 .csrf(csrf -> csrf
+                        .ignoringRequestMatchers(
+                                AntPathRequestMatcher.antMatcher("/api/auth/login"),
+                                AntPathRequestMatcher.antMatcher("/api/auth/refresh"),
+                                AntPathRequestMatcher.antMatcher("/api/auth/logout")
+                        )
                         .csrfTokenRepository(csrfTokenRepository())
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
                 .sessionManagement(session -> session

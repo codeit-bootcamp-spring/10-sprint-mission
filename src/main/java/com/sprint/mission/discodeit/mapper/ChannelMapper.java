@@ -35,4 +35,10 @@ public abstract class ChannelMapper {
                .map(BaseEntity::getCreatedAt)
                .orElse(null);
     }
+
+    protected List<UserDto> getParticipants(UUID channelId){
+        return readStatusRepository.findAllByChannelId(channelId).stream()
+                .map(readStatus -> userService.findUser(readStatus.getUser().getId()))
+                .toList();
+    }
 }

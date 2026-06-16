@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.handler.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.auth.jwt.JwtInformation;
+import com.sprint.mission.discodeit.auth.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.auth.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.dto.authDto.jwt.JwtDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
@@ -26,6 +28,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper objectMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final JwtRegistry jwtRegistry;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -33,6 +36,12 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = jwtTokenProvider.generateAccessToken(authentication);
         String refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
         String email = authentication.getName();
+
+        DiscodeitUserDetails userDetails = (DiscodeitUserDetails) authentication.getPrincipal();
+        UserDto userDto = userDetails.getUserDto();
+
+        JwtInformation jwtInformation = new JwtInformation(userDto, accessToken, refreshToken);
+        jwtRegistry.registerJwtInformation(jwtInformation);
 
         refreshTokenRepository.findByEmail(email)
                 .ifPresentOrElse(
@@ -52,12 +61,9 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(24 * 60 * 60);
-
         response.addCookie(refreshTokenCookie);
 
 
-        DiscodeitUserDetails userDetails = (DiscodeitUserDetails) authentication.getPrincipal();
-        UserDto userDto = userDetails.getUserDto();
 
         objectMapper.writeValue(response.getWriter(), new JwtDto(userDto, accessToken));
     }
