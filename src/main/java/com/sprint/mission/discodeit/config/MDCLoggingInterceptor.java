@@ -12,9 +12,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public class MDCLoggingInterceptor implements HandlerInterceptor {
 
   // MDC 로깅에 사용되는 상수 정의
-  private static final String REQUEST_ID = "request_id";
-  private static final String REQUEST_METHOD = "request_method";
-  private static final String REQUEST_URI = "request_uri";
+  public static final String REQUEST_ID = "request_id";
+  public static final String REQUEST_METHOD = "request_method";
+  public static final String REQUEST_URI = "request_uri";
 
   public static final String REQUEST_ID_HEADER = "Discodeit-Request-ID";
 
