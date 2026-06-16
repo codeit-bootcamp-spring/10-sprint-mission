@@ -49,7 +49,7 @@ public class SseEventListener {
   }
 
   @Async("eventTaskExecutor")
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
   public void on(BinaryContentUpdateEvent event) {
     log.debug("[SSE] 파일 업로드 상태 변경 이벤트 수신: binaryContentId={}", event.binaryContentDto().id());
     sseService.broadcast(
