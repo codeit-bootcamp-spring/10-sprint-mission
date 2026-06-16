@@ -15,20 +15,19 @@ spring:
     name: discodeit
   profiles:
     active: dev # 기본적으로 dev 환경 활성화
-
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 30MB
-
   datasource:
     driver-class-name: org.postgresql.Driver
-
   jpa:
     open-in-view: false
     properties:
       hibernate:
         default_batch_fetch_size: 100
+  cache:
+    type: caffeine
 
 logging:
   level:
@@ -46,16 +45,13 @@ management:
   info:
     env:
       enabled: true
-
   endpoints:
     web:
       exposure:
         include: "health" # 공통 설정에서는 health만 최소한으로 노출
-
   endpoint:
     health:
       show-details: never
-
   observations:
     annotations:
       enabled: true
