@@ -87,7 +87,7 @@ public class KafkaProduceRequiredEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async("ioTaskExecutor")
-    public void handleProfileUpload(BinaryContentCreatedEvent event){
+    public void handleBinaryContentUpload(BinaryContentCreatedEvent event){
         UUID binaryContentId = event.getBinaryContentId();
 
         try {

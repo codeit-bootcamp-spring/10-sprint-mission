@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.event.kafka.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.notification.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
@@ -16,6 +17,8 @@ import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.service.NotificationService;
+import com.sprint.mission.discodeit.service.SseService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -40,9 +43,7 @@ public class NotificationRequiredTopicListener {
     private final CacheManager cacheManager;
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
-    private final ReadStatusRepository readStatusRepository;
-    private final BinaryContentStorage s3BinaryContentStorage;
-    private final BinaryContentService binaryContentService;
+    private final NotificationService notificationService;
     @Value("${admin.init.email}")
     private String adminEmail;
 
@@ -53,29 +54,9 @@ public class NotificationRequiredTopicListener {
             MessageCreatedEvent event = objectMapper.readValue(kafkaEvent, MessageCreatedEvent.class);
             log.info("[Kafka 수신 완료]");
 
-            List<ReadStatus> activeStatus = readStatusRepository.findAllByChannelIdAndNotificationEnabledTrue(event.getChannelId());
-            List<Notification> notifications = new ArrayList<>();
+            List<NotificationDto> notificationDtos = notificationService.createNotification(event);
 
-            Cache notificationCache = cacheManager.getCache("userNotifications");
-
-            for(ReadStatus status : activeStatus){
-                UUID subscriberId = status.getUser().getId();
-
-                if(subscriberId.equals(event.getSenderId())) continue;
-                User receiverProxy = userRepository.getReferenceById(subscriberId);
-                notifications.add(new Notification(receiverProxy,
-                        String.format("%s(#%s)", event.getSenderName(), event.getChannelName()),
-                        event.getContent()));
-
-                if(notificationCache != null){
-                    notificationCache.evict(subscriberId);
-                }
-            }
-
-            if(!notifications.isEmpty()){
-                notificationRepository.saveAll(notifications);
-            }
-            log.info("메시지 알림 전송 완료: {} 건", notifications.size());
+            log.info("메시지 알림 전송 완료: {} 건", notificationDtos.size());
         } catch (JsonProcessingException e){
             log.error("[Kafka 소비 실패] 메시지 파싱 또는 처리 중 에러 발생", e);
         }
@@ -111,7 +92,7 @@ public class NotificationRequiredTopicListener {
     }
 
     @KafkaListener(topics = "discodeit.BinaryContentFailedEvent", groupId = "discodeit-group")
-    public void consumeProfileUpload(String kafkaEvent,
+    public void consumeBinaryContentUpload(String kafkaEvent,
                                      @Header(value = "requestId", required = false) String requestId){
         try{
             BinaryContentFailedEvent event = objectMapper.readValue(kafkaEvent, BinaryContentFailedEvent.class);

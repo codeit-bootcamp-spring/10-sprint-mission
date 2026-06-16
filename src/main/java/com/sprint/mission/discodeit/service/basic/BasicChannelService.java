@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.channel.*;
+import com.sprint.mission.discodeit.dto.sse.SseDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.enums.ChannelType;
+import com.sprint.mission.discodeit.event.ChannelUpdatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -20,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +39,7 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final ChannelMapper channelMapper;
     private final CacheManager cacheManager;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     // 공용 채널
     @Override
@@ -49,15 +53,20 @@ public class BasicChannelService implements ChannelService {
         // 채널 저장
         channelRepository.save(channel);
 
-
+        ChannelDto dto = channelMapper.toDto(channel);
         // 모든 유저가 공용채널의 읽음 상태를 갖도록함
         List<User> users = userRepository.findAll();
+        List<SseDto>  sseDtos = new ArrayList<>();
+
         for(User user : users){
             readStatusRepository.save(new ReadStatus(user, channel, false));
+            sseDtos.add(new SseDto(user.getId(), "channels.created",dto));
         }
 
+        applicationEventPublisher.publishEvent(new ChannelUpdatedEvent(sseDtos));
+
         log.info("공용 채널 생성 성공: 채널 id = {}", channel.getId());
-        return channelMapper.toDto(channel);
+        return dto;
     }
 
     //개인 채널
@@ -70,11 +79,19 @@ public class BasicChannelService implements ChannelService {
         channel.setType(ChannelType.PRIVATE);
         channelRepository.save(channel);
 
+        ChannelDto dto = channelMapper.toDto(channel);
+        List<SseDto>  sseDtos = new ArrayList<>();
+
         // 입력으로 들어온 유저 당 readStatus도 생성 후 저장
         // n+1 수정해야함
         request.getParticipantIds().stream()
                 .map(id -> userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id)))
-                .forEach(user -> readStatusRepository.save(new ReadStatus(user, channel, true)));
+                .forEach(user ->{
+                    readStatusRepository.save(new ReadStatus(user, channel, true));
+                    sseDtos.add(new SseDto(user.getId(), "channels.created",dto));
+                });
+
+        applicationEventPublisher.publishEvent(new ChannelUpdatedEvent(sseDtos));
 
         clearPrivateChannelCacheForUsers(request.getParticipantIds());
         log.info("개인 채널 생성 성공: 채널 id = {}", channel.getId());
@@ -104,7 +121,6 @@ public class BasicChannelService implements ChannelService {
     @Transactional(readOnly = true)
     @Cacheable(value = "userPublicChannels")
     public List<ChannelDto> findAllPublicChannelsByUserId() {
-        log.warn("🚨🚨🚨 [DB 조회 발생] Public 채널 쿼리 나감!!! 🚨🚨🚨");
         // 공용채널 조회
         // n+ 1 문제 수정해야함
         List<ChannelDto> publicList = channelRepository.findAll().stream()
@@ -120,7 +136,6 @@ public class BasicChannelService implements ChannelService {
     @Transactional(readOnly = true)
     @Cacheable(value = "userPrivateChannels", key = "#userId")
     public List<ChannelDto> findAllPrivateChannelsByUserId(UUID userId) {
-        log.warn("🚨🚨🚨 [DB 조회 발생] Public 채널 쿼리 나감!!! 🚨🚨🚨");
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
@@ -147,6 +162,7 @@ public class BasicChannelService implements ChannelService {
     @CacheEvict(value = "userPublicChannels", allEntries = true)
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest dto) {
         Channel channel = getChannel(channelId);
+
         if(channel.getType() == ChannelType.PRIVATE){
             throw new PrivateChannelUpdateException(channelId);
         }
@@ -158,8 +174,16 @@ public class BasicChannelService implements ChannelService {
             channel.updateChannelDescription(dto.getNewDescription());
         }
 
+        ChannelDto channelDto = channelMapper.toDto(channel);
+        List<User> users = userRepository.findAll();
+        List<SseDto>  sseDtos = new ArrayList<>();
+        for(User user : users){
+            sseDtos.add(new SseDto(user.getId(), "channels.updated",channelDto));
+        }
+        applicationEventPublisher.publishEvent(new ChannelUpdatedEvent(sseDtos));
+
         log.info("채널 수정 성공: 채널 id = {}", channelId);
-        return channelMapper.toDto(channel);
+        return channelDto;
     }
 
     @Override
@@ -173,8 +197,17 @@ public class BasicChannelService implements ChannelService {
         List<Message> messages = messageRepository.findAllByChannel(channel);
         messageRepository.deleteAll(messages);
 
+        ChannelDto channelDto = channelMapper.toDto(channel);
+
         log.info("채널 삭제 성공: 채널 id = {}", channelId);
         channelRepository.delete(channel);
+
+        List<User> users = userRepository.findAll();
+        List<SseDto>  sseDtos = new ArrayList<>();
+        for(User user : users){
+            sseDtos.add(new SseDto(user.getId(), "channels.deleted", channelDto));
+        }
+        applicationEventPublisher.publishEvent(new ChannelUpdatedEvent(sseDtos));
     }
 
     private Channel getChannel(UUID channelId){

@@ -2,12 +2,16 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.sse.SseDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.BinaryContentUpdatedEvent;
 import com.sprint.mission.discodeit.exception.binaryContent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.EmitterRepository;
+import com.sprint.mission.discodeit.repository.SseMessageRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +26,8 @@ import java.util.*;
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
-    private final BinaryContentStorage binaryContentStorage;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final EmitterRepository emitterRepository;
 
     @Override
     @Transactional
@@ -34,7 +38,6 @@ public class BasicBinaryContentService implements BinaryContentService {
                 dto.getContentType());
 
         binaryContentRepository.save(binaryContent);
-        applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), dto.getFileData()));
 
         return binaryContentMapper.toDto(binaryContent);
     }
@@ -60,7 +63,14 @@ public class BasicBinaryContentService implements BinaryContentService {
     public BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status) {
         BinaryContent binaryContent = getBinaryContent(binaryContentId);
         binaryContent.updateStatus(status);
-        return binaryContentMapper.toDto(binaryContent);
+        BinaryContentDto dto = binaryContentMapper.toDto(binaryContent);
+        List<SseDto> sseDtos = new ArrayList<>();
+
+        for(UUID userId : emitterRepository.findAllReceiverIds()){
+            sseDtos.add(new SseDto(userId, "binaryContents.updated", dto));
+        }
+        applicationEventPublisher.publishEvent(new BinaryContentUpdatedEvent(sseDtos));
+        return dto;
     }
 
     @Override

@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.sse.SseDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.UserUpdatedEvent;
 import com.sprint.mission.discodeit.exception.file.FileUploadFailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -36,6 +38,7 @@ public class BasicUserService implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final EmitterRepository emitterRepository;
 
     @Override
     @Transactional
@@ -52,7 +55,7 @@ public class BasicUserService implements UserService {
                 Role.USER);
 
         // 유저 저장
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
         // 프로필 등록 여부 & binaryContent객체 생성
         if(profile != null) {
             try {
@@ -71,8 +74,13 @@ public class BasicUserService implements UserService {
             }
         }
 
-
-        return userMapper.toDto(user,true);
+        UserDto userDto =  userMapper.toDto(user,true);
+        List<SseDto> sseDtos = new ArrayList<>();
+        for(UUID userId : emitterRepository.findAllReceiverIds()){
+            sseDtos.add(new SseDto(userId, "users.created", userDto));
+        }
+        applicationEventPublisher.publishEvent(new UserUpdatedEvent(sseDtos));
+        return userDto;
     }
 
     @Override
@@ -144,7 +152,15 @@ public class BasicUserService implements UserService {
                 throw new FileUploadFailException();
             }
         }
-        return findUser(userId);
+
+        UserDto userDto =  userMapper.toDto(user,true);
+        List<SseDto> sseDtos = new ArrayList<>();
+        for(UUID emitterUserId : emitterRepository.findAllReceiverIds()){
+            sseDtos.add(new SseDto(emitterUserId, "users.updated", userDto));
+        }
+        applicationEventPublisher.publishEvent(new UserUpdatedEvent(sseDtos));
+
+        return userDto;
     }
 
     @Override
@@ -155,8 +171,15 @@ public class BasicUserService implements UserService {
         User user = getUser(userId);
         BinaryContent profileImg = user.getProfile();
 
+        UserDto userDto =  userMapper.toDto(user,true);
         // 유저를 데이터에서 삭제
         userRepository.delete(user);
+
+        List<SseDto> sseDtos = new ArrayList<>();
+        for(UUID emitterUserId : emitterRepository.findAllReceiverIds()){
+            sseDtos.add(new SseDto(emitterUserId, "users.updated", userDto));
+        }
+        applicationEventPublisher.publishEvent(new UserUpdatedEvent(sseDtos));
 
         // 유저가 들고 있던 바이너리 컨텐츠 삭제
         if( profileImg != null){
