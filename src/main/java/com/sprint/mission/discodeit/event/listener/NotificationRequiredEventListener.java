@@ -5,12 +5,17 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +30,9 @@ public class NotificationRequiredEventListener {
   private final ReadStatusRepository readStatusRepository;
   private final NotificationRepository notificationRepository;
   private final UserRepository userRepository;
+
+  @Value("${discodeit.admin.username:admin}")
+  private String adminUsername;
 
   // 메시지 전송 트랜잭션 커밋 직후 실행
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -73,5 +81,31 @@ public class NotificationRequiredEventListener {
     );
 
     notificationRepository.save(notification);
+  }
+
+  @EventListener
+  public void on(S3UploadFailedEvent event) {
+    String requestId = event.requestId();
+    UUID binaryContentId = event.binaryContentId();
+    Throwable e = event.exception();
+
+    String title = "S3 파일 업로드 실패";
+
+    String content = """
+        RequestId: %s
+        BinaryContentId: %s
+        Error: %s"""
+        .formatted(requestId, binaryContentId, e.getMessage());
+
+    // 관리자 계정 조회
+    Optional<User> adminUserOpt = userRepository.findByUsernameWithProfile(adminUsername);
+
+    // 관리자 계정에 알림 생성
+    if (adminUserOpt.isPresent()) {
+      User admin = adminUserOpt.get();
+
+      Notification notification = new Notification(admin, title, content);
+      notificationRepository.save(notification);
+    }
   }
 }
