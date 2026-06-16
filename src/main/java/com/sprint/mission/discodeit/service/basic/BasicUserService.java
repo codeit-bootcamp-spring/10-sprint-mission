@@ -67,7 +67,7 @@ public class BasicUserService implements UserService {
                 user.addProfileImage(binaryContent);
                 // 연관성 주입
                 binaryContent = binaryContentRepository.save(binaryContent);
-                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), profile.getBytes()));
+                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(savedUser.getId(),binaryContent.getId(), profile.getBytes()));
 
             } catch (Exception e) {
                 throw new FileUploadFailException();
@@ -145,7 +145,7 @@ public class BasicUserService implements UserService {
                         profile.getOriginalFilename(),
                         profile.getContentType());
                 newBinaryContent = binaryContentRepository.save(newBinaryContent);
-                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(newBinaryContent.getId(), profile.getBytes()));
+                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(userId, newBinaryContent.getId(), profile.getBytes()));
 
                 user.updateProfileImg(newBinaryContent);
             } catch (Exception e) {
@@ -177,7 +177,7 @@ public class BasicUserService implements UserService {
 
         List<SseDto> sseDtos = new ArrayList<>();
         for(UUID emitterUserId : emitterRepository.findAllReceiverIds()){
-            sseDtos.add(new SseDto(emitterUserId, "users.updated", userDto));
+            sseDtos.add(new SseDto(emitterUserId, "users.deleted", userDto));
         }
         applicationEventPublisher.publishEvent(new UserUpdatedEvent(sseDtos));
 

@@ -93,11 +93,11 @@ public class KafkaProduceRequiredEventListener {
         try {
             log.info("비동기 s3 업로드 시작: id = {}", binaryContentId);
             s3BinaryContentStorage.put(binaryContentId, event.getBytes());
-            binaryContentService.updateStatus(binaryContentId, BinaryContentStatus.SUCCESS);
+            binaryContentService.updateStatus(event.getReceiverId(), binaryContentId, BinaryContentStatus.SUCCESS);
             log.info("비동기 s3 업로드 완료: id = {}", binaryContentId);
         }catch (FileUploadFailException e1) {
             // DB 상태 변경
-            binaryContentService.updateStatus(binaryContentId, BinaryContentStatus.FAIL);
+            binaryContentService.updateStatus(event.getReceiverId(), binaryContentId, BinaryContentStatus.FAIL);
             try {
                 // 이벤트 객체를 json문자열로 변환
                 String payload = objectMapper.writeValueAsString(new BinaryContentFailedEvent(ErrorCode.FILE_UPLOAD_FAIL, binaryContentId));

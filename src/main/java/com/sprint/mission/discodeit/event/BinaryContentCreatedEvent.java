@@ -9,10 +9,12 @@ import java.util.UUID;
 
 @Getter
 public class BinaryContentCreatedEvent {
+    private final UUID receiverId;
     private final UUID binaryContentId;
     private byte[] bytes;
 
-    public BinaryContentCreatedEvent(UUID binaryContentId, byte[] bytes){
+    public BinaryContentCreatedEvent(UUID receiverId,UUID binaryContentId, byte[] bytes){
+        this.receiverId = receiverId;
         this.binaryContentId = binaryContentId;
         this.bytes = bytes;
     }

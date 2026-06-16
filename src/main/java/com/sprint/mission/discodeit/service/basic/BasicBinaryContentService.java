@@ -60,16 +60,12 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     @Transactional
-    public BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+    public BinaryContentDto updateStatus(UUID receiverId,UUID binaryContentId, BinaryContentStatus status) {
         BinaryContent binaryContent = getBinaryContent(binaryContentId);
         binaryContent.updateStatus(status);
         BinaryContentDto dto = binaryContentMapper.toDto(binaryContent);
-        List<SseDto> sseDtos = new ArrayList<>();
 
-        for(UUID userId : emitterRepository.findAllReceiverIds()){
-            sseDtos.add(new SseDto(userId, "binaryContents.updated", dto));
-        }
-        applicationEventPublisher.publishEvent(new BinaryContentUpdatedEvent(sseDtos));
+        applicationEventPublisher.publishEvent(new BinaryContentUpdatedEvent(List.of(new SseDto(receiverId, "binaryContents.updated", dto))));
         return dto;
     }
 

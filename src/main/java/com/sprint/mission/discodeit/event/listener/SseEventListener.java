@@ -49,10 +49,17 @@ public class SseEventListener {
         }
     }
 
+    // 로그인 로그아웃은 트랜잭션이 없으므로 fallbackExecution로 트랜잭션없을때도 작동하도록함
     @Async("ioTaskExecutor")
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void handleUserUpdated(UserUpdatedEvent event){
         for(SseDto dto : event.getDtos()){
+            // 로그인 로그아웃시 모든 유저가 알 수 있게 브로드캐스팅
+            if(dto.getReceiverId() == null){
+                log.info("sse 브로드캐스트 완료 ");
+                sseService.broadcast(dto.getEventName(), dto.getDto());
+                continue;
+            }
             log.info("sse발송 완료 receiverId = {}", dto.getReceiverId());
             sseService.send(List.of(dto.getReceiverId()), dto.getEventName(), dto.getDto());
         }

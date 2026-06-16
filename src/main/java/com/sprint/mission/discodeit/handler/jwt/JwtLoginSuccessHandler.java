@@ -6,14 +6,17 @@ import com.sprint.mission.discodeit.auth.jwt.JwtInformation;
 import com.sprint.mission.discodeit.auth.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.auth.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.dto.authDto.jwt.JwtDto;
+import com.sprint.mission.discodeit.dto.sse.SseDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.RefreshToken;
+import com.sprint.mission.discodeit.event.UserUpdatedEvent;
 import com.sprint.mission.discodeit.repository.RefreshTokenRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -21,6 +24,7 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -29,6 +33,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtRegistry jwtRegistry;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -63,8 +68,10 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         refreshTokenCookie.setMaxAge(24 * 60 * 60);
         response.addCookie(refreshTokenCookie);
 
-
-
         objectMapper.writeValue(response.getWriter(), new JwtDto(userDto, accessToken));
+
+        applicationEventPublisher.publishEvent(new UserUpdatedEvent(
+                List.of(new SseDto(null, "users.updated", userDto))
+        ));
     }
 }

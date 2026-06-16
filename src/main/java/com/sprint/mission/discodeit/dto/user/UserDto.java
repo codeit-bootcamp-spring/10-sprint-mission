@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
+@Setter
 public class UserDto {
     private UUID id;
     private String username;

@@ -11,6 +11,6 @@ public interface BinaryContentService {
     BinaryContentDto create(BinaryContentCreateRequest dto);
     BinaryContentDto findBinaryContent(UUID id);
     List<BinaryContentDto> findAllIdIn(List<UUID> binaryContentIds);
-    BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status);
+    BinaryContentDto updateStatus(UUID receiverId,UUID binaryContentId, BinaryContentStatus status);
     void delete(UUID id);
 }
