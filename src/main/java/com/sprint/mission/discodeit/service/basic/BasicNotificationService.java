@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
+import com.sprint.mission.discodeit.event.message.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.exception.notification.NotificationForbiddenException;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
@@ -16,6 +17,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -29,17 +31,17 @@ public class BasicNotificationService implements NotificationService {
   private final NotificationRepository notificationRepository;
   private final NotificationMapper notificationMapper;
   private final CacheManager cacheManager;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Cacheable(value = "notifications", key = "#receiverId", unless = "#result.isEmpty()")
   @PreAuthorize("principal.userDto.id == #receiverId")
   @Override
   public List<NotificationDto> findAllByReceiverId(UUID receiverId) {
     log.debug("알림 목록 조회 시작: receiverId={}", receiverId);
-    List<NotificationDto> notifications = notificationRepository.findAllByReceiverIdOrderByCreatedAtDesc(
-            receiverId)
-        .stream()
-        .map(notificationMapper::toDto)
-        .toList();
+    List<NotificationDto> notifications =
+        notificationRepository.findAllByReceiverIdOrderByCreatedAtDesc(receiverId).stream()
+            .map(notificationMapper::toDto)
+            .toList();
     log.info("알림 목록 조회 완료: receiverId={}, 조회된 항목 수={}", receiverId, notifications.size());
     return notifications;
   }
@@ -50,8 +52,10 @@ public class BasicNotificationService implements NotificationService {
   @Override
   public void delete(UUID notificationId, UUID receiverId) {
     log.debug("알림 삭제 시작: id={}, receiverId={}", notificationId, receiverId);
-    Notification notification = notificationRepository.findById(notificationId)
-        .orElseThrow(() -> NotificationNotFoundException.withId(notificationId));
+    Notification notification =
+        notificationRepository
+            .findById(notificationId)
+            .orElseThrow(() -> NotificationNotFoundException.withId(notificationId));
     if (!notification.getReceiverId().equals(receiverId)) {
       log.warn("알림 삭제 권한 없음: id={}, receiverId={}", notificationId, receiverId);
       throw NotificationForbiddenException.withId(notificationId, receiverId);
@@ -67,15 +71,18 @@ public class BasicNotificationService implements NotificationService {
       return;
     }
     log.debug("새 알림 생성 시작: receiverIds={}", receiverIds);
-    List<Notification> notifications = receiverIds.stream()
-        .map(receiverId -> new Notification(
-            receiverId,
-            title,
-            content
-        )).toList();
-    notificationRepository.saveAll(notifications);
-    evictNotificationCache(receiverIds);
-    log.info("새 알림 생성 완료: receiverIds={}", receiverIds);
+    List<Notification> notifications =
+        receiverIds.stream()
+            .map(receiverId -> new Notification(receiverId, title, content))
+            .toList();
+    List<Notification> savedNotifications = notificationRepository.saveAll(notifications);
+
+    savedNotifications.stream()
+        .map(notificationMapper::toDto)
+        .forEach(
+            notificationDto ->
+                eventPublisher.publishEvent(
+                    new NotificationCreatedEvent(notificationDto, notificationDto.createdAt())));
   }
 
   private void evictNotificationCache(Set<UUID> receiverIds) {
@@ -89,4 +96,4 @@ public class BasicNotificationService implements NotificationService {
       log.warn("알림 캐시가 존재하지 않습니다.");
     }
   }
-} 
+}
