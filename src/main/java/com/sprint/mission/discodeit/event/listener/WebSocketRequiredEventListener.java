@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -23,6 +24,7 @@ public class WebSocketRequiredEventListener {
     private final MessageRepository messageRepository;
     private final MessageMapper messageMapper;
 
+    @Async("ioTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleMessage(MessageCreatedEvent event){
         UUID messageId = event.getMessageId();
