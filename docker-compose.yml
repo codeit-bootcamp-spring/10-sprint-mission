@@ -13,7 +13,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: discodeit-backend
+    deploy:
+      replicas: 3
     depends_on:
       postgres:
         condition: service_healthy
