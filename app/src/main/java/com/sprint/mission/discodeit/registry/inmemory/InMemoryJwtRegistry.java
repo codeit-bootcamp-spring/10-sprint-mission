@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.registry.inmemory;
 
 import com.sprint.mission.discodeit.dto.jwt.JwtInformation;
+import com.sprint.mission.discodeit.event.sse.UserLogInOutEvent;
 import com.sprint.mission.discodeit.exception.user.DiscodeitUnauthorizedException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.registry.JwtRegistry;
@@ -13,18 +14,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile("test")
 public class InMemoryJwtRegistry implements JwtRegistry {
 
   // <userId, Queue<JwtInformation>>
   private final Map<UUID, Queue<JwtInformation>> origin = new ConcurrentHashMap<>();
   private final int maxActiveJwtCount = 1;
   private final JwtTokenProvider jwtTokenProvider;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public void registerJwtInformation(JwtInformation jwtInformation) {
@@ -38,6 +43,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     }
 
     queue.offer(jwtInformation);
+    eventPublisher.publishEvent(new UserLogInOutEvent(jwtInformation.userDto().id(), true));
   }
 
   @Override
@@ -47,6 +53,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
       throw new UserNotFoundException();
     }
     origin.remove(userId);
+    eventPublisher.publishEvent(new UserLogInOutEvent(userId, false));
   }
 
   @Override
@@ -101,13 +108,5 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     origin.values().forEach(queue -> queue
         .removeIf(info -> jwtTokenProvider.isExpired(info.refreshToken()))
     );
-  }
-
-  @Override
-  public JwtInformation getJwtInformationByUserIdAndRefreshToken(UUID userId, String refreshToken) {
-    return origin.get(userId).stream()
-        .filter(info -> info.refreshToken().equals(refreshToken))
-        .findFirst()
-        .orElse(null);
   }
 }
