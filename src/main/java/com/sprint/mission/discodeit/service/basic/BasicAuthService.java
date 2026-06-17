@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ public class BasicAuthService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
+    @CacheEvict(cacheNames = "users", allEntries = true)
     @Transactional
     public UserDto login(LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername())

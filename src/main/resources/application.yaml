@@ -1,4 +1,8 @@
 spring:
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=100,expireAfterAccess=600s,recordStats
   application:
     name: discodeit
   servlet:
@@ -8,6 +12,10 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
   jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
     hibernate:
       ddl-auto: validate
     open-in-view: false
@@ -21,10 +29,13 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,loggers
+        include: health,info,metrics,loggers,caches
   endpoint:
     health:
       show-details: always
+  observations:
+    annotations:
+      enabled: true
 
 info:
   name: Discodeit

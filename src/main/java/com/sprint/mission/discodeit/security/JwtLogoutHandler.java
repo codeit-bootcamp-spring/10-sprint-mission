@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.UUID;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Slf4j
 @Component
@@ -20,6 +21,7 @@ public class JwtLogoutHandler implements LogoutHandler {
     private final JwtRegistry jwtRegistry;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @CacheEvict(cacheNames = "users", allEntries = true)
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) {
