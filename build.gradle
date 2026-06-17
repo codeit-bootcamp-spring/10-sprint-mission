@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '2.0-M10'
+version = '2.2-M11'
 description = 'Demo project for Spring Boot'
 
 java {
@@ -45,6 +45,13 @@ dependencies {
 	// Lombok-MapStruct 바인딩
 	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 
+	// Retry
+	implementation 'org.springframework.retry:spring-retry'
+
+	// Cache
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
+
 	// Database
 	implementation 'org.postgresql:postgresql:42.7.3'
 	testImplementation 'com.h2database:h2'
@@ -64,7 +71,7 @@ dependencies {
 	runtimeOnly 'com.h2database:h2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-	// Test 내 Lombok 및 Security ㅛㅏ용
+	// Test 내 Lombok 및 Security 사용
 	testCompileOnly 'org.projectlombok:lombok'
 	testAnnotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.security:spring-security-test'

@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.request.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.message.MessageDto;
 import com.sprint.mission.discodeit.dto.response.message.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -30,6 +31,7 @@ public class MessageController {
     private final MessageService messageService;
 
     @Operation(summary = "Message 생성", operationId = "create_2")
+    @Timed("message.create.async")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageDto> create(@Valid @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
                                              @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {

@@ -11,6 +11,15 @@ spring:
       client:
         instance:
           name: discodeit
+  cache:
+    type: caffeine
+    cache-names:
+      - channels
+      - notifications
+      - users
+    caffeine:
+      # 최대 100개 저장, 접근 후 10분(600초) 지나면 만료, 통계 기록 활성화
+      spec: maximumSize=100, expireAfterAccess=600s, recordStats
 
 # JWT 설정
 jwt:
@@ -51,6 +60,10 @@ management:
 
   info:
     env:
+      enabled: true
+
+  observations:
+    annotations:
       enabled: true
 
 # 애플리케이션 상세 정보

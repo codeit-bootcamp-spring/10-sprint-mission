@@ -45,7 +45,11 @@ public enum ErrorCode {
 
     // BinaryContent
     BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "Binary content with id not found"),
-    BINARY_CONTENT_FILE_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred while processing file");
+    BINARY_CONTENT_FILE_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred while processing file"),
+
+    // Notification
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "Notification with id not found"),
+    ACCESS_DENIED_NOTIFICATION(HttpStatus.FORBIDDEN, "Access denied for notification");
 
     private final HttpStatus httpStatus;
     private final String message;

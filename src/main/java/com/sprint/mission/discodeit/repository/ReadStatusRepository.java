@@ -62,6 +62,16 @@ public interface ReadStatusRepository extends JpaRepository<ReadStatusEntity, UU
             """)
     List<ReadStatusEntity> findAllByChannel(@Param("channel") ChannelEntity channel);
 
+    // 다건 조회 (알림 상태 활성화)
+    @Query("""
+            SELECT readStatus
+            FROM ReadStatusEntity readStatus
+            JOIN FETCH readStatus.user
+            JOIN FETCH readStatus.channel
+            WHERE readStatus.channel.id = :channelId
+            """)
+    List<ReadStatusEntity> findByChannelIdAndNotificationEnabledTrue(@Param("channelId") UUID channelId);
+
     // 유효성 검사 (중복 확인)
     Boolean existsByUserIdAndChannelId(UUID userId, UUID channelId);
 }

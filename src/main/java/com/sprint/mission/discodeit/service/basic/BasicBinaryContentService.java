@@ -2,14 +2,16 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.response.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContentEntity;
-import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -25,7 +27,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     private final BinaryContentMapper binaryContentMapper;
 
-    private final BinaryContentStorage localBinaryContentStorage;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     // 첨부 파일 생성
     @Override
@@ -34,7 +36,10 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContentEntity newBinaryContent = new BinaryContentEntity(fileName, bytes.length, contentType);
 
         binaryContentRepository.save(newBinaryContent);
-        localBinaryContentStorage.put(newBinaryContent.getId(), bytes);
+        applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(
+                newBinaryContent.getId(),
+                bytes
+        ));
 
         return binaryContentMapper.toDto(newBinaryContent);
     }
@@ -61,6 +66,17 @@ public class BasicBinaryContentService implements BinaryContentService {
         return binaryContentRepository.findAll().stream()
                 .map(binaryContentMapper::toDto)
                 .toList();
+    }
+
+    // 첨부 파일 업로드 상태 수정
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+        BinaryContentEntity targetBinaryContent = getBinaryContentEntityOrThrow(binaryContentId);
+
+        targetBinaryContent.updateStatus(status);
+
+        return binaryContentMapper.toDto(targetBinaryContent);
     }
 
     // 첨부 파일 삭제

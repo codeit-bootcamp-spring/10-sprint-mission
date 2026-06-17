@@ -18,6 +18,8 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,7 @@ public class BasicChannelService implements ChannelService {
     // 공개 채널 생성
     @Override
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+    @CacheEvict(cacheNames = "channels", key = "#userId")
     @Transactional
     public ChannelDto createPublicChannel(PublicChannelCreateRequest publicChannelCreateRequest) {
         ChannelEntity newChannel = channelMapper.toPublicEntity(publicChannelCreateRequest);
@@ -54,6 +57,7 @@ public class BasicChannelService implements ChannelService {
 
     // 비공개 채널 생성
     @Override
+    @CacheEvict(cacheNames = "channels", key = "#userId")
     @Transactional
     public ChannelDto createPrivateChannel(PrivateChannelCreateRequest privateChannelCreateRequest) {
         ChannelEntity newChannel = channelMapper.toPrivateEntity();
@@ -96,6 +100,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     // 특정 사용자가 참여하고 있는 채널 목록 조회
+    @Cacheable(cacheNames = "channels", key = "#userId")
     public List<ChannelDto> findAllByUserId(UUID userId) {
         UserEntity targetUser = getUserEntityOrThrow(userId);
 
@@ -107,6 +112,7 @@ public class BasicChannelService implements ChannelService {
     // 채널 정보 수정
     @Override
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+    @CacheEvict(cacheNames = "channels", key = "#userId")
     @Transactional
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest publicChannelUpdateRequest) {
         ChannelEntity targetChannel = getChannelEntityOrThrow(channelId);
@@ -127,6 +133,7 @@ public class BasicChannelService implements ChannelService {
     // 채널 삭제
     @Override
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+    @CacheEvict(cacheNames = "channels", key = "#userId")
     @Transactional
     public void delete(UUID channelId) {
         ChannelEntity targetChannel = getChannelEntityOrThrow(channelId);

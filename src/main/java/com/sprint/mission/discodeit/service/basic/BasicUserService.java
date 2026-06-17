@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.request.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentFileProcessingErrorException;
@@ -17,9 +18,11 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.security.jwt.registry.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -43,7 +46,7 @@ public class BasicUserService implements UserService {
 
     private final UserMapper userMapper;
 
-    private final BinaryContentStorage binaryContentStorage;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -51,6 +54,7 @@ public class BasicUserService implements UserService {
 
     // 사용자 생성
     @Override
+    @Cacheable(cacheNames = "users", key = "#userId")
     @Transactional
     public UserDto create(UserCreateRequest userCreateRequest, MultipartFile profile) {
         // 유효성 검증 (중복 확인)
@@ -93,7 +97,10 @@ public class BasicUserService implements UserService {
                 );
 
                 binaryContentRepository.save(newProfile);
-                binaryContentStorage.put(newProfile.getId(), profile.getBytes());
+                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(
+                        newProfile.getId(),
+                        profile.getBytes()
+                ));
             } catch (IOException e) {
                 throw new BinaryContentFileProcessingErrorException(targetUser.getUsername(), profile.getName());
             }
@@ -103,6 +110,7 @@ public class BasicUserService implements UserService {
 
     // 사용자 단건 조회
     @Override
+    @Cacheable(cacheNames = "users", key = "#userId")
     public UserDto findById(UUID userId) {
         UserEntity targetUser = getUserEntityOrThrow(userId);
         boolean isOnline = jwtRegistry.hasActiveJwtInformationByUserId(targetUser.getId());
@@ -138,6 +146,7 @@ public class BasicUserService implements UserService {
     // 사용자 정보 수정
     @Override
     @PreAuthorize("@authValidator.isSelf(#userId, authentication.name)")        // 파라미터 값과 현재 로그인 한 사용자의 ID 일치 여부 확인
+    @CacheEvict(cacheNames = "users", key = "#userId")
     @Transactional
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest, MultipartFile profile) {
         UserEntity targetUser = getUserEntityOrThrow(userId);
@@ -181,6 +190,7 @@ public class BasicUserService implements UserService {
     // 사용자 삭제
     @Override
     @PreAuthorize("@authValidator.isSelf(#userId, authentication.name)")
+    @CacheEvict(cacheNames = "users", key = "#userId")
     @Transactional
     public void delete(UUID userId) {
         UserEntity targetUser = getUserEntityOrThrow(userId);

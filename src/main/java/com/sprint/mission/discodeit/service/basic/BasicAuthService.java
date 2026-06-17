@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.response.auth.JwtDto;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.dto.response.auth.TokenDto;
 import com.sprint.mission.discodeit.entity.UserEntity;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.auth.JwtTokenUnauthorizedException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.AuthMapper;
@@ -15,6 +16,7 @@ import com.sprint.mission.discodeit.security.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.jwt.registry.JwtRegistry;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -39,6 +41,8 @@ public class BasicAuthService implements AuthService {
     private final JwtRegistry jwtRegistry;
 
     private final UserDetailsService userDetailsService;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     // refreshToken 재발급
     @Override
@@ -72,6 +76,13 @@ public class BasicAuthService implements AuthService {
         UserEntity targetUser = getUserEntityOrThrow(roleUpdateRequest.userId());
 
         targetUser.updateRole(roleUpdateRequest.newRole());
+
+        // 알림 이벤트 생성
+        applicationEventPublisher.publishEvent(new RoleUpdatedEvent(
+                targetUser.getId(),
+                targetUser.getRole(),
+                roleUpdateRequest.newRole()
+        ));
 
         // 권한이 변경된, 특정 사용자 강제 로그아웃
         jwtRegistry.invalidateJwtInformationByUserId(targetUser.getId());

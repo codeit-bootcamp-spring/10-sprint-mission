@@ -43,9 +43,18 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     @Override
     public UUID put(UUID binaryContentId, byte[] bytes) {
         try {
-            Files.write(resolvePath(binaryContentId), bytes);
+            // 성능 향상을 위한 지연 (3초)
+            Thread.sleep(3000);
+
+            Path path = resolvePath(binaryContentId);
+            Files.write(path, bytes);
+
             return binaryContentId;
-        } catch (IOException e) {
+        } catch (InterruptedException e) {                      // 스레드 오류
+            // 대기 중 오류 발생 시, 해당 스레드의 인터럽트 상태 복구
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Thread interrupted while simulating delay", e);
+        } catch (IOException e) {                               // 파일 쓰기 오류
             throw new RuntimeException("Failed to store binary content", e);
         }
     }

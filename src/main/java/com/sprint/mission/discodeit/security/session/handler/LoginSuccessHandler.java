@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.security.session.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.cache.CacheEvictService;
 import com.sprint.mission.discodeit.security.auth.DiscodeitUserDetails;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,10 +26,15 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final ObjectMapper objectMapper;        // 자바 객체 -> JSON 변환
 
+    private final CacheEvictService cacheEvictService;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         // 인증이 완료된 사용자의 정보 조회
         DiscodeitUserDetails userDetails = (DiscodeitUserDetails) authentication.getPrincipal();
+
+        // 특정 사용자의 캐시 삭제
+        cacheEvictService.evictUserCaches(userDetails.getUserDto().id());
 
         // JSON 형태로 200 OK와 함께 반환
         response.setStatus(HttpStatus.OK.value());

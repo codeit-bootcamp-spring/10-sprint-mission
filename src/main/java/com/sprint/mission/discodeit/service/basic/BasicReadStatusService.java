@@ -84,6 +84,7 @@ public class BasicReadStatusService implements ReadStatusService {
         ReadStatusEntity targetReadStatus = getReadStatusEntity(readStatusId);
 
         targetReadStatus.updateLastReadTime(readStatusUpdateRequest.newLastReadAt());
+        targetReadStatus.updateNotificationEnabled(readStatusUpdateRequest.notificationEnabled());
 
         return readStatusMapper.toDto(targetReadStatus);
     }
