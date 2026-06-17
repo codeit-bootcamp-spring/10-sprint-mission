@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.event.BinaryContentUploadFailedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
@@ -12,6 +13,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.basic.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -47,6 +49,8 @@ public class NotificationRequiredTopicListener {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
+    private final SseService sseService;
+
     @KafkaListener(topics = "discodeit.MessageCreatedEvent")
     public void onMessageCreatedEvent(String kafkaEvent) {
         try {
@@ -76,7 +80,24 @@ public class NotificationRequiredTopicListener {
                     ))
                     .toList();
 
-            notificationRepository.saveAll(notifications);
+            List<Notification> savedNotifications = notificationRepository.saveAll(notifications);
+
+            savedNotifications.forEach(notification -> {
+                NotificationDto notificationDto = new NotificationDto(
+                        notification.getId(),
+                        notification.getCreatedAt(),
+                        notification.getReceiver().getId(),
+                        notification.getTitle(),
+                        notification.getContent()
+                );
+
+                /// SSE에 연결돼있는
+                sseService.send(
+                        List.of(notification.getReceiver().getId()),
+                                "notifications.created",
+                                notificationDto
+                );
+            });
 
             /// 알림이 발생한 사용자의 알림을 캐시에서 삭제
             if (cache != null) {
@@ -114,7 +135,21 @@ public class NotificationRequiredTopicListener {
                     "%s -> %s".formatted(event.getPreviousRole(), event.getNewRole())
             );
 
-            notificationRepository.save(notification);
+            Notification savedNotification = notificationRepository.save(notification);
+            NotificationDto notificationDto = new NotificationDto(
+                    savedNotification.getId(),
+                    savedNotification.getCreatedAt(),
+                    savedNotification.getReceiver().getId(),
+                    savedNotification.getTitle(),
+                    savedNotification.getContent()
+            );
+
+            /// SSE에 연결돼있는
+            sseService.send(
+                    List.of(savedNotification.getReceiver().getId()),
+                    "notifications.created",
+                    notificationDto
+            );
 
             if (cache != null) {
                 cache.evict(event.getUserId());
@@ -152,7 +187,27 @@ public class NotificationRequiredTopicListener {
             List<Notification> notifications = admins.stream()
                     .map(admin -> new Notification(admin, title, content))
                     .toList();
-            notificationRepository.saveAll(notifications);
+
+            List<Notification> savedNotifications = notificationRepository.saveAll(notifications);
+
+            savedNotifications.forEach(notification -> {
+                NotificationDto notificationDto = new NotificationDto(
+                        notification.getId(),
+                        notification.getCreatedAt(),
+                        notification.getReceiver().getId(),
+                        notification.getTitle(),
+                        notification.getContent()
+                );
+
+                /// SSE에 연결돼있는
+                sseService.send(
+                        List.of(notification.getReceiver().getId()),
+                        "notifications.created",
+                        notificationDto
+                );
+            });
+
+
             if (cache != null) {
                 admins.stream()
                         .map(User::getId)
