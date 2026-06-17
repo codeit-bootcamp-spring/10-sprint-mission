@@ -53,7 +53,8 @@ public class BinaryContentController {
         response.id(),
         response.fileName(),
         response.size(),
-        response.contentType()
+        response.contentType(),
+        response.status()
     );
 
     return binaryContentStorage.download(dto);
@@ -81,7 +82,8 @@ public class BinaryContentController {
         response.id(),
         response.fileName(),
         response.size(),
-        response.contentType()
+        response.contentType(),
+        response.status()
     ));
   }
 
@@ -100,7 +102,8 @@ public class BinaryContentController {
                 response.id(),
                 response.fileName(),
                 response.size(),
-                response.contentType()
+                response.contentType(),
+                response.status()
             ))
             .toList()
     );

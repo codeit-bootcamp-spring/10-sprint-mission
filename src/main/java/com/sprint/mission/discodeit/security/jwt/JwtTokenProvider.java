@@ -9,6 +9,7 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 import lombok.Getter;
@@ -40,13 +41,15 @@ public class JwtTokenProvider {
       Date expiration = new Date(
           System.currentTimeMillis() + accessTokenExpirationMinutes * 60 * 1000L);
 
-      JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+      JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder()
           .subject(subject)
-          .claim("roles", claims.get("roles"))
           .expirationTime(expiration)
           .issueTime(new Date())
-          .issuer("discodeit")
-          .build();
+          .issuer("discodeit");
+
+      claims.forEach(builder::claim);
+
+      JWTClaimsSet claimsSet = builder.build();
 
       SignedJWT signedJWT = new SignedJWT(
           new JWSHeader(JWSAlgorithm.HS256),
@@ -107,6 +110,19 @@ public class JwtTokenProvider {
 
     } catch (Exception e) {
       throw new RuntimeException("JWT 파싱 실패", e);
+    }
+  }
+
+  // 만료시간
+  public Instant getExpiration(String token) {
+    try {
+      SignedJWT signedJWT = SignedJWT.parse(token);
+      return signedJWT
+          .getJWTClaimsSet()
+          .getExpirationTime()
+          .toInstant();
+    } catch (Exception e) {
+      throw new RuntimeException("JWT 만료 시간 추출 실패", e);
     }
   }
 }

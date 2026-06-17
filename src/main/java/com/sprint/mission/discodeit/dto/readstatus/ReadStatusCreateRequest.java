@@ -14,7 +14,8 @@ public record ReadStatusCreateRequest(
     @NotNull(message = "채널ID는 필수입니다.")
     UUID channelId,
 
-    Instant lastReadAt
+    Instant lastReadAt,
+    Boolean notificationEnabled
 ) {
 
 }

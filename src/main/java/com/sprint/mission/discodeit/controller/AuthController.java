@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.auth.JwtDto;
+import com.sprint.mission.discodeit.dto.auth.JwtInformation;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.user.UserDto;
@@ -9,11 +10,11 @@ import com.sprint.mission.discodeit.dto.user.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -21,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,15 +42,17 @@ public class AuthController {
   private final BinaryContentMapper binaryContentMapper;
   private final JwtTokenProvider jwtTokenProvider;
   private final DiscodeitUserDetailsService discodeitUserDetailsService;
+  private final JwtRegistry jwtRegistry;
 
   public AuthController(UserService userService, BinaryContentService binaryContentService,
       BinaryContentMapper binaryContentMapper, JwtTokenProvider jwtTokenProvider,
-      DiscodeitUserDetailsService discodeitUserDetailsService) {
+      DiscodeitUserDetailsService discodeitUserDetailsService, JwtRegistry jwtRegistry) {
     this.userService = userService;
     this.binaryContentService = binaryContentService;
     this.binaryContentMapper = binaryContentMapper;
     this.jwtTokenProvider = jwtTokenProvider;
     this.discodeitUserDetailsService = discodeitUserDetailsService;
+    this.jwtRegistry = jwtRegistry;
   }
 
   @GetMapping("/csrf-token")
@@ -60,15 +62,6 @@ public class AuthController {
 
     return ResponseEntity.status(203).build();
   }
-// 삭제
-//  @GetMapping("/me")
-//  public ResponseEntity<UserDto> getMe(
-//      @AuthenticationPrincipal DiscodeitUserDetails userDetails
-//  ) {
-//    UserDto userDto = userDetails.getUserDto();
-//
-//    return ResponseEntity.ok(userDto);
-//  }
 
   @PostMapping("/refresh")
   public ResponseEntity<JwtDto> refresh(
@@ -82,6 +75,11 @@ public class AuthController {
 
     try {
       Map<String, Object> claims = jwtTokenProvider.getClaims(refreshToken);
+
+      if (!jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+      }
+
       String username = (String) claims.get("sub");
 
       DiscodeitUserDetails userDetails =
@@ -90,6 +88,9 @@ public class AuthController {
       UserDto userDto = userDetails.getUserDto();
 
       Map<String, Object> accessClaims = Map.of(
+          "userId", userDto.id().toString(),
+          "email", userDto.email(),
+          "username", userDto.username(),
           "roles", userDetails.getAuthorities().stream()
               .map(GrantedAuthority::getAuthority)
               .toList()
@@ -102,6 +103,17 @@ public class AuthController {
 
       String newRefreshToken = jwtTokenProvider.generateRefreshToken(
           userDto.email()
+      );
+
+      jwtRegistry.rotateJwtInformation(
+          refreshToken,
+          new JwtInformation(
+              userDto.id(),
+              newAccessToken,
+              newRefreshToken,
+              jwtTokenProvider.getExpiration(newAccessToken),
+              jwtTokenProvider.getExpiration(newRefreshToken)
+          )
       );
 
       Cookie cookie = new Cookie("REFRESH_TOKEN", newRefreshToken);

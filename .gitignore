@@ -24,4 +24,6 @@ dist-ssr
 *.sw?
 .env
 discodeit.env
+.gradle/
 build/
+out/

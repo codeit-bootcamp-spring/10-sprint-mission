@@ -27,13 +27,17 @@ public class ReadStatus extends BaseUpdatableEntity {
   @Column(name = "last_read_at", nullable = false)
   private Instant readAt;
 
+  @Column(name = "notification_enabled", nullable = false)
+  private boolean notificationEnabled;
+
   protected ReadStatus() {
   }
 
-  public ReadStatus(User user, Channel channel) {
+  public ReadStatus(User user, Channel channel, boolean notificationEnabled) {
     this.user = user;
     this.channel = channel;
     this.readAt = Instant.now();
+    this.notificationEnabled = notificationEnabled;
   }
 
   public UUID getUserId() {
@@ -46,6 +50,11 @@ public class ReadStatus extends BaseUpdatableEntity {
 
   public void updateLastReadAt(Instant time) {
     this.readAt = time;
+    touch();
+  }
+
+  public void updateNotificationEnabled(boolean notificationEnabled) {
+    this.notificationEnabled = notificationEnabled;
     touch();
   }
 }

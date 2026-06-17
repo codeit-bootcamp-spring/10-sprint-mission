@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.message.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidParameterException;
@@ -23,7 +24,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.time.Instant;
@@ -35,10 +36,10 @@ import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,7 +57,8 @@ public class BasicMessageService implements MessageService {
   private final MessageDtoMapper messageDtoMapper;
   private final BinaryContentMapper binaryContentMapper;
   private final UserMapper userMapper;
-  private final SessionRegistry sessionRegistry;
+  private final JwtRegistry jwtRegistry;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public MessageDto create(MessageCreateRequest req) {
@@ -93,6 +95,21 @@ public class BasicMessageService implements MessageService {
 
     Message saved = messageRepository.save(
         new Message(channel, user, req.content(), attachments)
+    );
+
+    String channelName = channel.getName() != null
+        ? channel.getName()
+        : "PRIVATE";
+
+    eventPublisher.publishEvent(
+        new MessageCreatedEvent(
+            saved.getId(),
+            channel.getId(),
+            channelName,
+            user.getId(),
+            user.getUsername(),
+            saved.getContent()
+        )
     );
 
     return toDto(saved, Map.of(user.getId(), user));
@@ -230,10 +247,7 @@ public class BasicMessageService implements MessageService {
   }
 
   private boolean isOnline(UUID userId) {
-    return sessionRegistry.getAllPrincipals().stream()
-        .filter(DiscodeitUserDetails.class::isInstance)
-        .map(DiscodeitUserDetails.class::cast)
-        .anyMatch(principal -> principal.getUserDto().id().equals(userId));
+    return jwtRegistry.hasActiveJwtInformationByUserId(userId);
   }
 
   private void findChannelOrThrow(UUID channelId) {

@@ -19,6 +19,7 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserRole;
+import com.sprint.mission.discodeit.event.message.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageEmptyException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
@@ -30,8 +31,8 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,8 +42,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -73,7 +74,10 @@ class BasicMessageServiceTest {
   private UserMapper userMapper;
 
   @Mock
-  private SessionRegistry sessionRegistry;
+  private JwtRegistry jwtRegistry;
+
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
 
   @InjectMocks
   private BasicMessageService messageService;
@@ -120,7 +124,7 @@ class BasicMessageServiceTest {
     given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
     given(userRepository.findById(authorId)).willReturn(Optional.of(author));
     given(messageRepository.save(any(Message.class))).willReturn(message);
-    given(sessionRegistry.getAllPrincipals()).willReturn(List.of());
+    given(jwtRegistry.hasActiveJwtInformationByUserId(any(UUID.class))).willReturn(false);
     given(userMapper.toDto(any(User.class), anyBoolean(), any())).willReturn(authorDto);
     given(messageDtoMapper.toDto(any(Message.class), any(), anyList())).willReturn(response);
 
@@ -135,6 +139,8 @@ class BasicMessageServiceTest {
     then(channelRepository).should().findById(channelId);
     then(userRepository).should().findById(authorId);
     then(messageRepository).should().save(any(Message.class));
+    then(jwtRegistry).should().hasActiveJwtInformationByUserId(authorId);
+    then(eventPublisher).should().publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -155,6 +161,7 @@ class BasicMessageServiceTest {
 
     then(userRepository).should(never()).findById(authorId);
     then(messageRepository).should(never()).save(any(Message.class));
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -178,6 +185,7 @@ class BasicMessageServiceTest {
         .isInstanceOf(UserNotFoundException.class);
 
     then(messageRepository).should(never()).save(any(Message.class));
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -195,6 +203,7 @@ class BasicMessageServiceTest {
         .isInstanceOf(MessageEmptyException.class);
 
     then(channelRepository).should(never()).findById(channelId);
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -236,7 +245,7 @@ class BasicMessageServiceTest {
     MessageUpdateRequest request = new MessageUpdateRequest(messageId, "after");
 
     given(messageRepository.findById(messageId)).willReturn(Optional.of(message));
-    given(sessionRegistry.getAllPrincipals()).willReturn(List.of());
+    given(jwtRegistry.hasActiveJwtInformationByUserId(any(UUID.class))).willReturn(false);
     given(userMapper.toDto(any(User.class), anyBoolean(), any())).willReturn(authorDto);
     given(messageDtoMapper.toDto(any(Message.class), any(), anyList())).willReturn(response);
 
@@ -248,6 +257,8 @@ class BasicMessageServiceTest {
     assertThat(result.content()).isEqualTo("after");
 
     then(messageRepository).should().findById(messageId);
+    then(jwtRegistry).should().hasActiveJwtInformationByUserId(authorId);
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -305,6 +316,7 @@ class BasicMessageServiceTest {
     // then
     then(messageRepository).should().findById(messageId);
     then(messageRepository).should().delete(message);
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -320,6 +332,7 @@ class BasicMessageServiceTest {
         .isInstanceOf(MessageNotFoundException.class);
 
     then(messageRepository).should(never()).delete(any(Message.class));
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -366,7 +379,7 @@ class BasicMessageServiceTest {
         .willReturn(List.of(message));
     given(userRepository.findAllByIdInWithProfileImage(List.of(authorId)))
         .willReturn(List.of(author));
-    given(sessionRegistry.getAllPrincipals()).willReturn(List.of());
+    given(jwtRegistry.hasActiveJwtInformationByUserId(any(UUID.class))).willReturn(false);
     given(userMapper.toDto(any(User.class), anyBoolean(), any())).willReturn(authorDto);
     given(messageDtoMapper.toDto(any(Message.class), any(), anyList())).willReturn(messageDto);
 
@@ -383,6 +396,8 @@ class BasicMessageServiceTest {
     then(messageRepository).should()
         .findMessageIdsByChannelId(any(UUID.class), any(Pageable.class));
     then(messageRepository).should().findAllByIdInWithAuthorAndAttachments(List.of(messageId));
+    then(jwtRegistry).should().hasActiveJwtInformationByUserId(authorId);
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 
   @Test
@@ -398,5 +413,6 @@ class BasicMessageServiceTest {
         .isInstanceOf(ChannelNotFoundException.class);
 
     then(messageRepository).should(never()).findMessageIdsByChannelId(any(), any());
+    then(eventPublisher).should(never()).publishEvent(any(MessageCreatedEvent.class));
   }
 }

@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.config;
 
-import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
@@ -18,15 +17,12 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -125,7 +121,7 @@ public class SecurityConfig {
 
     config.setAllowedOrigins(List.of("http://localhost:3000"));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-    config.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN"));
+    config.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN", "Authorization"));
     config.setAllowCredentials(true);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -157,13 +153,4 @@ public class SecurityConfig {
     return handler;
   }
 
-  @Bean
-  public SessionRegistry sessionRegistry() {
-    return new SessionRegistryImpl();
-  }
-
-  @Bean
-  public HttpSessionEventPublisher httpSessionEventPublisher() {
-    return new HttpSessionEventPublisher();
-  }
 }

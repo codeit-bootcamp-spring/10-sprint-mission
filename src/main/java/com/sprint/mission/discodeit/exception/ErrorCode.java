@@ -21,12 +21,17 @@ public enum ErrorCode {
   // 401
   UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증에 실패했습니다."),
 
+  // 403
+  FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+  NOTIFICATION_FORBIDDEN(HttpStatus.FORBIDDEN, "본인의 알림만 삭제할 수 있습니다."),
+
   // 404
   USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
   CHANNEL_NOT_FOUND(HttpStatus.NOT_FOUND, "채널을 찾을 수 없습니다."),
   MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "메시지를 찾을 수 없습니다."),
   READ_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "상태 정보를 찾을 수 없습니다."),
   BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다."),
+  NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다."),
 
   // 409
   DUPLICATION_CHANNEL(HttpStatus.CONFLICT, "이미 존재하는 채널입니다."),

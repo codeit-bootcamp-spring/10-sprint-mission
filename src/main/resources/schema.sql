@@ -10,7 +10,9 @@ CREATE TABLE IF NOT EXISTS binary_contents
     created_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
     file_name    VARCHAR(255) NOT NULL,
     size         BIGINT       NOT NULL,
-    content_type VARCHAR(100) NOT NULL
+    content_type VARCHAR(100) NOT NULL,
+    updated_at   timestamp with time zone,
+    status       varchar(20)  NOT NULL DEFAULT 'PROCESSING'
 );
 
 -- users
@@ -69,12 +71,13 @@ CREATE TABLE IF NOT EXISTS messages
 -- read_statuses
 CREATE TABLE IF NOT EXISTS read_statuses
 (
-    id           UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
-    created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at   TIMESTAMPTZ,
-    user_id      UUID        NOT NULL,
-    channel_id   UUID        NOT NULL,
-    last_read_at TIMESTAMPTZ NOT NULL,
+    id                   UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at           TIMESTAMPTZ,
+    user_id              UUID        NOT NULL,
+    channel_id           UUID        NOT NULL,
+    last_read_at         TIMESTAMPTZ NOT NULL,
+    notification_enabled BOOLEAN     NOT NULL,
 
     CONSTRAINT uk_read_user_channel UNIQUE (user_id, channel_id),
 
@@ -111,3 +114,21 @@ CREATE TABLE IF NOT EXISTS message_attachments
 CREATE INDEX IF NOT EXISTS idx_messages_channel ON messages (channel_id);
 CREATE INDEX IF NOT EXISTS idx_read_user ON read_statuses (user_id);
 CREATE INDEX IF NOT EXISTS idx_read_channel ON read_statuses (channel_id);
+
+-- notifications
+CREATE TABLE IF NOT EXISTS notifications
+(
+    id          UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    receiver_id UUID        NOT NULL,
+    title       VARCHAR(255) NOT NULL,
+    content     TEXT        NOT NULL,
+
+    CONSTRAINT fk_notifications_receiver
+    FOREIGN KEY (receiver_id)
+    REFERENCES users (id)
+    ON DELETE CASCADE
+    );
+
+CREATE INDEX IF NOT EXISTS idx_notifications_receiver_created_at
+    ON notifications (receiver_id, created_at DESC);
