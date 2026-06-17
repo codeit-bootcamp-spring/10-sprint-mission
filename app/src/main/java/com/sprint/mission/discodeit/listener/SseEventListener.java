@@ -7,7 +7,11 @@ import com.sprint.mission.discodeit.event.sse.BinaryContentUpdateEvent;
 import com.sprint.mission.discodeit.event.sse.ChannelChangedEvent;
 import com.sprint.mission.discodeit.event.sse.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.event.sse.UserChangedEvent;
+import com.sprint.mission.discodeit.event.sse.UserLogInOutEvent;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.SseService;
+import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +31,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class SseEventListener {
 
   private final SseService sseService;
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
 
   @Async("eventTaskExecutor")
   @EventListener
@@ -81,5 +87,18 @@ public class SseEventListener {
         "users." + event.action().name().toLowerCase(),
         event.userDto()
     );
+  }
+
+  @Async("eventTaskExecutor")
+  @EventListener
+  public void on(UserLogInOutEvent event) {
+    log.debug("[SSE] 사용자 로그인/로그아웃 이벤트 수신: channelId={}", event.userId());
+    userRepository.findById(event.userId())
+        .ifPresent(user -> {
+          sseService.broadcast(
+              "users.updated",
+              userMapper.toDto(user, event.isOnline())
+          );
+        });
   }
 }
