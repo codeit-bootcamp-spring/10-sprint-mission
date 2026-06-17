@@ -22,28 +22,6 @@ services:
       - db
       - redis
       - broker
-#    environment:
-#      # --- .env 파일에서 동적으로 주입받는 변수들 ---
-#      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-#      - SERVER_PORT=${SERVER_PORT}
-#      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
-#      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
-#      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-#      - STORAGE_TYPE=${STORAGE_TYPE}
-#      - AWS_S3_ACCESS_KEY=${AWS_S3_ACCESS_KEY}
-#      - AWS_S3_SECRET_KEY=${AWS_S3_SECRET_KEY}
-#      - AWS_S3_REGION=${AWS_S3_REGION}
-#      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
-#      - AWS_S3_PRESIGNED_URL_EXPIRATION=${AWS_S3_PRESIGNED_URL_EXPIRATION}
-#      - JVM_OPTS=${JVM_OPTS}
-#      - ADMIN_EMAIL=${ADMIN_EMAIL}
-#      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-#      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-
-      # --- Docker Compose 내부망 고정 설정 ---
-#      - SPRING_REDIS_HOST=redis
-#      - SPRING_REDIS_PORT=6379
-#      - SPRING_KAFKA_BOOTSTRAP_SERVERS=broker:29092
     networks:
       - sprint-network
 
