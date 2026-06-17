@@ -117,7 +117,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 refreshToken
             )
         );
-        User user = userRepository.findById(userDetails.getUserDto().id())
+        User user = userRepository.findByIdWithProfile(userDetails.getUserDto().id())
                 .orElseThrow(() -> UserNotFoundException.withId(userDetails.getUserDto().id()));
 
         UserDto userDto = userMapper.toDto(user);
