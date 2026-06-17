@@ -7,6 +7,8 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.user.UserDeleteEvent;
+import com.sprint.mission.discodeit.event.user.UserUpdateEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -20,7 +22,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -70,7 +71,7 @@ public class BasicUserService implements UserService {
           //binaryContentStorage.put(binaryContent.getId(), bytes);
 
           ///BinaryContentStorage 호출하는 대신 BinaryContentCreatedEvent를 발행.
-          eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+          eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes, null));
 
           return binaryContent;
         })
@@ -79,10 +80,12 @@ public class BasicUserService implements UserService {
     String encodedPassword = passwordEncoder.encode(password);
 
     User user = new User(username, email, encodedPassword, nullableProfile);
-
     userRepository.save(user);
+    UserDto userDto = userMapper.toDto(user);
+    eventPublisher.publishEvent(new UserUpdateEvent(userDto));
+
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
-    return userMapper.toDto(user);
+    return userDto;
   }
 
   /// 단일 사용자 조회도 캐시를 적용하려면 findAll()에 해당하는 캐시와 분리를 하는게 맞다.
@@ -149,7 +152,7 @@ public class BasicUserService implements UserService {
           binaryContentRepository.save(binaryContent);
 
           ///BinaryContentStorage 호출하는 대신 BinaryContentCreatedEvent를 발행.
-          eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+          eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes, user.getId()));
           return binaryContent;
         })
         .orElse(null);
@@ -157,10 +160,12 @@ public class BasicUserService implements UserService {
     String newPassword = userUpdateRequest.newPassword();
     String encodedPassword = Optional.ofNullable(newPassword).map(passwordEncoder::encode)
         .orElse(user.getPassword());
-    user.update(newUsername, newEmail, encodedPassword, nullableProfile);
 
+    user.update(newUsername, newEmail, encodedPassword, nullableProfile);
+    UserDto userDto = userMapper.toDto(user);
+    eventPublisher.publishEvent(new UserUpdateEvent(userDto));
     log.info("사용자 수정 완료: id={}", userId);
-    return userMapper.toDto(user);
+    return userDto;
   }
 
   @CacheEvict(cacheManager = "redisCacheManager", value = "users", key = "'all'")
@@ -174,7 +179,13 @@ public class BasicUserService implements UserService {
       throw UserNotFoundException.withId(userId);
     }
 
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> UserNotFoundException.withId(userId));
+
+    UserDto userDto = userMapper.toDto(user);
+
     userRepository.deleteById(userId);
+    eventPublisher.publishEvent(new UserDeleteEvent(userDto));
     log.info("사용자 삭제 완료: id={}", userId);
   }
 }

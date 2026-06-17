@@ -11,5 +11,6 @@ import java.util.UUID;
 public class BinaryContentCreatedEvent {
     UUID binaryContentId;
     byte[] bytes;
+    UUID userId;
 
 }

@@ -39,6 +39,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       if (StringUtils.hasText(token)) {
         if (tokenProvider.validateAccessToken(token) && jwtRegistry.hasActiveJwtInformationByAccessToken(
             token)) {
+
+          /// 인증이 username기준이라 username 변경시 access token 인증이 깨진다. -> userId를 기준으로 인증하기로 고려..
           String username = tokenProvider.getUsernameFromToken(token);
 
           UserDetails userDetails = userDetailsService.loadUserByUsername(username);

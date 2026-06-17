@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.event;
+package com.sprint.mission.discodeit.event.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

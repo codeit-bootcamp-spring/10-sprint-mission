@@ -10,11 +10,17 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nimbusds.jose.JOSEException;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.user.UserUpdateEvent;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +28,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 
@@ -43,18 +51,40 @@ class JwtLoginSuccessHandlerTest {
   @Mock
   private JwtRegistry jwtRegistry;
 
+  @Mock
+  private CacheManager cacheManager;
+
+  @Mock
+  private UserMapper userMapper;
+
+  @Mock
+  private UserRepository userRepository;
+
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
+
   private JwtLoginSuccessHandler jwtLoginSuccessHandler;
   private ObjectMapper objectMapper;
   private DiscodeitUserDetails userDetails;
+  private UserDto userDto;
+  private UUID userId;
 
   @BeforeEach
   void setUp() {
     objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
-    jwtLoginSuccessHandler = new JwtLoginSuccessHandler(objectMapper, tokenProvider, jwtRegistry);
+    jwtLoginSuccessHandler = new JwtLoginSuccessHandler(
+        objectMapper,
+        tokenProvider,
+        jwtRegistry,
+        cacheManager,
+        userMapper,
+        userRepository,
+        eventPublisher
+    );
 
-    UUID userId = UUID.randomUUID();
-    UserDto userDto = new UserDto(
+    userId = UUID.randomUUID();
+    userDto = new UserDto(
         userId,
         "testuser",
         "test@example.com",
@@ -77,6 +107,21 @@ class JwtLoginSuccessHandlerTest {
     when(authentication.getPrincipal()).thenReturn(userDetails);
     given(tokenProvider.generateAccessToken(any(DiscodeitUserDetails.class)))
         .willReturn("test.jwt.token");
+    given(tokenProvider.generateRefreshToken(any(DiscodeitUserDetails.class)))
+        .willReturn("test.refresh.token");
+    given(tokenProvider.genereateRefreshTokenCookie("test.refresh.token"))
+        .willReturn(new Cookie(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, "test.refresh.token"));
+    User user = new User("testuser", "test@example.com", "encoded-password", null);
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    UserDto onlineUserDto = new UserDto(
+        userId,
+        "testuser",
+        "test@example.com",
+        null,
+        true,
+        Role.USER
+    );
+    given(userMapper.toDto(user)).willReturn(onlineUserDto);
 
     // When
     jwtLoginSuccessHandler.onAuthenticationSuccess(request, response, authentication);
@@ -86,6 +131,9 @@ class JwtLoginSuccessHandlerTest {
     verify(response).setContentType(MediaType.APPLICATION_JSON_VALUE);
     verify(response).setStatus(HttpServletResponse.SC_OK);
     verify(tokenProvider).generateAccessToken(userDetails);
+    verify(tokenProvider).generateRefreshToken(userDetails);
+    verify(jwtRegistry).registerJwtInformation(any());
+    verify(eventPublisher).publishEvent(any(UserUpdateEvent.class));
 
     String responseBody = stringWriter.toString();
     assert responseBody.contains("\"accessToken\":\"test.jwt.token\"");

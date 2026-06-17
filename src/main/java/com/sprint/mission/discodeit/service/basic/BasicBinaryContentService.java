@@ -63,7 +63,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     ///BinaryContentStorage 호출하는 대신 BinaryContentCreatedEvent를 발행.
     /// BinaryContentCreatedEvent를 받는 이벤트리스너로 향한다.
-    eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+    eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes, null));
 
     log.info("바이너리 컨텐츠 생성 완료: id={}, fileName={}, size={}", 
         binaryContent.getId(), fileName, bytes.length);

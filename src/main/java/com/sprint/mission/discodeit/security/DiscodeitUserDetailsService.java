@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class DiscodeitUserDetailsService implements UserDetailsService {
@@ -29,6 +31,19 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
     return new DiscodeitUserDetails(
         userDto,
         user.getPassword()
+    );
+  }
+
+  @Transactional(readOnly = true)
+  public UserDetails loadUserById(UUID userId) {
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> UserNotFoundException.withId(userId));
+
+    UserDto userDto = userMapper.toDto(user);
+
+    return new DiscodeitUserDetails(
+            userDto,
+            user.getPassword()
     );
   }
 }
