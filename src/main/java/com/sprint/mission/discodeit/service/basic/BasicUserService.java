@@ -1,151 +1,166 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.response.UserDto;
-import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.config.CacheNames;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.user.UserEmailAlreadyExistsException;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.exception.user.UsernameAlreadyExistsException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class BasicUserService implements UserService {
 
-	private final UserRepository userRepository;
-	private final UserMapper userMapper;
-	private final BinaryContentRepository binaryContentRepository;
-	private final BinaryContentStorage binaryContentStorage;
-	private final PasswordEncoder passwordEncoder;
-	private final JwtRegistry jwtRegistry;
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
+  private final BinaryContentRepository binaryContentRepository;
+  private final ApplicationEventPublisher eventPublisher;
+  private final PasswordEncoder passwordEncoder;
 
-	@Transactional
-	@Override
-	public UserDto create(UserCreateRequest userCreateRequest,
-		Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-		String username = userCreateRequest.username();
-		String email = userCreateRequest.email();
+  @CacheEvict(cacheNames = CacheNames.USERS, allEntries = true)
+  @Transactional
+  @Override
+  public UserDto create(UserCreateRequest userCreateRequest,
+      Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+    log.debug("사용자 생성 시작: {}", userCreateRequest);
 
-		if (userRepository.existsByEmail(email)) {
-			throw new UserEmailAlreadyExistsException(email);
-		}
-		if (userRepository.existsByUsername(username)) {
-			throw new UsernameAlreadyExistsException(username);
-		}
+    String username = userCreateRequest.username();
+    String email = userCreateRequest.email();
 
-		BinaryContent nullableProfile = optionalProfileCreateRequest
-			.map(profileRequest -> {
-				String fileName = profileRequest.fileName();
-				String contentType = profileRequest.contentType();
-				byte[] bytes = profileRequest.bytes();
-				BinaryContent binaryContent = new BinaryContent(fileName,
-					(long)bytes.length,
-					contentType);
-				binaryContentRepository.save(binaryContent);
-				binaryContentStorage.put(binaryContent.getId(), bytes);
-				return binaryContent;
-			})
-			.orElse(null);
+    if (userRepository.existsByEmail(email)) {
+      throw UserAlreadyExistsException.withEmail(email);
+    }
+    if (userRepository.existsByUsername(username)) {
+      throw UserAlreadyExistsException.withUsername(username);
+    }
 
-		String encryptedPassword = passwordEncoder.encode(userCreateRequest.password());
+    BinaryContent nullableProfile = optionalProfileCreateRequest
+        .map(profileRequest -> {
+          String fileName = profileRequest.fileName();
+          String contentType = profileRequest.contentType();
+          byte[] bytes = profileRequest.bytes();
+          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+              contentType);
+          binaryContentRepository.save(binaryContent);
+          eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+          return binaryContent;
+        })
+        .orElse(null);
+    String password = userCreateRequest.password();
+    String encodedPassword = passwordEncoder.encode(password);
 
-		User user = new User(username, email, encryptedPassword, nullableProfile);
-		userRepository.save(user);
-		log.info("[USER_CREATE] 사용자 생성 완료: userId={}, email={}", user.getId(), user.getEmail());
+    User user = new User(username, email, encodedPassword, nullableProfile);
 
-		return userMapper.toDto(user);
-	}
+    userRepository.save(user);
+    log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
+    return userMapper.toDto(user);
+  }
 
-	@Transactional(readOnly = true)
-	@Override
-	public UserDto find(UUID userId) {
-		return userRepository.findById(userId)
-			.map(userMapper::toDto)
-			.orElseThrow(() -> new UserNotFoundException(userId));
-	}
+  @Transactional(readOnly = true)
+  @Override
+  public UserDto find(UUID userId) {
+    log.debug("사용자 조회 시작: id={}", userId);
+    UserDto userDto = userRepository.findById(userId)
+        .map(userMapper::toDto)
+        .orElseThrow(() -> UserNotFoundException.withId(userId));
+    log.info("사용자 조회 완료: id={}", userId);
+    return userDto;
+  }
 
-	@Transactional(readOnly = true)
-	@Override
-	public List<UserDto> findAll() {
-		return userRepository.findAllWithProfile()
-			.stream()
-			.map(userMapper::toDto)
-			.toList();
-	}
+  @Cacheable(cacheNames = CacheNames.USERS, key = "'all'")
+  @Transactional(readOnly = true)
+  @Override
+  public List<UserDto> findAll() {
+    log.debug("모든 사용자 조회 시작");
+    List<UserDto> userDtos = userRepository.findAllWithProfile()
+        .stream()
+        .map(userMapper::toDto)
+        .toList();
+    log.info("모든 사용자 조회 완료: 총 {}명", userDtos.size());
+    return userDtos;
+  }
 
-	@Transactional
-	@Override
-	public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
-		Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new UserNotFoundException(userId));
+  @PreAuthorize("principal.userDto.id == #userId")
+  @CacheEvict(cacheNames = CacheNames.USERS, allEntries = true)
+  @Transactional
+  @Override
+  public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
+      Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+    log.debug("사용자 수정 시작: id={}, request={}", userId, userUpdateRequest);
 
-		String newUsername = userUpdateRequest.newUsername();
-		String newEmail = userUpdateRequest.newEmail();
-		validateDuplicatedUserFields(user, newUsername, newEmail);
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> {
+          UserNotFoundException exception = UserNotFoundException.withId(userId);
+          return exception;
+        });
 
-		BinaryContent nullableProfile = optionalProfileCreateRequest
-			.map(profileRequest -> {
+    String newUsername = userUpdateRequest.newUsername();
+    String newEmail = userUpdateRequest.newEmail();
 
-				String fileName = profileRequest.fileName();
-				String contentType = profileRequest.contentType();
-				byte[] bytes = profileRequest.bytes();
-				BinaryContent binaryContent = new BinaryContent(fileName,
-					(long)bytes.length,
-					contentType);
-				binaryContentRepository.save(binaryContent);
-				binaryContentStorage.put(binaryContent.getId(), bytes);
-				return binaryContent;
-			})
-			.orElse(null);
+    if (userRepository.existsByEmail(newEmail)) {
+      throw UserAlreadyExistsException.withEmail(newEmail);
+    }
 
-		String newPassword = userUpdateRequest.newPassword();
-		String encryptedNewPassword = newPassword == null ? null : passwordEncoder.encode(newPassword);
-		user.update(newUsername, newEmail, encryptedNewPassword, nullableProfile);
+    if (userRepository.existsByUsername(newUsername)) {
+      throw UserAlreadyExistsException.withUsername(newUsername);
+    }
 
-		log.info("[USER_UPDATE] 사용자 수정 완료. userId={}", userId);
-		return userMapper.toDto(user);
-	}
+    BinaryContent nullableProfile = optionalProfileCreateRequest
+        .map(profileRequest -> {
 
-	private void validateDuplicatedUserFields(User user, String newUsername, String newEmail) {
-		if (newEmail != null && !newEmail.equals(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
-			throw new UserEmailAlreadyExistsException(newEmail);
-		}
-		if (newUsername != null && !newUsername.equals(user.getUsername()) && userRepository.existsByUsername(newUsername)) {
-			throw new UsernameAlreadyExistsException(newUsername);
-		}
-	}
+          String fileName = profileRequest.fileName();
+          String contentType = profileRequest.contentType();
+          byte[] bytes = profileRequest.bytes();
+          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+              contentType);
+          binaryContentRepository.save(binaryContent);
+          eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+          return binaryContent;
+        })
+        .orElse(null);
 
-	@Transactional
-	@Override
-	public void delete(UUID userId) {
-		if (!userRepository.existsById(userId)) {
-			throw new UserNotFoundException(userId);
-		}
+    String newPassword = userUpdateRequest.newPassword();
+    String encodedPassword = Optional.ofNullable(newPassword).map(passwordEncoder::encode)
+        .orElse(user.getPassword());
+    user.update(newUsername, newEmail, encodedPassword, nullableProfile);
 
-		jwtRegistry.invalidateJwtInformationByUserId(userId);
-		userRepository.deleteById(userId);
-		log.info("[USER_DELETE] 사용자 삭제 완료: userId={}", userId);
-	}
+    log.info("사용자 수정 완료: id={}", userId);
+    return userMapper.toDto(user);
+  }
 
+  @PreAuthorize("principal.userDto.id == #userId")
+  @CacheEvict(cacheNames = CacheNames.USERS, allEntries = true)
+  @Transactional
+  @Override
+  public void delete(UUID userId) {
+    log.debug("사용자 삭제 시작: id={}", userId);
+
+    if (!userRepository.existsById(userId)) {
+      throw UserNotFoundException.withId(userId);
+    }
+
+    userRepository.deleteById(userId);
+    log.info("사용자 삭제 완료: id={}", userId);
+  }
 }

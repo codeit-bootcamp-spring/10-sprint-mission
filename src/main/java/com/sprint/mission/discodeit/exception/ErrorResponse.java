@@ -1,74 +1,29 @@
 package com.sprint.mission.discodeit.exception;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+@Getter
+@RequiredArgsConstructor
+public class ErrorResponse {
 
-@Schema(description = "공통 예외 응답")
-public record ErrorResponse(
+  private final Instant timestamp;
+  private final String code;
+  private final String message;
+  private final Map<String, Object> details;
+  private final String exceptionType;
+  private final int status;
 
-	@Schema(description = "예외 발생 시각", example = "2026-02-23T05:23:49.657764500Z")
-	Instant timestamp,
+  public ErrorResponse(DiscodeitException exception, int status) {
+    this(Instant.now(), exception.getErrorCode().name(), exception.getMessage(),
+        exception.getDetails(), exception.getClass().getSimpleName(), status);
+  }
 
-	@Schema(description = "예외 코드", example = "INVALID_CREDENTIALS")
-	String code,
-
-	@Schema(description = "예외 메시지", example = "사용자 이름 또는 비밀번호가 올바르지 않습니다.")
-	String message,
-
-	@Schema(description = "예외 상세 정보")
-	Map<String, Object> details,
-
-	@Schema(description = "발생한 예외 클래스 이름", example = "InvalidCredentialsException")
-	String exceptionType,
-
-	@Schema(description = "HTTP 상태 코드", example = "401")
-	int status
-) {
-
-	public ErrorResponse {
-		timestamp = timestamp == null ? Instant.now() : timestamp;
-		details = details == null
-			? Collections.emptyMap()
-			: Collections.unmodifiableMap(new LinkedHashMap<>(details));
-	}
-
-	public static ErrorResponse of(DiscodeitException exception) {
-		ErrorCode errorCode = exception.getErrorCode();
-		return new ErrorResponse(
-			exception.getTimestamp(),
-			errorCode.name(),
-			exception.getMessage(),
-			exception.getDetails(),
-			exception.getClass().getSimpleName(),
-			errorCode.getHttpStatus().value()
-		);
-	}
-
-	public static ErrorResponse of(ErrorCode code, String exceptionType, String message,
-		Map<String, Object> details) {
-		String resolvedMessage = (message == null || message.isBlank())
-			? code.getMessage()
-			: message;
-
-		return new ErrorResponse(
-			Instant.now(),
-			code.name(),
-			resolvedMessage,
-			details,
-			exceptionType,
-			code.getHttpStatus().value()
-		);
-	}
-
-	public static ErrorResponse of(ErrorCode code, String exceptionType, String message) {
-		return of(code, exceptionType, message, Collections.emptyMap());
-	}
-
-	public static ErrorResponse of(ErrorCode code, String exceptionType) {
-		return of(code, exceptionType, null);
-	}
-}
+  public ErrorResponse(Exception exception, int status) {
+    this(Instant.now(), exception.getClass().getSimpleName(), exception.getMessage(),
+        new HashMap<>(), exception.getClass().getSimpleName(), status);
+  }
+} 

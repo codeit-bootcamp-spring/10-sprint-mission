@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT:80}
+  port: 80
 
 spring:
   datasource:
@@ -11,24 +11,16 @@ spring:
       hibernate:
         format_sql: false
 
-discodeit:
-  admin:
-    username: ${ADMIN_USERNAME}
-    email: ${ADMIN_EMAIL}
-    password: ${ADMIN_PASSWORD}
-  security:
-    jwt:
-      secret: ${JWT_SECRET}
-      issuer: ${JWT_ISSUER:discodeit}
-      access-token-validity-seconds: ${JWT_ACCESS_TOKEN_VALIDITY_SECONDS:1800}
-      refresh-token-validity-seconds: ${JWT_REFRESH_TOKEN_VALIDITY_SECONDS:1209600}
-
 logging:
   level:
     com.sprint.mission.discodeit: info
-    org.hibernate.SQL: info
+    org.hibernate.SQL: warn
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
   endpoint:
     health:
       show-details: never

@@ -1,34 +1,25 @@
 FROM amazoncorretto:17 AS builder
 
-WORKDIR /workspace
+WORKDIR /app
 
-COPY gradlew ./
 COPY gradle ./gradle
+COPY gradlew ./gradlew
 COPY build.gradle settings.gradle ./
 
 RUN chmod +x ./gradlew
-
-RUN ./gradlew dependencies --no-daemon
+RUN ./gradlew dependencies
 
 COPY src ./src
+RUN ./gradlew build -x test
 
-RUN ./gradlew bootJar -x test --no-daemon
-
-RUN mkdir -p extracted \
-    && java -Djarmode=layertools -jar build/libs/*.jar extract --destination extracted
-
-FROM amazoncorretto:17-alpine AS runtime
+FROM amazoncorretto:17-alpine3.21
 
 WORKDIR /app
 
 ENV JVM_OPTS=""
-ENV SERVER_PORT=80
 
-COPY --from=builder /workspace/extracted/dependencies/ ./
-COPY --from=builder /workspace/extracted/spring-boot-loader/ ./
-COPY --from=builder /workspace/extracted/snapshot-dependencies/ ./
-COPY --from=builder /workspace/extracted/application/ ./
+COPY --from=builder /app/build/libs/*.jar ./app.jar
 
 EXPOSE 80
 
-ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} -Dserver.port=${SERVER_PORT} org.springframework.boot.loader.launch.JarLauncher"]
+ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} -jar app.jar"]

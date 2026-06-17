@@ -6,4 +6,9 @@ build
 out
 *.iml
 *.log
+.logs
+
 .env
+*.env
+*.pem
+discodeit.env

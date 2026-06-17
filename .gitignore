@@ -3,14 +3,9 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-.kotlin
 
 ### IntelliJ IDEA ###
 .idea
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
 *.iws
 *.iml
 *.ipr
@@ -43,8 +38,23 @@ bin/
 ### Mac OS ###
 .DS_Store
 
-/data/
-/storage/
-.logs/
+### Discodeit ###
+.discodeit
+
+### 숨김 파일 ###
+.*
+!.gitignore
+
+
+### Github Actions ###
+!.github/
+
+### Local secrets / environment ###
 *.env
 *.pem
+discodeit.env
+.logs/
+
+### Project dotfiles allowed ###
+!.dockerignore
+!.gitattributes
