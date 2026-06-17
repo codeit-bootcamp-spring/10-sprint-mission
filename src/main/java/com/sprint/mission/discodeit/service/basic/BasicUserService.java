@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.config.CacheConfig.CacheNames;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateUsernameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -18,8 +20,10 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,8 +41,9 @@ public class BasicUserService implements UserService {
   private final BinaryContentStorage binaryContentStorage;
   private final UserMapper mapper;
   private final PasswordEncoder passwordEncoder;
-  private final SessionRegistry sessionRegistry;
+  private final ApplicationEventPublisher eventPublisher;
 
+  @CacheEvict(cacheNames = CacheNames.USER_CACHE, allEntries = true)
   @Transactional
   @Override
   public UserDto createUser(UserDto.UserCreateRequest userReq, MultipartFile profileImage)
@@ -59,12 +64,16 @@ public class BasicUserService implements UserService {
     return toDto(user);
   }
 
+  @Cacheable(CacheNames.USER_CACHE)
   @Override
   public List<UserDto> findAllUsers() {
     return userRepository.findAll().stream()
-        .map(this::toDto).toList();
+        .map(this::toDto)
+        .filter(UserDto::online)  // 활성화 된 것만 반환
+        .toList();
   }
 
+  @CacheEvict(cacheNames = CacheNames.USER_CACHE, allEntries = true)
   @PreAuthorize("#uuid == authentication.principal.userDto.id")
   @Transactional
   @Override
@@ -103,6 +112,7 @@ public class BasicUserService implements UserService {
     return toDto(user);
   }
 
+  @CacheEvict(cacheNames = CacheNames.USER_CACHE, allEntries = true)
   @PreAuthorize("#uuid == authentication.principal.userDto.id")
   @Transactional
   @Override
@@ -142,9 +152,8 @@ public class BasicUserService implements UserService {
     BinaryContent content = new BinaryContent(
         profileImage.getOriginalFilename(), profileImage.getSize(), profileImage.getContentType());
     binaryContentRepository.save(content);
-    binaryContentStorage.put(content.getId(), profileImage.getBytes());
-    log.debug("[Service] 프로필 이미지 저장 완료: contentId={}, userId={}",
-        content.getId(), user.getId());
+    eventPublisher.publishEvent(
+        new BinaryContentCreatedEvent(content.getId(), profileImage.getBytes()));
 
     user.updateProfile(content);
   }

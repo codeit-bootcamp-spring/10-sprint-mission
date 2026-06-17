@@ -65,7 +65,9 @@ public class GlobalExceptionHandler {
     int status = switch (e.getClass().getSimpleName()) {
       case "UserNotFoundException", "UserStatusNotFoundException", "ChannelNotFoundException",
            "ReadStatusNotFoundException", "MessageNotFoundException",
+           "NotificationNotFoundException",
            "BinaryContentNotFoundException" -> 404;
+      case "NotificationAccessDeniedException" -> 403;
       case "InvalidTokenException" -> 401;
       default -> 400;
     };

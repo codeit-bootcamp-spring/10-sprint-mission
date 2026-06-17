@@ -10,9 +10,11 @@ DROP TABLE IF EXISTS binary_contents CASCADE;
 CREATE TABLE binary_contents(
     id UUID PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     size BIGINT NOT NULL,
-    content_type VARCHAR(100) NOT NULL
+    content_type VARCHAR(100) NOT NULL,
+    status varchar(20) NOT NULL
 );
 
 CREATE TABLE users(
@@ -59,10 +61,19 @@ CREATE TABLE read_statuses(
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     channel_id UUID NOT NULL REFERENCES channels(id) ON DELETE CASCADE,
     last_read_at TIMESTAMPTZ NOT NULL,
+    notification_enabled BOOLEAN NOT NULL,
     UNIQUE (user_id, channel_id)
 );
 
 CREATE TABLE message_attachments(
     message_id UUID NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
     attachment_id UUID NOT NULL REFERENCES binary_contents(id) ON DELETE CASCADE
+);
+
+CREATE TABLE notifications(
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMPTZ NOT NULL,
+    receiver_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(100) NOT NULL,
+    content TEXT NOT NULL
 );

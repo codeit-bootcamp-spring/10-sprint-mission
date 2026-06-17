@@ -15,9 +15,37 @@ spring:
     multipart:
       max-file-size: 1MB
       max-request-size: 10MB
-#        format_sql: true
+  #        format_sql: true
+  cache:
+    cache-names: channelsByUser, notificationsByUser, userCache
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
+    type: redis
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 discodeit:
+  admin:
+    id: ${ADMIN_ID}
+    pw: ${ADMIN_PW}
+    email: ${ADMIN_EMAIL}
   repository:
     type: file
     file-directory: .discodeit
@@ -32,9 +60,12 @@ discodeit:
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (default: 10분)
   jwt:
+    secure: true
     key: ${JWT_SECRET_KEY}
     access-token-expiration-minutes: 10                 # 10분
     refresh-token-expiration-minutes: '#{60 * 24 * 7}'  # 일주일
+  kafka:
+    enabled: true
 
 logging.level:
   root: info
@@ -47,8 +78,11 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, loggers
+        include: health, info, metrics, loggers, caches
   info.env.enabled: true
+  observations:
+    annotations:
+      enabled: true
 
 info:
   app:

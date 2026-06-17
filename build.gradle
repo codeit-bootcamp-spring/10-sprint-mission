@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '2.1-M10'
+version = '2.2-M11'
 description = 'project for Spring Boot'
 
 java {
@@ -32,8 +32,14 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'            // Actuator
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'            // JPA
     implementation 'org.springframework.boot:spring-boot-starter-security'            // Security
+    implementation 'org.springframework.retry:spring-retry'                           // retry
     implementation 'org.postgresql:postgresql:42.7.3'                                 // Postgre SQL
     runtimeOnly 'com.h2database:h2'                                                   // h2
+
+    implementation 'org.springframework.boot:spring-boot-starter-cache'               // Cache 추상화
+    implementation 'com.github.ben-manes.caffeine:caffeine'                           // Cache 엔진
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'          // redis
+    implementation 'org.springframework.kafka:spring-kafka'                           // kafka
 
     compileOnly 'org.projectlombok:lombok'                                            // LomBock
     annotationProcessor 'org.projectlombok:lombok'

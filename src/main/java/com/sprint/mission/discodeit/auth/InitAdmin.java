@@ -8,10 +8,15 @@ import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateUsernameException;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -22,13 +27,26 @@ public class InitAdmin implements ApplicationRunner {
   private final UserService userService;
   private final AuthService authService;
 
+  @Value("${discodeit.admin.id}")
+  private String adminId;
+  @Value("${discodeit.admin.pw}")
+  private String adminPw;
+  @Value("${discodeit.admin.email}")
+  private String adminEmail;
+
   @Override
   public void run(ApplicationArguments args) throws Exception {
 
     try {
-      UserCreateRequest request = new UserCreateRequest("admin", "pw123", "admin@gmail.com");
+      UserCreateRequest request = new UserCreateRequest(adminId, adminPw, adminEmail);
       UserDto adminDto = userService.createUser(request, null);
-      authService.updateRoleInner(new UserRoleUpdateRequest(adminDto.id(), Role.ADMIN));
+
+      // updateRole 하기위한 임시 어드민 권한 부여
+      UsernamePasswordAuthenticationToken tempAdmin = new UsernamePasswordAuthenticationToken(
+          adminDto, null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+      SecurityContextHolder.getContext().setAuthentication(tempAdmin);
+
+      authService.updateRole(new UserRoleUpdateRequest(adminDto.id(), Role.ADMIN));
       log.info("Admin 계정 생성됨");
     } catch (DuplicateUsernameException | DuplicateEmailException e) {
       log.warn("Admin이 이미 존재함");

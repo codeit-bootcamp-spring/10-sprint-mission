@@ -4,13 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.auth.dto.JwtDto;
 import com.sprint.mission.discodeit.auth.dto.JwtInformation;
+import com.sprint.mission.discodeit.config.CacheConfig.CacheNames;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -25,6 +29,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final ObjectMapper objectMapper;
   private final JwtTokenProvider jwtTokenProvider;
   private final JwtRegistry jwtRegistry;
+  private final CacheManager cacheManager;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -49,6 +54,10 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
           userDetails.getUserDto(), accessToken, refreshToken);
       jwtRegistry.registerJwtInformation(jwtInfo);
       log.info("Jwt Login 성공: userId={}", userDetails.getUserDto().id());
+
+      // 캐시 삭제
+      Optional.ofNullable(cacheManager.getCache(CacheNames.USER_CACHE))
+          .ifPresent(Cache::clear);
     } else {
       String errorMessage = "인증 객체 타입이 맞지 않습니다";
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

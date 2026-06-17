@@ -8,7 +8,5 @@ public interface AuthService {
 
   UserDto updateRole(UserRoleUpdateRequest request);
 
-  UserDto updateRoleInner(UserRoleUpdateRequest request);
-
   JwtInformation updateRefreshToken(String token);
 }

@@ -11,6 +11,8 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTClaimsSet.Builder;
 import com.nimbusds.jwt.SignedJWT;
 import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.exception.auth.InvalidTokenException;
+import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Date;
@@ -28,6 +30,10 @@ public class JwtTokenProvider {
   public final static String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
 
   @Getter
+  @Value("${discodeit.jwt.secure}")
+  private boolean secure;
+
+  @Getter
   @Value("${discodeit.jwt.key}")
   private String secretKey;
 
@@ -38,6 +44,16 @@ public class JwtTokenProvider {
   @Getter
   @Value("${discodeit.jwt.refresh-token-expiration-minutes}")
   private long refreshTokenExpirationMinutes;
+
+  @PostConstruct
+  public void validateKeyLength() {
+    if (secretKey == null || secretKey.getBytes(StandardCharsets.UTF_8).length < 32) {
+      throw new IllegalArgumentException(
+          "JWT Secret Key 길이는 최소 32바이트(256비트)이어야 합니다. currentKeyLength="
+              + (secretKey == null ? 0 : secretKey.getBytes(StandardCharsets.UTF_8).length)
+      );
+    }
+  }
 
   public String generateAccessToken(DiscodeitUserDetails userDetails) {
     return generateToken(TokenType.ACCESS, userDetails);
@@ -81,43 +97,39 @@ public class JwtTokenProvider {
   }
 
   public String getUserId(String token) {
-    return getClaims(token).get("userId").toString();
-  }
-
-  public Map<String, Object> getClaims(String token) {
-    return parseAndValidateToken(token);
+    return verifyAndGetClaims(token).get("userId").toString();
   }
 
   public boolean validateToken(String token) {
     try {
-      Map<String, Object> maps = parseAndValidateToken(token);
+      verifyAndGetClaims(token);
       return true;
     } catch (Exception e) {
       return false;
     }
   }
 
-  private Map<String, Object> parseAndValidateToken(String token) {
+  public Map<String, Object> verifyAndGetClaims(String token) {
     try {
       SignedJWT signedJWT = SignedJWT.parse(token);
       JWSVerifier verifier = new MACVerifier(secretKey.getBytes(StandardCharsets.UTF_8));
 
       if (!signedJWT.verify(verifier)) {
         log.warn("JWT 서명 검증 실패: 유효하지 않은 서명");
-        throw new RuntimeException("JWT 검증 실패");
+        throw new InvalidTokenException();
       }
 
       JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
       if (claimsSet.getExpirationTime() != null &&
           claimsSet.getExpirationTime().before(new Date())) {
         log.warn("JWT 검증 실패: 만료된 토큰");
-        throw new RuntimeException("만료된 토큰");
+        throw new InvalidTokenException();
       }
 
       return claimsSet.getClaims();
     } catch (ParseException | JOSEException e) {
       log.warn("JWT 파싱 실패: 잘못된 형식의 토큰 details={}", e.getMessage());
-      throw new RuntimeException("잘못된 형식의 토큰", e);
+      throw new InvalidTokenException();
     }
   }
 
@@ -125,7 +137,7 @@ public class JwtTokenProvider {
     return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
         .path("/")
         .httpOnly(true)
-        .secure(true)
+        .secure(secure)
         .sameSite("Lax")
         .maxAge(getRefreshTokenExpirationMinutes() * 60)
         .build();
@@ -135,7 +147,7 @@ public class JwtTokenProvider {
     return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME)
         .path("/")
         .httpOnly(true)
-        .secure(true)
+        .secure(secure)
         .sameSite("Lax")
         .maxAge(0)
         .build();

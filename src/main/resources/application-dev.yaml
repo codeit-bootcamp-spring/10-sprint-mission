@@ -15,7 +15,11 @@ spring:
         format_sql: false
         show_sql: true
 
+discodeit:
+  jwt:
+    secure: false
+
 logging:
   level:
     com.sprint.mission.discodeit: debug
-    org.springframework.security: trace
+    org.springframework.security: info

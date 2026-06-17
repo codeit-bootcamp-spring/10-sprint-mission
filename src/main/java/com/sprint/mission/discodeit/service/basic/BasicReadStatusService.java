@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -80,12 +81,15 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   public ReadStatusDto updateReadStatus(UUID uuid,
       ReadStatusDto.ReadStatusUpdateRequest updateReq) {
-    log.debug("[Service] ReadStatus 수정 시작: id={}, newLastReadAt={}",
-        uuid, updateReq.newLastReadAt());
+    log.debug("[Service] ReadStatus 수정 시작: id={}, newLastReadAt={}, newNotificationEnabled={}",
+        uuid, updateReq.newLastReadAt(), updateReq.newNotificationEnabled());
     ReadStatus readStatus = readStatusRepository.findById(uuid)
         .orElseThrow(() -> new ReadStatusNotFoundException());
 
-    readStatus.updateLastReadAt(updateReq.newLastReadAt());
+    Optional.ofNullable(updateReq.newLastReadAt())
+        .ifPresent(readStatus::updateLastReadAt);
+    Optional.ofNullable(updateReq.newNotificationEnabled())
+        .ifPresent(readStatus::updateNotificationEnabled);
     readStatusRepository.save(readStatus);
     log.debug("[Service] 수정된 ReadStatus 저장 완료: id={}", readStatus.getId());
 

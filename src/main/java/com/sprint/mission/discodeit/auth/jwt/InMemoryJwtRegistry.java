@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.auth.jwt;
 
 import com.sprint.mission.discodeit.auth.dto.JwtInformation;
+import com.sprint.mission.discodeit.exception.auth.InvalidTokenException;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -13,8 +15,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 public class InMemoryJwtRegistry implements JwtRegistry {
 
   private final Map<UUID, Queue<JwtInformation>> origin = new ConcurrentHashMap<>();
-  private final Map<String, Boolean> accessTokenCollections = new ConcurrentHashMap<>();
-  private final Map<String, Boolean> refreshTokenCollections = new ConcurrentHashMap<>();
+  private final Set<String> accessTokenCollections = ConcurrentHashMap.newKeySet();
+  private final Set<String> refreshTokenCollections = ConcurrentHashMap.newKeySet();
 
   private final JwtTokenProvider jwtTokenProvider;
   private final int maxActiveJwtCount;
@@ -62,31 +64,32 @@ public class InMemoryJwtRegistry implements JwtRegistry {
   public boolean hasActiveJwtInformationByAccessToken(String accessToken) {
     // JwtInformation이 Registry에 존재하는지 확인합니다.
     // 필터에서 유효한 토큰인지 확인할 때 활용합니다.
-    return accessTokenCollections.containsKey(accessToken);
+    return accessTokenCollections.contains(accessToken);
   }
 
   @Override
   public boolean hasActiveJwtInformationByRefreshToken(String refreshToken) {
     // JwtInformation이 Registry에 존재하는지 확인합니다.
     // 토큰 재발급 시 유효한 토큰인지 확인할 때 활용합니다.
-    return refreshTokenCollections.containsKey(refreshToken);
+    return refreshTokenCollections.contains(refreshToken);
   }
 
   @Override
   public void rotateJwtInformation(String refreshToken, JwtInformation newJwtInformation) {
     // 토큰 재발급 시 토큰 로테이션을 수행합니다.
     origin.computeIfPresent(newJwtInformation.getUserDto().id(), (k, v) -> {
-      v.stream()
+
+      JwtInformation targetInfo = v.stream()
           .filter(jwtInfo -> jwtInfo.getRefreshToken().equals(refreshToken))
           .findFirst()
-          .ifPresent(jwtInfo -> {
-            removeTokens(jwtInfo.getAccessToken(), jwtInfo.getRefreshToken());
-            String newAccessToken = newJwtInformation.getAccessToken();
-            String newRefreshToken = newJwtInformation.getRefreshToken();
+          .orElseThrow(InvalidTokenException::new);
 
-            jwtInfo.rotate(newAccessToken, newRefreshToken);
-            registerTokens(newAccessToken, newRefreshToken);
-          });
+      removeTokens(targetInfo.getAccessToken(), targetInfo.getRefreshToken());
+      String newAccessToken = newJwtInformation.getAccessToken();
+      String newRefreshToken = newJwtInformation.getRefreshToken();
+
+      targetInfo.rotate(newAccessToken, newRefreshToken);
+      registerTokens(newAccessToken, newRefreshToken);
       return v;
     });
   }
@@ -99,8 +102,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
       Queue<JwtInformation> jwtInfos = entry.getValue();
 
       jwtInfos.removeIf(jwtInfo -> {
-        if (!jwtTokenProvider.validateToken(jwtInfo.getAccessToken()) ||
-            !jwtTokenProvider.validateToken(jwtInfo.getRefreshToken())) {
+        if (!jwtTokenProvider.validateToken(jwtInfo.getRefreshToken())) {
           removeTokens(jwtInfo.getAccessToken(), jwtInfo.getRefreshToken());
           return true;
         }
@@ -112,8 +114,8 @@ public class InMemoryJwtRegistry implements JwtRegistry {
   }
 
   private void registerTokens(String accessToken, String refreshToken) {
-    accessTokenCollections.put(accessToken, true);
-    refreshTokenCollections.put(refreshToken, true);
+    accessTokenCollections.add(accessToken);
+    refreshTokenCollections.add(refreshToken);
   }
 
   private void removeTokens(String accessToken, String refreshToken) {

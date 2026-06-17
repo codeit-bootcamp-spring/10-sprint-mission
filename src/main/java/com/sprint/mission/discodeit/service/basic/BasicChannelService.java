@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.config.CacheConfig.CacheNames;
 import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.ChannelDto.ChannelSummary;
 import com.sprint.mission.discodeit.dto.UserDto;
@@ -26,6 +27,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +47,7 @@ public class BasicChannelService implements ChannelService {
   private final UserRepository userRepository;
   private final ChannelMapper channelMapper;
   private final UserMapper userMapper;
+  private final CacheManager cacheManager;
 
   @Transactional
   @Override
@@ -66,10 +72,15 @@ public class BasicChannelService implements ChannelService {
     readStatusRepository.saveAll(readStatuses);
     log.debug("[Service] ReadStatuses 저장 완료: channelId={}", privateChannel.getId());
 
+    // 캐시 삭제
+    Optional.ofNullable(cacheManager.getCache(CacheNames.CHANNELS_BY_USER))
+        .ifPresent(cache -> participantIds.forEach(cache::evict));
+
     log.info("[Service] 비공개채널 생성 성공: id={}", privateChannel.getId());
     return toResponse(privateChannel);
   }
 
+  @CacheEvict(cacheNames = CacheNames.CHANNELS_BY_USER, allEntries = true) // 전체 채널이라 전부 삭제
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override
@@ -87,6 +98,7 @@ public class BasicChannelService implements ChannelService {
     return toResponse(publicChannel);
   }
 
+  @Cacheable(CacheNames.CHANNELS_BY_USER)
   @Override
   public List<ChannelDto> findAllByUserId(UUID userId) {
     getUserOrThrow(userId);
@@ -108,6 +120,7 @@ public class BasicChannelService implements ChannelService {
     return channelMapper.toDto(channels, participants);
   }
 
+  @CacheEvict(cacheNames = CacheNames.CHANNELS_BY_USER, allEntries = true) // 전체 채널이라 전부 삭제
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
   @Override
@@ -144,7 +157,17 @@ public class BasicChannelService implements ChannelService {
   @Override
   public void deleteChannel(UUID uuid) {
     log.debug("[Service] 채널 삭제 시작: id={}", uuid);
-    getChannelOrThrow(uuid);
+    Channel channel = getChannelOrThrow(uuid);
+
+    switch (channel.getType()) {
+      case PUBLIC -> Optional.ofNullable(cacheManager.getCache(CacheNames.CHANNELS_BY_USER))
+          .ifPresent(Cache::clear);
+      case PRIVATE -> Optional.ofNullable(cacheManager.getCache(CacheNames.CHANNELS_BY_USER))
+          .ifPresent(cache ->
+              readStatusRepository.findAllByChannelIdIn(List.of(uuid))
+                  .forEach(rs -> cache.evict(rs.getUser().getId()))
+          );
+    }
 
     channelRepository.deleteById(uuid);
     log.info("[Service] 채널 삭제 성공: id={}", uuid);
