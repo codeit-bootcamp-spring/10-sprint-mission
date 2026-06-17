@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -44,7 +45,11 @@ public class BasicBinaryContentService implements BinaryContentService {
       //DB에 메타데이터 저장
       binaryContentRepository.save(binaryContent);
       eventPublisher.publishEvent(
-          new BinaryContentCreatedEvent(binaryContent.getId(), multipartFile.getBytes()));
+          new BinaryContentCreatedEvent(
+              binaryContent.getId(),
+              multipartFile.getBytes(),
+              List.of()
+          ));
       log.info("[BINARY_CONTENT] 파일 저장 성공: binaryContentId={}", binaryContent.getId());
       return binaryContentMapper.toDto(binaryContent);
     } catch (IOException e) {
@@ -75,13 +80,14 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
-  public BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+  public BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status,
+      Collection<UUID> receiverIds) {
     BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
         .orElseThrow(() -> new BinaryContentNotFoundException(
             Map.of("binaryContentId", binaryContentId)));
     binaryContent.updateStatus(status);
     BinaryContentDto dto = binaryContentMapper.toDto(binaryContent);
-    eventPublisher.publishEvent(new BinaryContentUpdateEvent(dto));
+    eventPublisher.publishEvent(new BinaryContentUpdateEvent(dto, receiverIds));
     return dto;
   }
 

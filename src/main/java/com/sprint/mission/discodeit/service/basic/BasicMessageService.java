@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
@@ -26,6 +27,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -63,17 +65,20 @@ public class BasicMessageService implements MessageService {
         .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", request.channelId())));
 
     if (channel.getType() == ChannelType.PRIVATE) {
-      readStatusRepository.findByUserIdAndChannelId(request.authorId(), request.channelId())
+      readStatusRepository.findByUserIdAndChannelId(request.authorId(),
+              request.channelId())
           .orElseThrow(() -> new ChannelParticipantException(Map.of(
               "authorId", request.authorId(), "channelId", request.channelId())));
     }
 
     Message message = messageMapper.toEntity(request, channel, user);
 
-    //요청에 첨부파일이 있다면 for-loop를 통해 객체 생성 후 저장
     if (multipartFiles != null && !multipartFiles.isEmpty()) {
+      List<UUID> receiverIds = readStatusRepository.findAllByChannel(channel).stream()
+          .map(readStatus -> readStatus.getUser().getId())
+          .toList();
       for (MultipartFile file : multipartFiles) {
-        if (file.isEmpty()) { //리스트 안에 특정 파일이 비었는지 확인
+        if (file.isEmpty()) {
           continue;
         }
         try {
@@ -86,8 +91,8 @@ public class BasicMessageService implements MessageService {
           );
           binaryContentRepository.save(attachment);
           eventPublisher.publishEvent(
-              new BinaryContentCreatedEvent(attachment.getId(), file.getBytes()));
-          message.addAttachment(attachment); //편의 메서드 사용
+              new BinaryContentCreatedEvent(attachment.getId(), file.getBytes(), receiverIds));
+          message.addAttachment(attachment);
           log.info("[MESSAGE] 첨부 파일 저장 성공: attachmentId={}", attachment.getId());
         } catch (IOException e) {
           throw new BinaryContentUploadException(e);

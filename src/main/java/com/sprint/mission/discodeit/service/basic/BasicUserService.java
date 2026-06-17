@@ -67,7 +67,7 @@ public class BasicUserService implements UserService {
         );
         binaryContentRepository.save(profile);
         eventPublisher.publishEvent(
-            new BinaryContentCreatedEvent(profile.getId(), file.getBytes()));
+            new BinaryContentCreatedEvent(profile.getId(), file.getBytes(), List.of()));
         log.info("[USER] 프로필 사진 저장 성공: profileId={}", profile.getId());
       } catch (IOException e) {
         throw new BinaryContentUploadException(e);
@@ -138,7 +138,7 @@ public class BasicUserService implements UserService {
         );
         binaryContentRepository.save(newProfile);
         eventPublisher.publishEvent(
-            new BinaryContentCreatedEvent(newProfile.getId(), file.getBytes()));
+            new BinaryContentCreatedEvent(newProfile.getId(), file.getBytes(), List.of()));
         user.updateProfile(newProfile);
         log.info("[USER] 새로운 프로필 사진 저장 성공: profileId={}", newProfile.getId());
       } catch (IOException e) {

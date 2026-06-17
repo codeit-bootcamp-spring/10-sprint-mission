@@ -26,13 +26,15 @@ public class BinaryContentEventListener {
     try {
       binaryContentStorage.put(event.binaryContentId(), event.bytes());
 
-      binaryContentService.updateStatus(event.binaryContentId(), BinaryContentStatus.SUCCESS);
+      binaryContentService.updateStatus(event.binaryContentId(), BinaryContentStatus.SUCCESS,
+          event.receiverIds());
       log.info("[BINARY_CONTENT] 바이너리 데이터 업로드 성공: id={}", event.binaryContentId());
 
     } catch (Exception e) {
       log.error("[BINARY_CONTENT] 바이너리 데이터 업로드 실패: id={}", event.binaryContentId());
 
-      binaryContentService.updateStatus(event.binaryContentId(), BinaryContentStatus.FAIL);
+      binaryContentService.updateStatus(event.binaryContentId(), BinaryContentStatus.FAIL,
+          event.receiverIds());
     }
   }
 }

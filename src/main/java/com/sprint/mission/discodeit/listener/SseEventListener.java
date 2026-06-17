@@ -52,7 +52,12 @@ public class SseEventListener {
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void on(BinaryContentUpdateEvent event) {
     log.debug("[SSE] 파일 업로드 상태 변경 이벤트 수신: binaryContentId={}", event.binaryContentDto().id());
-    sseService.broadcast(
+    if (event.receiverIds() == null || event.receiverIds().isEmpty()) {
+      log.debug("[SSE] 수신자가 지정되지 않아 이벤트 폐기 (예: 회원가입 프로필 업로드)");
+      return;
+    }
+    sseService.send(
+        event.receiverIds(),
         "binaryContents.updated",
         event.binaryContentDto()
     );
