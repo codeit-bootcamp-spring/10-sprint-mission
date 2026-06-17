@@ -24,6 +24,7 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -65,6 +66,9 @@ class BinaryContentApiIntegrationTest {
 
   @Autowired
   private MessageService messageService;
+
+  @Autowired
+  private BinaryContentStorage binaryContentStorage;
 
   private RequestPostProcessor asUser(UUID userId, UserRole role) {
     UserDto userDto = new UserDto(userId, "testuser", "test@example.com", null, false, role);
@@ -206,6 +210,9 @@ class BinaryContentApiIntegrationTest {
 
     BinaryContentDto binaryContent = binaryContentService.create(createRequest);
     UUID binaryContentId = binaryContent.id();
+    // create()는 파일 저장을 AFTER_COMMIT 비동기 이벤트로 처리하므로, @Transactional 테스트에서는
+    // 커밋이 일어나지 않아 실제 파일이 기록되지 않는다. 다운로드 검증을 위해 스토리지에 직접 저장한다.
+    binaryContentStorage.put(binaryContentId, fileContent.getBytes());
 
     mockMvc.perform(get("/api/binaryContents/{binaryContentId}/download", binaryContentId)
             .with(asUser(UUID.randomUUID(), UserRole.USER)))

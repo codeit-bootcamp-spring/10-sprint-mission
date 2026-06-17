@@ -1,0 +1,14 @@
+# Prometheus 설정 파일
+global:
+  scrape_interval: 5s # 5초마다 메트릭 수집
+  evaluation_interval: 15s # # Prometheus에 정의된 rules 를 얼마나 자주 재평가할지 설정
+
+# scrape_configs - 메트릭 수집 대상 목록 정의
+scrape_configs:
+  - job_name: 'discodeit'
+    metrics_path: '/actuator/prometheus' # Spring Boot Actuator prometheus 엔드포인트
+    static_configs:
+      # docker compose로 app까지 함께 실행하는 경우: 서비스명 app 사용
+      - targets: [ 'app:8080' ]
+      # 앱을 호스트에서 ./gradlew bootRun 으로 실행하는 경우 위 줄을 주석 처리하고 아래 사용
+      # - targets: ['host.docker.internal:8080']

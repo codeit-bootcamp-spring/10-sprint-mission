@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
+import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.time.Instant;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -32,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,6 +43,10 @@ public class MessageController implements MessageApi {
 
   private final MessageService messageService;
 
+  // @Timed - 메서드 실행 시간을 자동으로 측정해서 메트릭으로 수집
+  // Spring Boot Actuator + Prometheus + Grafana 조합으로 시각화
+  // 'message.create.async'이라는 이름으로 해당 API의 응답 시간을 측정
+  @Timed(value = "message.create.async", description = "바이너리 컨텐츠 IO 작업 동기 처리 비동기 처리 간 성능 차이 측정")
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<MessageDto> create(
       @RequestPart("messageCreateRequest") @Valid MessageCreateRequest messageCreateRequest,

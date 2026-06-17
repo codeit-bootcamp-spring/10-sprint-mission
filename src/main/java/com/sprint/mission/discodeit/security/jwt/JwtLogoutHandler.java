@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,7 @@ public class JwtLogoutHandler implements LogoutHandler {
 
   private final JwtRegistry jwtRegistry;
   private final JwtTokenProvider jwtTokenProvider;
+  private final CacheManager cacheManager;
 
   @Override
   public void logout(HttpServletRequest request, HttpServletResponse response,
@@ -47,5 +50,11 @@ public class JwtLogoutHandler implements LogoutHandler {
     cookie.setPath("/");
     cookie.setMaxAge(0); // 브라우저에서 즉시 삭제
     response.addCookie(cookie);
+
+    // 3) 로그아웃으로 online 상태가 바뀌므로 사용자 목록 캐시 무효화
+    Cache userCache = cacheManager.getCache("users");
+    if (userCache != null) {
+      userCache.clear(); // 캐시에 저장된 모든 항목 비우기
+    }
   }
 }

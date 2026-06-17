@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +34,7 @@ public class BasicReadStatusService implements ReadStatusService {
   private final ChannelRepository channelRepository;
   private final ReadStatusMapper readStatusMapper;
 
+  @CacheEvict(value = "userChannels", allEntries = true)
   @Transactional
   @Override
   public ReadStatusDto create(ReadStatusCreateRequest request) {
@@ -49,8 +52,11 @@ public class BasicReadStatusService implements ReadStatusService {
       throw DuplicateReadStatusException.withUserIdAndChannelId(userId, channelId);
     }
 
+    // PRIVATE 채널은 알림 여부를 true로 초기화
+    boolean notificationEnabled = channel.getType() == ChannelType.PRIVATE;
     ReadStatus readStatus = readStatusRepository.save(
-        new ReadStatus(user, channel, request.lastReadAt()));
+        new ReadStatus(user, channel, request.lastReadAt(), notificationEnabled)
+    );
 
     log.info("읽음 상태 생성 완료: id={}, userId={}, channelId={}",
         readStatus.getId(), userId, channelId);
@@ -87,11 +93,16 @@ public class BasicReadStatusService implements ReadStatusService {
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> ReadStatusNotFoundException.withId(readStatusId));
     readStatus.update(request.newLastReadAt());
+    // 채널의 알림 여부 수정
+    if (request.newNotificationEnabled() != null) {
+      readStatus.updateNotificationEnabled(request.newNotificationEnabled());
+    }
 
     log.info("읽음 상태 수정 완료: id={}", readStatusId);
     return readStatusMapper.toDto(readStatus);
   }
 
+  @CacheEvict(value = "userChannels", allEntries = true)
   @Transactional
   @Override
   public void delete(UUID readStatusId) {

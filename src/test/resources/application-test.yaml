@@ -11,6 +11,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  cache:
+    type: none # 캐시 없이 테스트
 
 logging:
   level:

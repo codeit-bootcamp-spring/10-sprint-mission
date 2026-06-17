@@ -190,7 +190,8 @@ class ReadStatusApiIntegrationTest {
 
     Instant newLastReadAt = Instant.now();
     ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(
-        newLastReadAt
+        newLastReadAt,
+        true
     );
 
     String requestBody = objectMapper.writeValueAsString(updateRequest);
@@ -214,7 +215,8 @@ class ReadStatusApiIntegrationTest {
     UUID nonExistentReadStatusId = UUID.randomUUID();
 
     ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(
-        Instant.now()
+        Instant.now(),
+        true
     );
 
     String requestBody = objectMapper.writeValueAsString(updateRequest);

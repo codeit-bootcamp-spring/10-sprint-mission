@@ -3,6 +3,9 @@ package com.sprint.mission.discodeit.controller;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.sprint.mission.discodeit.security.jwt.JwtProperties;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +24,15 @@ class AuthControllerTest {
 
   @MockitoBean
   private UserService userService;
+
+  @MockitoBean
+  private JwtTokenProvider jwtTokenProvider;
+
+  @MockitoBean
+  private JwtProperties jwtProperties;
+
+  @MockitoBean
+  private JwtRegistry jwtRegistry;
 
   @Test
   @DisplayName("CSRF 토큰 발급 요청 시 203 반환")

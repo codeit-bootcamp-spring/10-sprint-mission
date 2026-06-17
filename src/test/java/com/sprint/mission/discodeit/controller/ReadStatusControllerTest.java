@@ -61,7 +61,8 @@ class ReadStatusControllerTest {
         readStatusId,
         userId,
         channelId,
-        lastReadAt
+        lastReadAt,
+        true
     );
 
     given(readStatusService.create(any(ReadStatusCreateRequest.class)))
@@ -104,13 +105,14 @@ class ReadStatusControllerTest {
     UUID channelId = UUID.randomUUID();
     Instant newLastReadAt = Instant.now();
 
-    ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(newLastReadAt);
+    ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(newLastReadAt, true);
 
     ReadStatusDto updatedReadStatus = new ReadStatusDto(
         readStatusId,
         userId,
         channelId,
-        newLastReadAt
+        newLastReadAt,
+        true
     );
 
     given(readStatusService.update(eq(readStatusId), any(ReadStatusUpdateRequest.class)))
@@ -134,7 +136,7 @@ class ReadStatusControllerTest {
     UUID nonExistentId = UUID.randomUUID();
     Instant newLastReadAt = Instant.now();
 
-    ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(newLastReadAt);
+    ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(newLastReadAt, true);
 
     given(readStatusService.update(eq(nonExistentId), any(ReadStatusUpdateRequest.class)))
         .willThrow(ReadStatusNotFoundException.withId(nonExistentId));
@@ -156,8 +158,8 @@ class ReadStatusControllerTest {
     Instant now = Instant.now();
 
     List<ReadStatusDto> readStatuses = List.of(
-        new ReadStatusDto(UUID.randomUUID(), userId, channelId1, now.minusSeconds(60)),
-        new ReadStatusDto(UUID.randomUUID(), userId, channelId2, now)
+        new ReadStatusDto(UUID.randomUUID(), userId, channelId1, now.minusSeconds(60), true),
+        new ReadStatusDto(UUID.randomUUID(), userId, channelId2, now, true)
     );
 
     given(readStatusService.findAllByUserId(userId)).willReturn(readStatuses);

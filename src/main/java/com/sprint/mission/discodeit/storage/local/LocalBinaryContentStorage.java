@@ -44,6 +44,14 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   }
 
   public UUID put(UUID binaryContentId, byte[] bytes) {
+    // 추가: 성능 비교용 의도적 지연 (동기/비동기 처리 차이 확인용)
+    try {
+      Thread.sleep(3000); // 스레드 3초가 일시 정지
+    } catch (InterruptedException e) { // 예외가 발생하면 인터럽트 플래그가 false로 리셋됨
+      Thread.currentThread().interrupt(); // 인터럽트 상태를 유지하기 위해 재설정
+      throw new RuntimeException("지연을 시뮬레이션하는 도중 스레드가 중단됨", e);
+    }
+
     Path filePath = resolvePath(binaryContentId);
     if (Files.exists(filePath)) {
       throw new IllegalArgumentException("File with key " + binaryContentId + " already exists");

@@ -3,15 +3,16 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class BasicBinaryContentService implements BinaryContentService {
 
+  /*
+  ApplicationEventPublisher
+  옵저버 패턴을 구현하여 컴포넌트 간의 결합도를 낮추고 이벤트를 발행(Publish)하는 인터페이스
+   */
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentMapper binaryContentMapper;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   @Transactional
   @Override
@@ -39,13 +44,16 @@ public class BasicBinaryContentService implements BinaryContentService {
         contentType
     );
     binaryContentRepository.save(binaryContent);
-    binaryContentStorage.put(binaryContent.getId(), bytes);
+    // publishEvent로 이벤트 밣행
+    applicationEventPublisher.publishEvent(
+        new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
 
     log.info("바이너리 컨텐츠 생성 완료: id={}, fileName={}, size={}",
         binaryContent.getId(), fileName, bytes.length);
     return binaryContentMapper.toDto(binaryContent);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public BinaryContentDto find(UUID binaryContentId) {
     log.debug("바이너리 컨텐츠 조회 시작: id={}", binaryContentId);
@@ -57,6 +65,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     return dto;
   }
 
+  @Transactional(readOnly = true)
   @Override
   public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
     log.debug("바이너리 컨텐츠 목록 조회 시작: ids={}", binaryContentIds);

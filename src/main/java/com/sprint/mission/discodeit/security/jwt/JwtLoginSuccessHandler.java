@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -23,6 +25,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final JwtProperties jwtProperties;
   private final ObjectMapper objectMapper;
   private final JwtRegistry jwtRegistry;
+  private final CacheManager cacheManager;
 
   @Override
   public void onAuthenticationSuccess(
@@ -52,5 +55,12 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setCharacterEncoding("UTF-8");
     objectMapper.writeValue(response.getWriter(), new JwtDto(userDto, accessToken)); // JSON 직렬화
+
+    // 로그인으로 online 상태가 바뀌므로 사용자 목록 캐시 무효화
+    Cache userCache = cacheManager.getCache("users");
+    if (userCache != null) {
+      userCache.clear(); // 캐시에 저장된 모든 항목 비우기
+    }
+
   }
 }

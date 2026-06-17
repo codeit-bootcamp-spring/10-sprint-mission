@@ -44,9 +44,9 @@ class AuthApiIntegrationTest {
             .param("username", "loginuser")
             .param("password", "Password1!"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id", notNullValue()))
-        .andExpect(jsonPath("$.username", is("loginuser")))
-        .andExpect(jsonPath("$.email", is("login@example.com")));
+        .andExpect(jsonPath("$.userDto.id", notNullValue()))
+        .andExpect(jsonPath("$.userDto.username", is("loginuser")))
+        .andExpect(jsonPath("$.userDto.email", is("login@example.com")));
   }
 
   @Test

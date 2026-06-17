@@ -16,15 +16,52 @@ spring:
       - dev
   config:
     import: optional:file:.env[.properties]
+  cache:
+    type: redis
+    cache-names: users, userChannels, userNotifications # 사용한 캐시 이름 목록
+    redis:
+      enable-statistics: true # 캐시 매니저가 만드는 RedisCache에 대해 통계 수집을 켬
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  kafka:
+    # 호스트 bootRun -> localhost:9092 (broker의 PLAINTEXT_HOST 리스너)
+    # 컨테이너 실행    -> broker:29092  (KAFKA_BOOTSTRAP_SERVERS env로 주입, 내부 PLAINTEXT 리스너)
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      # 메시지 키를 직렬화할 클래스
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # 메시지 값(payload)을 직렬화할 클래스
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      # 이 Consumer가 속할 Consumer Group ID
+      # 같은 group-id를 가진 Consumer끼리 파티션을 나눠서 병렬 소비
+      # 서로 다른 group-id면 동일 토픽 메시지를 독립적으로 각자 소비
+      group-id: discodeit-group
+      # Consumer Group이 처음 생성되었거나 offset 정보가 없을 때 어느 위치부터 읽을지 결정
+      # earliest -> 토픽의 가장 첫 번째 메시지부터 읽음 (메시지 유실 방지에 유리)
+      # latest   -> 이 Consumer가 구독을 시작한 시점 이후의 새 메시지만 읽음
+      auto-offset-reset: earliest
+      # 메시지 키를 역직렬화할 클래스
+      # Producer의 key-serializer와 반드시 대칭 구조여야 함
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # 메시지 값(payload)을 역직렬화할 클래스
+      # Producer의 value-serializer와 반드시 대칭 구조여야 함
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,loggers
+        include: health,info,metrics,loggers,caches,prometheus
   endpoint:
     health:
       show-details: always
+  observations:
+    annotations:
+      enabled: true
 
 info:
   name: Discodeit

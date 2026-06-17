@@ -1,27 +1,57 @@
+# app, db, prometheus, grafana 묶어서 실행
 services:
   app:
+    # 'docker compose up --build' 시 아래 build 설정으로 이미지를 생성
     image: discodeit:local
     build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: discodeit
+      context: . # Dockerfile이 위치한 빌드 컨텍스트 루트 (프로젝트 최상위 디렉토리)
+      dockerfile: Dockerfile # 사용할 Dockerfile 명시
+    container_name: discodeit # 실행 중인 컨테이너에 고정 이름을 부여
     ports:
-      - "8081:80"
+      # 호스트의 8080포트 -> 컨테이너 내부 8080포트(Spring Boot 기본 포트)로 포워딩
+      - "8080:8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      # Spring profile
+      - SPRING_PROFILES_ACTIVE=dev
+      # DB
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/discodeit
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-      - STORAGE_TYPE=s3
+      # Redis (컨테이너 네트워크 내 redis 서비스명으로 접근)
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      # Kafka (컨테이너 네트워크 내 broker 서비스의 내부 리스너로 접근)
+      - KAFKA_BOOTSTRAP_SERVERS=broker:29092
+      - STORAGE_TYPE=local
       - STORAGE_LOCAL_ROOT_PATH=.discodeit/storage
+      # Logging
+      - LOG_PATTERN=%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %clr(%-5level) %-36logger{36} [%X{requestId} | %X{requestMethod} | %X{requestUri}] - %msg%n
+      - LOG_FILE_PATH=.logs
+      - LOG_FILE_NAME=application
+      # AWS S3
       - AWS_S3_ACCESS_KEY=${AWS_S3_ACCESS_KEY}
       - AWS_S3_SECRET_KEY=${AWS_S3_SECRET_KEY}
       - AWS_S3_REGION=${AWS_S3_REGION}
       - AWS_S3_BUCKET=${AWS_S3_BUCKET}
       - AWS_S3_PRESIGNED_URL_EXPIRATION=600
+      # JWT
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      # Admin (관리자 계정)
+      - DISCODEIT_ADMIN_USERNAME=${DISCODEIT_ADMIN_USERNAME}
+      - DISCODEIT_ADMIN_EMAIL=${DISCODEIT_ADMIN_EMAIL}
+      - DISCODEIT_ADMIN_PASSWORD=${DISCODEIT_ADMIN_PASSWORD}
     depends_on:
-      - db
+      db:
+        # db 컨테이너가 healthcheck를 통과해 정상 상태가 된 후에 app을 시작
+        condition: service_healthy
+      redis:
+        # redis 컨테이너가 시작된 후에 app을 시작
+        condition: service_started
+      broker:
+        # kafka broker 컨테이너가 시작된 후에 app을 시작
+        condition: service_started
     volumes:
+      # 로컬 스토리지에 업로드된 바이너리 파일을 'binary-content-storage'에 저장해 컨테이너 재시작 시에도 유지
       - binary-content-storage:/app/.discodeit/storage
     networks:
       - discodeit-network
@@ -34,17 +64,154 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
+      # FIXME: prod 환경에서는 포트 노출 제거 권장
       - "5432:5432"
     volumes:
+      # PostgreSQL 데이터 파일을 named volume에 저장하여 컨테이너 삭제 후에도 데이터가 유지
       - postgres-data:/var/lib/postgresql/data
+      # 호스트의 schema.sql을 컨테이너의 초기화 스크립트 디렉토리에 마운트
+      # '/docker-entrypoint-initdb.d/'에 있는 .sql 파일은 DB가 처음 생성될 때 자동 실행
+      # 이미 데이터가 존재하면 재실행하지 않음
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      # pg_isready 명령으로 DB가 실제 쿼리를 받을 수 있는 상태인지 확인
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d discodeit" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - discodeit-network
+
+  # Kafka 개념 관련 상세 내용 -> study.md에 정리
+  broker:
+    image: apache/kafka:latest
+    hostname: broker
+    container_name: broker
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_BROKER_ID: 1 # 브로커 고유 식별자. 클러스터 내 각 브로커는 서로 다른 ID를 가져야 함
+      # 각 리스너 이름과 보안 프로토콜의 매핑 정의
+      # PLAINTEXT(내부 브로커 통신)
+      # PLAINTEXT_HOST(외부 클라이언트)
+      # CONTROLLER(컨트롤러 통신)
+      #   -> PLAINTEXT 프로토콜 (암호화 없음)
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      # 클라이언트에게 알려주는 실제 접속 주소
+      # PLAINTEXT://broker:29092        -> 같은 Docker 네트워크 내 컨테이너끼리 통신할 때 사용
+      # PLAINTEXT_HOST://localhost:9092 -> 호스트 머신(개발 PC)에서 접근할 때 사용
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      # __consumer_offsets 토픽(컨슈머 오프셋 저장용 내부 토픽)의 복제 계수
+      # 브로커가 1개이므로 1로 설정 (운영 환경에서는 최소 3 권장)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      # 컨슈머 그룹 최초 리밸런싱 대기 시간 (밀리초)
+      # 0으로 설정 시 새 컨슈머 합류 즉시 리밸런싱 수행
+      # 개발 환경에서는 0이 편리하나, 운영 환경에서는 3000(3초) 정도 권장
+      # * 리팰런싱 : 파티션을 counsumer 들에게 다시 나눠주는 작업
+      #           (Consumer가 새로 들어올 때, Consumer가 죽었을 때, 파티션 수가 바뀔 때)
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      # 트랜잭션 상태 로그 토픽의 최소 ISR(In-Sync Replica) 수
+      # ISR - 리더와 동기화된 복제본의 최소 개수
+      # 단일 브로커이므로 1로 설정 (운영 환경에서는 2 이상 권장)
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      # 트랜잭션 상태 로그 토픽의 복제 계수
+      # 단일 브로커이므로 1로 설정 (운영 환경에서는 3 권장)
+      # * Kafka 트랜잭션 : 여러 토픽에 메시지를 보낼 때 전부 성공하거나 전부 실패하게 만드는 기능 (DB 트랜잭션과 동일 개념)
+      # * 트랜잭션 상태 로그 토픽 : Kafka가 트랜잭션 진행 상태를 기록하는 Kafka 내부 전용 토픽
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      # KRaft 모드에서 이 노드가 담당할 역할 지정
+      #   broker     - 메시지 저장 및 클라이언트 요청 처리
+      #   controller - 클러스터 메타데이터 및 리더 선출 관리 (기존 Zookeeper 역할 대체)
+      # 단일 노드에서 두 역할을 모두 수행하는 'combined 모드'
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1 # KRaft 모드에서의 노드 고유 ID
+      # KRaft 컨트롤러 쿼럼(투표) 구성원 목록
+      # 형식 - {node_id}@{host}:{port}
+      # 1@broker:29093 -> Node ID가 1인 컨트롤러가 broker 호스트의 29093 포트에서 대기
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      # 브로커가 실제로 바인딩(수신 대기)할 주소와 포트
+      #   PLAINTEXT://broker:29092      -> 내부 브로커 간 통신용 리스너
+      #   CONTROLLER://broker:29093     -> KRaft 컨트롤러 통신 전용 리스너
+      #   PLAINTEXT_HOST://0.0.0.0:9092 -> 외부 클라이언트 접속용 (모든 네트워크 인터페이스에서 수신)
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      # 브로커 간 내부 통신에 사용할 리스너 이름 지정
+      # 복제(replication) 등 브로커끼리 통신할 때 PLAINTEXT 리스너를 사용
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      # KRaft 컨트롤러 통신 전용 리스너 이름 지정
+      # 컨트롤러 쿼럼 통신 시 CONTROLLER 리스너를 사용
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      # Kafka 메시지 데이터(로그 세그먼트)가 저장될 디렉토리 경로
+      # /tmp는 컨테이너 재시작 시 데이터가 사라짐 - 영속성이 필요하면 볼륨 마운트 권장
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      # KRaft 모드에서 클러스터를 식별하는 고유 UUID (Base64 인코딩)
+      # 'kafka-storage.sh random-uuid' 명령으로 생성 가능
+      # 한 번 설정 후 변경 불가 - 변경 시 기존 데이터와 호환 불가
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - discodeit-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: discodeit-prometheus
+    ports:
+      - "9090:9090"
+    # 호스트의 prometheus.yml을 컨테이너 내 설정 파일 경로에 마운트
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    # 호스트에서 bootRun으로 앱을 실행할 때 host.docker.internal 해석을 위해 필요 (Linux)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - discodeit-network
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    # 컨테이너 시작 시 기본 커맨드 대신 실행할 명령어를 지정
+    # redis-server: Redis 서버 실행 명령어
+    # --appendonly yes: AOF(Append Only File) 영속성 모드 활성화
+    #
+    # 1. RDB (기본값): 특정 시점의 스냅샷을 .rdb 파일로 저장
+    #    - 장점: 파일 크기 작음, 복구 속도 빠름
+    #    - 단점: 스냅샷 사이에 서버가 죽으면 그 사이 데이터 유실
+    #    ex) 매 5분마다 스냅샷 -> 4분 59초에 서버 다운 -> 4분 59초치 데이터 유실
+    #
+    # 2. AOF (--appendonly yes): 모든 쓰기 명령어를 .aof 파일에 순서대로 기록
+    #    - 장점: 장애 발생 시 데이터 유실 최소화 (기본설정: 1초 단위)
+    #    - 단점: RDB보다 파일 크기 크고 복구 속도 느림
+    #    ex) SET key1 "a" 기록, SET key2 "b" 기록... -> 서버 다운 -> .aof 재실행으로 복구
+    command: redis-server --appendonly yes
+    networks:
+      - discodeit-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: discodeit-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      # Grafana 초기 관리자 계정 설정
+      # FIXME: prod 환경에서는 반드시 강력한 비밀번호로 변경하고 외부 환경변수로 관리 권장
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      # Grafana 설정, 대시보드, 플러그인 등 영속 데이터를 named volume에 저장
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
     networks:
       - discodeit-network
 
 volumes:
   postgres-data:
   binary-content-storage:
+  grafana-data:
+  redis-data:
 
 networks:
   discodeit-network:
-    driver: bridge 
+    driver: bridge
+

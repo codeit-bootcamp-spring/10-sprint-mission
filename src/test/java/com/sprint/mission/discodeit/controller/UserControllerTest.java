@@ -17,6 +17,7 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.UserRole;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.service.UserService;
@@ -75,7 +76,8 @@ class UserControllerTest {
         UUID.randomUUID(),
         "profile.jpg",
         12L,
-        MediaType.IMAGE_JPEG_VALUE
+        MediaType.IMAGE_JPEG_VALUE,
+        BinaryContentStatus.SUCCESS
     );
 
     UserDto createdUser = new UserDto(
@@ -196,7 +198,8 @@ class UserControllerTest {
         UUID.randomUUID(),
         "updated-profile.jpg",
         14L,
-        MediaType.IMAGE_JPEG_VALUE
+        MediaType.IMAGE_JPEG_VALUE,
+        BinaryContentStatus.SUCCESS
     );
 
     UserDto updatedUser = new UserDto(

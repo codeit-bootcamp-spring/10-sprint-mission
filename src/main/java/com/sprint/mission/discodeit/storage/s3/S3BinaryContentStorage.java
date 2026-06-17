@@ -68,7 +68,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
       return binaryContentId;
     } catch (S3Exception e) {
       log.error("S3에 파일 업로드 실패: {}", e.getMessage());
-      throw new RuntimeException("S3에 파일 업로드 실패: " + key, e);
+      throw new S3UploadException("S3에 파일 업로드 실패: " + key, e);
     }
   }
 

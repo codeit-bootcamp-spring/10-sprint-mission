@@ -28,9 +28,12 @@ class UserRepositoryTest {
   private TestEntityManager entityManager;
 
   private User createTestUser(String username, String email) {
+    return createTestUser(username, email, UserRole.USER);
+  }
+
+  private User createTestUser(String username, String email, UserRole role) {
     BinaryContent profile = new BinaryContent("profile.jpg", 1024L, "image/jpeg");
-    User user = new User(username, email, "password123!@#", profile, UserRole.USER);
-    return user;
+    return new User(username, email, "password123!@#", profile, role);
   }
 
   @Test
@@ -109,5 +112,29 @@ class UserRepositoryTest {
 
     assertThat(Hibernate.isInitialized(foundUser1.getProfile())).isTrue();
     assertThat(Hibernate.isInitialized(foundUser2.getProfile())).isTrue();
+  }
+
+  @Test
+  @DisplayName("역할로 사용자를 조회하면 해당 역할의 사용자만 반환한다 - ADMIN")
+  void findAllByRole_Admin_ReturnsOnlyAdmins() {
+    // given
+    userRepository.saveAll(List.of(
+        createTestUser("admin1", "admin1@example.com", UserRole.ADMIN),
+        createTestUser("admin2", "admin2@example.com", UserRole.ADMIN),
+        createTestUser("user1", "user1@example.com", UserRole.USER),
+        createTestUser("manager1", "manager1@example.com", UserRole.CHANNEL_MANAGER)
+    ));
+
+    entityManager.flush();
+    entityManager.clear();
+
+    // when
+    List<User> admins = userRepository.findAllByRole(UserRole.ADMIN);
+
+    // then
+    assertThat(admins).hasSize(2);
+    assertThat(admins).extracting(User::getRole).containsOnly(UserRole.ADMIN);
+    assertThat(admins).extracting(User::getUsername)
+        .containsExactlyInAnyOrder("admin1", "admin2");
   }
 }
