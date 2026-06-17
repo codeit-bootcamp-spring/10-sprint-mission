@@ -19,7 +19,6 @@ public class SseMessageRepository {
     private final Map<UUID, SseMessage> messages = new ConcurrentHashMap<>();
 
     private static final int MAX_SIZE = 500;
-    private final MessageRepository messageRepository;
 
     public void save(SseMessage message){
         UUID eventId = message.getEventId();

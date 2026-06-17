@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.sse.SseMessage;
 import com.sprint.mission.discodeit.repository.EmitterRepository;
+import com.sprint.mission.discodeit.repository.SseMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,6 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SseService {
     private final EmitterRepository emitterRepository;
+    private final SseMessageRepository sseMessageRepository;
 
     private final static long TIMEOUT = 60L * 60L * 1000L;
 
@@ -36,6 +39,22 @@ public class SseService {
         });
 
         emitterRepository.add(receiverId, sseEmitter);
+
+        if(lastEventId != null){
+            List<SseMessage> lastMessages = sseMessageRepository.findAllAfter(lastEventId);
+            for(SseMessage message : lastMessages){
+                try {
+                    sseEmitter.send(
+                            SseEmitter.event()
+                                    .id(message.getEventId().toString())
+                                    .name(message.getEventName())
+                                    .data(message.getData())
+                    );
+                } catch (IOException e) {
+                    sseEmitter.completeWithError(e);
+                }
+            }
+        }
         log.info("SSE emitter 등록 완료. receiverId = {}, lastEventId = {}", receiverId, lastEventId);
 
         // 연결 직후 메시지를 보내 통로를 열어둠
@@ -47,12 +66,16 @@ public class SseService {
     }
 
     public void send(Collection<UUID> receiverIds, String eventName, Object data) {
+        SseMessage message = new SseMessage(UUID.randomUUID(), eventName, data);
+        sseMessageRepository.save(message);
+
         for(UUID receiverId : receiverIds){
             List<SseEmitter> emitters = emitterRepository.findAllByReceiverId(receiverId);
             for(SseEmitter emitter : emitters){
                 try{
                     emitter.send(
                             SseEmitter.event()
+                                    .id(message.getEventId().toString())
                                     .name(eventName)
                                     .data(data)
                     );
