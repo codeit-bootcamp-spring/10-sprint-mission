@@ -70,6 +70,8 @@ public class SecurityConfig {
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             // SPA 전용 핸들러 등록
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+            // STOMP는 무시 (STOMP CONNENT에서 인증)
+            .ignoringRequestMatchers("/ws", "/ws/**")
         )
         // 세션 관리 설정
         .sessionManagement(management -> management
@@ -93,6 +95,8 @@ public class SecurityConfig {
             .permitAll() // 토큰 재발급
             .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**",
                 "/actuator/**").permitAll() // API가 아닌 요청(Swagger, Actuator)
+            .requestMatchers("/ws", "/ws/**") // STOMP
+            .permitAll()
             // 그 외의 모든 요청은 반드시 인증되어야 함
             .anyRequest().authenticated()
         )
