@@ -12,6 +12,7 @@ public record UserDto(
     String username,
     String email,
     BinaryContentDto profile,
-    Role role) {
+    Role role,
+    boolean online) {
 
 }

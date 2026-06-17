@@ -1,16 +1,29 @@
 package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentDto;
+import com.sprint.mission.discodeit.notification.repository.JPANotificationRepository;
+import com.sprint.mission.discodeit.notification.service.NotificationService;
+import com.sprint.mission.discodeit.user.Role;
+import com.sprint.mission.discodeit.user.entity.User;
+import com.sprint.mission.discodeit.user.repository.JPAUserRepository;
 import java.io.InputStream;
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -21,12 +34,15 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 
 @Component
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
+@Slf4j
 public class S3BinaryContentStorage implements BinaryContentStorage {
 
   private final String accessKey;
   private final String secretKey;
   private final String region;
   private final String bucket;
+  private final JPAUserRepository jpaUserRepository;
+  private final NotificationService notificationService;
 
   @Value("${discodeit.storage.s3.presigned-url-expiration:600}")
   long presignedUrlExpiration;
@@ -35,15 +51,24 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
       @Value("${discodeit.storage.s3.access-key}") String accessKey,
       @Value("${discodeit.storage.s3.secret-key}") String secretKey,
       @Value("${discodeit.storage.s3.region}") String region,
-      @Value("${discodeit.storage.s3.bucket}") String bucket
+      @Value("${discodeit.storage.s3.bucket}") String bucket,
+      JPAUserRepository jpaUserRepository,
+      NotificationService notificationService
   ) {
     this.accessKey = accessKey;
     this.secretKey = secretKey;
     this.region = region;
     this.bucket = bucket;
+    this.jpaUserRepository = jpaUserRepository;
+    this.notificationService = notificationService;
   }
 
   @Override
+  @Retryable(
+      retryFor = {SdkException.class},
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 1000, multiplier = 2)
+  )
   public UUID put(UUID id, byte[] bytes) {
     getS3Client().putObject(
         PutObjectRequest.builder()
@@ -54,6 +79,19 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     );
     return id;
   }
+
+  @Recover
+  public UUID recover(SdkException e, UUID id, byte[] bytes) {
+    List<User> admins = jpaUserRepository.findAllByRole(Role.ADMIN);
+    String content = "RequestId: " + MDC.get("requestId") + "\n"
+        + "BinaryContentId: " + id + "\n"
+        + "Error: " + e.getMessage();
+    for (User admin : admins) {
+      notificationService.create(admin.getId(), "S3 업로드 실패", content);
+    }
+    return null;
+  }
+
 
   @Override
   public InputStream get(UUID id) {

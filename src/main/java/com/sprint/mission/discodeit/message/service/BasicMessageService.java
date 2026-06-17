@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.message.service;
 
 import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.binarycontent.entity.BinaryContent;
+import com.sprint.mission.discodeit.binarycontent.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.binarycontent.repository.JPABinaryContentRepository;
 import com.sprint.mission.discodeit.channel.entity.Channel;
 import com.sprint.mission.discodeit.common.exception.channel.ChannelNotFoundException;
@@ -11,17 +12,18 @@ import com.sprint.mission.discodeit.message.dto.MessageCreateRequest;
 import com.sprint.mission.discodeit.message.dto.MessageDto;
 import com.sprint.mission.discodeit.message.dto.MessageUpdateRequest;
 import com.sprint.mission.discodeit.message.entity.Message;
+import com.sprint.mission.discodeit.message.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.message.mapper.MessageMapper;
 import com.sprint.mission.discodeit.message.repository.JPAMessageRepository;
 import com.sprint.mission.discodeit.channel.repository.JPAChannelRepository;
 import com.sprint.mission.discodeit.paging.dto.PageResponse;
 import com.sprint.mission.discodeit.paging.mapper.PageResponseMapper;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.user.entity.User;
 import com.sprint.mission.discodeit.user.repository.JPAUserRepository;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,7 +42,7 @@ public class BasicMessageService implements MessageService {
   private final JPAChannelRepository jpaChannelRepository;
   private final JPAUserRepository jpaUserRepository;
   private final MessageMapper messageMapper;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher eventPublisher;
   private final JPABinaryContentRepository jpaBinaryContentRepository;
   private final PageResponseMapper pageResponseMapper;
 
@@ -67,7 +69,9 @@ public class BasicMessageService implements MessageService {
               req.contentType()
           );
           BinaryContent savedBinaryContent = jpaBinaryContentRepository.save(binaryContent);
-          binaryContentStorage.put(savedBinaryContent.getId(), req.bytes());
+          eventPublisher.publishEvent(
+              new BinaryContentCreatedEvent(savedBinaryContent.getId(), req.bytes())
+          );
           log.info("[MESSAGE_CREATE] 첨부파일 저장 완료 : binaryContentId={}",
               savedBinaryContent.getId());
           return savedBinaryContent;
@@ -79,6 +83,10 @@ public class BasicMessageService implements MessageService {
     Message savedMessage = jpaMessageRepository.save(message);
     log.info("[MESSAGE_CREATE] 메시지 생성 완료 id={}, channel={}, author={}",
         message.getId(), message.getChannel(), message.getAuthor());
+
+    eventPublisher.publishEvent(
+        new MessageCreatedEvent(savedMessage)
+    );
     return messageMapper.toDto(savedMessage);
   }
 

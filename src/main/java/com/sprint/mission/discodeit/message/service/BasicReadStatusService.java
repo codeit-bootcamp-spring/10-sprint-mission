@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.message.service;
 
 import com.sprint.mission.discodeit.channel.entity.Channel;
+import com.sprint.mission.discodeit.channel.entity.ChannelType;
 import com.sprint.mission.discodeit.message.dto.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.message.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.message.dto.ReadStatusUpdateRequest;
@@ -44,8 +45,10 @@ public class BasicReadStatusService implements ReadStatusService {
     Channel channel = jpaChannelRepository.findById(channelId)
         .orElseThrow(() -> new NoSuchElementException("Channel not found"));
 
+    boolean notificationEnabled = (channel.getType() == ChannelType.PRIVATE);
+
     ReadStatus readStatus = jpaReadStatusRepository.save(
-        new ReadStatus(user, channel, request.lastReadAt())
+        new ReadStatus(user, channel, request.lastReadAt(), notificationEnabled)
     );
     return readStatusMapper.toDto(readStatus);
   }
@@ -72,7 +75,12 @@ public class BasicReadStatusService implements ReadStatusService {
   public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
     ReadStatus readStatus = jpaReadStatusRepository.findById(readStatusId)
         .orElseThrow(() -> new NoSuchElementException("해당 읽음 객체가 존재하지 않습니다"));
-    readStatus.updateLastRead(request.newLastReadAt());
+    if (request.newLastReadAt() != null) {
+      readStatus.updateLastRead(request.newLastReadAt());
+    }
+    if (request.newNotificationEnabled() != null) {
+      readStatus.updateNotificationEnabled(request.newNotificationEnabled());
+    }
     return readStatusMapper.toDto(readStatus);
   }
 

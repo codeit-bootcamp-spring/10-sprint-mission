@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.binarycontent.dto;
 
+import com.sprint.mission.discodeit.binarycontent.entity.BinaryContentStatus;
 import java.util.UUID;
 
 public record BinaryContentDto(
@@ -7,7 +8,8 @@ public record BinaryContentDto(
     String fileName,
     Long size,
     String contentType,
-    byte[] bytes
+    byte[] bytes,
+    BinaryContentStatus status
 ) {
 
 }

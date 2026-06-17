@@ -21,7 +21,11 @@ public enum ErrorCode {
   BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 파일입니다"),
 
   //Auth
-  INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.");
+  INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+
+  //Notification
+  NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
+  NOTIFICATION_FORBIDDEN(HttpStatus.FORBIDDEN, "본인의 알림만 삭제할 수 있습니다.");
 
 
   private final HttpStatus status;

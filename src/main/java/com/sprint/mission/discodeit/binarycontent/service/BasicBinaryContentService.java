@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.binarycontent.service;
 
 import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentDto;
+import com.sprint.mission.discodeit.binarycontent.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.binarycontent.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.binarycontent.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.binarycontent.repository.JPABinaryContentRepository;
 import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentCreateRequest;
@@ -10,6 +12,7 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,8 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final JPABinaryContentRepository jpaBinaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentMapper binaryContentMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   @Transactional
@@ -41,7 +44,9 @@ public class BasicBinaryContentService implements BinaryContentService {
         (long) bytes.length,
         contentType);
     BinaryContent savedBinaryContent = jpaBinaryContentRepository.save(binaryContent);
-    binaryContentStorage.put(savedBinaryContent.getId(), bytes);
+    eventPublisher.publishEvent(
+        new BinaryContentCreatedEvent(savedBinaryContent.getId(), bytes)
+    );
 
     log.info("[BINARY_CONTENT_CREATE] 파일 저장 완료 : binaryContentId={}", savedBinaryContent.getId());
 
@@ -71,4 +76,16 @@ public class BasicBinaryContentService implements BinaryContentService {
   public void delete(UUID id) {
     jpaBinaryContentRepository.deleteById(id);
   }
+
+  @Override
+  @Transactional
+  public BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+    BinaryContent binaryContent = jpaBinaryContentRepository.findById(binaryContentId)
+        .orElseThrow(
+            () -> new BinaryContentNotFoundException(Map.of("binaryContentId", binaryContentId)));
+
+    binaryContent.updateStatus(status);
+    return binaryContentMapper.toDto(binaryContent);
+  }
+
 }

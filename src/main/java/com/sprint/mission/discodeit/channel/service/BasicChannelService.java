@@ -17,6 +17,10 @@ import com.sprint.mission.discodeit.user.repository.JPAUserRepository;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +39,7 @@ public class BasicChannelService implements ChannelService {
   private final JPAUserRepository jpaUserRepository;
   private final ChannelMapper channelMapper;
   private final UserMapper userMapper;
+  private final CacheManager cacheManager;
 
   @Override
   @Transactional
@@ -53,10 +58,14 @@ public class BasicChannelService implements ChannelService {
     } // 나중에 수정 필요
 
     List<ReadStatus> readStatuses = participants.stream()
-        .map(user -> new ReadStatus(user, createdChannel, Instant.now()))
+        .map(user -> new ReadStatus(user, createdChannel, Instant.now(), true))
         .toList();
 
     jpaReadStatusRepository.saveAll(readStatuses);
+    Cache cache = cacheManager.getCache("channelsByUser");
+    if (cache != null) {
+      participants.forEach(user -> cache.evict(user.getId()));
+    }
     log.info("[CHANNEL_CREATE] private 채널 생성 완료 channelId={}", channel.getId());
     return channelMapper.toDto(createdChannel);
   }
@@ -64,6 +73,7 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+  @CacheEvict(value = "channelsByUser", allEntries = true)
   public ChannelDto create(ChannelCreatePublicRequest request) {
     log.info("[CHANNEL_CREATE] public 채널 생성 시작 : channelName={}, channelDescription={}",
         request.name(), request.description());
@@ -90,6 +100,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @Cacheable(value = "channelsByUser", key = "#userId")
   @Transactional(readOnly = true)
   public List<ChannelDto> findByUserId(UUID userId) {
     List<UUID> subscribedIds = jpaReadStatusRepository.findAllByUserId(userId)
@@ -134,6 +145,7 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+  @CacheEvict(value = "channelsByUser", allEntries = true)
   public ChannelDto update(UUID channelId, ChannelUpdateRequest request) {
     log.info("[CHANNEL_UPDATE] 채널 정보 수정 시작 : channelId={}",
         channelId);
@@ -160,6 +172,13 @@ public class BasicChannelService implements ChannelService {
 
     Channel channel = jpaChannelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", channelId)));
+
+    List<ReadStatus> readStatuses = jpaReadStatusRepository.findAllByChannelId(channelId);
+
+    Cache cache = cacheManager.getCache("channelsByUser");
+    if (cache != null) {
+      readStatuses.forEach(rs -> cache.evict(rs.getUser().getId()));
+    }
     jpaChannelRepository.delete(channel);
     log.info("[CHANNEL_DELETE] 채널 삭제 완료 : channelId={} ", channelId);
 
