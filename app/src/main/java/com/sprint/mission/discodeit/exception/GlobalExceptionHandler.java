@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.time.Instant;
 import java.util.Collections;
@@ -7,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -77,7 +79,11 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler
-  public ResponseEntity<ErrorResponse> handleException(Exception e) {
+  public ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest request) {
+    String accept = request.getHeader("Accept");
+    if (accept != null && accept.contains(MediaType.TEXT_EVENT_STREAM_VALUE)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
     log.error("[ERROR] 예상치 못한 서버 내부 오류 발생", e);
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
