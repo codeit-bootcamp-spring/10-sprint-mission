@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.event.channel.ChannelCreateEvent;
 import com.sprint.mission.discodeit.event.channel.ChannelUpdateEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
@@ -52,8 +53,10 @@ public class BasicChannelService implements ChannelService {
     Channel channel = new Channel(ChannelType.PUBLIC, name, description);
 
     channelRepository.save(channel);
+    ChannelDto channelDto = channelMapper.toDto(channel);
+    eventPublisher.publishEvent(new ChannelCreateEvent(channelDto));
     log.info("채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
-    return channelMapper.toDto(channel);
+    return channelDto;
   }
 
   @CacheEvict(cacheManager = "redisCacheManager", cacheNames = "userChannels", allEntries = true)
@@ -63,6 +66,8 @@ public class BasicChannelService implements ChannelService {
     log.debug("채널 생성 시작: {}", request);
     Channel channel = new Channel(ChannelType.PRIVATE, null, null);
     channelRepository.save(channel);
+    ChannelDto channelDto = channelMapper.toDto(channel);
+    eventPublisher.publishEvent(new ChannelCreateEvent(channelDto));
 
     List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
         .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
@@ -70,7 +75,7 @@ public class BasicChannelService implements ChannelService {
     readStatusRepository.saveAll(readStatuses);
 
     log.info("채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
-    return channelMapper.toDto(channel);
+    return channelDto;
   }
 
   @Transactional(readOnly = true)
@@ -140,6 +145,10 @@ public class BasicChannelService implements ChannelService {
     if (!channelRepository.existsById(channelId)) {
       throw ChannelNotFoundException.withId(channelId);
     }
+    Channel channel = channelRepository.findById(channelId).orElseThrow(() -> ChannelNotFoundException.withId(channelId));
+    ChannelDto channelDto = channelMapper.toDto(channel);
+
+    eventPublisher.publishEvent(new ChannelCreateEvent(channelDto));
 
     messageRepository.deleteAllByChannelId(channelId);
     readStatusRepository.deleteAllByChannelId(channelId);

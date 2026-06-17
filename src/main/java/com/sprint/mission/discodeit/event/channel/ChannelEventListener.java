@@ -18,4 +18,14 @@ public class ChannelEventListener {
     public void on(ChannelUpdateEvent event) {
         sseService.broadcast("channels.updated", event.channel);
     }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void on(ChannelCreateEvent event) {
+        sseService.broadcast("channels.created", event.channel);
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void on(ChannelDeleteEvent event) {
+        sseService.broadcast("channels.deleted", event.channel);
+    }
 }
