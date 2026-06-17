@@ -21,4 +21,3 @@ logs/
 
 # 환경변수(민감한 정보)
 .env
-discodeit.env

@@ -1,6 +1,56 @@
 version: "3.9"
 
 services:
+  # 1. Nginx 리버스 프록시
+  reverse-proxy:
+    image: nginx:latest
+    container_name: reverse-proxy
+    ports:
+      - "3000:80" # 외부의 3000번 요청을 Nginx 내부의 80번으로 연결
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./src/main/resources/static:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+    networks:
+      - internal-network
+
+  # 2. 백엔드 (Spring Boot)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discodeit-backend
+    restart: always
+    environment:
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      # DB 연결 주소
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/discodeit
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      # Redis 및 Kafka 연결 환경변수 추가 필요
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      STORAGE_TYPE: ${STORAGE_TYPE}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+    networks:
+      - internal-network
+    # 3. PostgreSQL
   db:
     image: postgres:15-alpine
     container_name: discodeit-db
@@ -14,49 +64,43 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
-      # 임시로 5433로 설정
-    ports:
-      - "5433:5432"
+      start_period: 30s
     volumes:
-      # postgres 데이터 유지
       - postgres_data:/var/lib/postgresql/data
-      # 로컬의 schema.sql 파일을 컨테이너 내부의 경로로 복사
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
-
-  # 2. 애플리케이션 서비스 설정
-  app:
-    # [요구사항] 로컬 Dockerfile에서 빌드
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: discodeit-app
+    networks:
+      - internal-network
+  # 4. Memory DB (Redis)
+  redis:
+    image: redis:7.2-alpine
+    container_name: discodeit-redis
+    restart: always
+    networks:
+      - internal-network
+  # 5. Message Broker
+  kafka:
+    image: apache/kafka:latest
+    container_name: discodeit-kafka
     restart: always
     environment:
-      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS}
-      # 스프링의 db연결 환경변수
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/discodeit
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      # discodeit IAM 접근 키, 리전, 버킷이름
-      AWS_CREDENTIALS_ACCESS_KEY: ${AWS_ACCESS_KEY_ID}
-      AWS_CREDENTIALS_SECRET_KEY: ${AWS_SECRET_ACCESS_KEY}
-      AWS_REGION: ${AWS_REGION}
-      AWS_S3_BUCKET: ${AWS_BUCKET_NAME}
-
-      # 저장소 관련 환경 변수
-      STORAGE_TYPE: s3
-      STORAGE_LOCAL_ROOT_PATH: ./uploads
-      AWS_S3_PRESIGNED_URL_EXPIRATION: 600
-
-    ports:
-      - "80:8080"
-    volumes:
-      - ./uploads:/app/uploads
-    # db가 먼저 떠야 app컨테이너가 띄어짐
-    depends_on:
-      db:
-        condition: service_healthy
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      # 🌟 Apache 공식 이미지는 KRaft 포맷을 위해 유효한 Base64 형태의 클러스터 ID가 필수입니다!
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - internal-network
+networks:
+  internal-network:
+    driver: bridge
 volumes:
   postgres_data:

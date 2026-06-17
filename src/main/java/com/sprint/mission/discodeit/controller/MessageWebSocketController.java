@@ -17,7 +17,7 @@ public class MessageWebSocketController {
 
     @MessageMapping("/messages")
     public void sendMessage(MessageCreateRequest request){
-        messageService.create(request, List.of());
+        messageService.create(request, null);
     }
 
 

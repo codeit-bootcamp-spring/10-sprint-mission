@@ -25,7 +25,7 @@ public class TokenService {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
 
-    @Transactional
+    @Transactional(noRollbackFor = IllegalArgumentException.class)
     public TokenResultDto reissueToken(String oldRefreshToken){
         // 서명 및 만료일 검증
         if(!jwtTokenProvider.validateToken(oldRefreshToken)){

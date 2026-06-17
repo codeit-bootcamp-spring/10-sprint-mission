@@ -49,6 +49,6 @@ out/
 /uploads
 
 .env
-discodeit.env
+.env
 
 .logs
