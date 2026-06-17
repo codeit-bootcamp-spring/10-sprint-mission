@@ -18,6 +18,4 @@ public interface JwtRegistry {
   void rotateJwtInformation(String oldRefreshToken, JwtInformation newJwtInformation);
 
   void clearExpiredJwtInformation();
-
-  JwtInformation getJwtInformationByUserIdAndRefreshToken(UUID userId, String refreshToken);
 }
