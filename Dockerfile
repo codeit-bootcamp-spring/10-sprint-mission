@@ -22,4 +22,4 @@ RUN ./gradlew bootJar -x test
 EXPOSE 80
 
 # JVM 옵션 직접 명시 (핵심)
-ENTRYPOINT ["java", "-Xmx256m", "-Xms128m", "-XX:MaxMetaspaceSize=128m", "-XX:+UseSerialGC", "-jar", "build/libs/discodeit-1.2-M8.jar", "--server.port=80"]
+ENTRYPOINT ["java", "-jar", "build/libs/discodeit-1.2-M8.jar", "--server.port=80"]
