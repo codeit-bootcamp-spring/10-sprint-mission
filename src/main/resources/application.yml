@@ -15,20 +15,40 @@ spring:
     name: discodeit
   profiles:
     active: dev # 기본적으로 dev 환경 활성화
-
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 30MB
-
   datasource:
     driver-class-name: org.postgresql.Driver
-
   jpa:
     open-in-view: false
     properties:
       hibernate:
         default_batch_fetch_size: 100
+  cache:
+    cache:
+      type: redis
+      cache-names:
+        - channels
+        - notifications
+        - users
+      redis:
+        enable-statistics: true
+      data:
+        redis:
+          host: ${REDIS_HOST:localhost}
+          port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:discodeit-group}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 logging:
   level:
@@ -46,15 +66,16 @@ management:
   info:
     env:
       enabled: true
-
   endpoints:
     web:
       exposure:
-        include: "health,info,metrics,loggers"
-
+        include: "health" # 공통 설정에서는 health만 최소한으로 노출
   endpoint:
     health:
-      show-details: always # 상세한 DB 연결 상태 등을 보고 싶을 때 사용
+      show-details: never
+  observations:
+    annotations:
+      enabled: true
 
 info:
   app:

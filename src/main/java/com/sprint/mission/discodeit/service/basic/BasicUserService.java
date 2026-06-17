@@ -1,19 +1,21 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.FileUploadException;
 import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,10 +30,11 @@ public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher eventPublisher;
   private final PasswordEncoder passwordEncoder;
   private final JwtRegistry jwtRegistry;
 
+  @CacheEvict(value = "users", allEntries = true)
   @Override
   @Transactional
   public User create(String username, String email, String password, MultipartFile profileFile) {
@@ -55,9 +58,11 @@ public class BasicUserService implements UserService {
             profileFile.getSize(),
             profileFile.getContentType()
         );
-        binaryContentRepository.save(profile);
+        binaryContentRepository.save(profile); // 메타데이터 저장
 
-        binaryContentStorage.put(profile.getId(), profileFile.getBytes());
+        // 메타데이터 저장 이벤트 발행
+        eventPublisher.publishEvent(
+            new BinaryContentCreatedEvent(profile.getId(), profileFile.getBytes()));
       } catch (IOException e) {
         throw new FileUploadException(Map.of(
             "username", username,
@@ -89,6 +94,7 @@ public class BasicUserService implements UserService {
     return user;
   }
 
+  @Cacheable(value = "users")
   @Override
   public List<User> findAll() {
     log.info("Fetching all users list"); // 유저 전체 조회 시작 로그
@@ -99,6 +105,7 @@ public class BasicUserService implements UserService {
     return users;
   }
 
+  @CacheEvict(value = "users", allEntries = true)
   @Override
   @Transactional
   @PreAuthorize("#id == authentication.principal.id") // 수정하려는 타겟 ID와 현재 로그인한 사람의 ID가 일치할 때만 실행
@@ -141,7 +148,9 @@ public class BasicUserService implements UserService {
         );
         BinaryContent savedImage = binaryContentRepository.save(newImage);
 
-        binaryContentStorage.put(savedImage.getId(), profileFile.getBytes());
+        // 메타 데이터 저장 이벤트 발행
+        eventPublisher.publishEvent(
+            new BinaryContentCreatedEvent(savedImage.getId(), profileFile.getBytes()));
 
         user.updateProfileImage(savedImage);
       } catch (IOException e) {
@@ -157,6 +166,7 @@ public class BasicUserService implements UserService {
     return user;
   }
 
+  @CacheEvict(value = "users", allEntries = true)
   @Override
   @Transactional
   @PreAuthorize("hasRole('ADMIN')") // 권한 검사
@@ -166,16 +176,23 @@ public class BasicUserService implements UserService {
     // 유저 검증
     User user = getOrThrowUser(id);
 
+    // 권한 변경 알림을 위해 권한 수정 전 현재 권한을 변수에 할당
+    Role oldRole = user.getRole();
+
     // 권한 수정
     user.updateRole(newRole);
 
     // 권한이 변경된 사용자의 모든 토큰을 Registry에서 무효화
     jwtRegistry.invalidateJwtInformationByUserId(id);
 
+    // 역할 변경 후 이벤트 발행
+    eventPublisher.publishEvent(new RoleUpdatedEvent(id, oldRole, newRole));
+
     log.info("User ID {} role updated successfully to {}", id, newRole);
     return user;
   }
 
+  @CacheEvict(value = "users", allEntries = true)
   @Override
   @Transactional
   @PreAuthorize("#id == authentication.principal.id") // 수정하려는 타겟 ID와 현재 로그인한 사람의 ID가 일치할 때만 실행

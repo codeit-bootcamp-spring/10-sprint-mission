@@ -31,3 +31,16 @@ discodeit:
     username: ${DISCODEIT_ADMIN_USERNAME:admin}
     email: ${DISCODEIT_ADMIN_EMAIL:admin@admin.com}
     password: ${DISCODEIT_ADMIN_PASSWORD:admin1234!}
+
+management:
+  info:
+    env:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        # 성능 측정 및 디버깅을 위해 dev 프로필에서만 완전 노출
+        include: "health,info,metrics,loggers,observations"
+  endpoint:
+    health:
+      show-details: always # 개발 시 상세한 내부 인프라 상태 확인

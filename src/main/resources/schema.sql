@@ -1,9 +1,11 @@
 CREATE TABLE IF NOT EXISTS binary_contents (
     id UUID PRIMARY KEY,
     created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
     file_name VARCHAR(255) NOT NULL,
     size BIGINT NOT NULL,
-    content_type VARCHAR(100) NOT NULL
+    content_type VARCHAR(100) NOT NULL,
+    status varchar(20) NOT NULL
     );
 
 CREATE TABLE IF NOT EXISTS channels (
@@ -55,6 +57,7 @@ CREATE TABLE IF NOT EXISTS read_statuses (
     user_id UUID NOT NULL,
     channel_id UUID NOT NULL,
     last_read_at timestamp with time zone NOT NULL,
+    notification_enabled boolean NOT NULL,
     CONSTRAINT fk_read_status_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_read_status_channel FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE,
     UNIQUE (user_id, channel_id)
@@ -67,3 +70,14 @@ CREATE TABLE IF NOT EXISTS message_attachments (
     CONSTRAINT fk_attachment_message FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE,
     CONSTRAINT fk_attachment_content FOREIGN KEY (attachment_id) REFERENCES binary_contents(id) ON DELETE CASCADE
     );
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id UUID PRIMARY KEY,
+    created_at  timestamp with time zone NOT NULL,
+    receiver_id UUID NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    CONSTRAINT fk_notifications_receiver FOREIGN KEY (receiver_id) REFERENCES users (id) ON DELETE CASCADE
+    );
+-- 알림 목록 조회 시 읽기 성능을 위한 인덱스
+CREATE INDEX IF NOT EXISTS idx_notifications_receiver_created_at ON notifications (receiver_id, created_at DESC);

@@ -58,11 +58,17 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   @Transactional
-  public ReadStatus update(UUID id, Instant newLastReadAt) {
+  public ReadStatus update(UUID id, Instant newLastReadAt, Boolean notificationEnabled) {
     ReadStatus readStatus = getOrThrowReadStatus(id);
 
+    // 마지막 확인 시간 업데이트
     if (newLastReadAt != null) {
       readStatus.updateLastReadAt(newLastReadAt);
+    }
+
+    // 알림 활성화 여부 업데이트
+    if (notificationEnabled != null) {
+      readStatus.updateNotificationEnabled(notificationEnabled);
     }
 
     return readStatus;

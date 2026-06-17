@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.MessageService;
+import io.micrometer.core.annotation.Timed;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ public class MessageController implements MessageApi {
   private final PageResponseMapper pageResponseMapper;
 
   @Override
+  // @Timed("message.create.async") // 동기/비동기 처리 간 응답 속도 테스트를 위해 메서드 실행 시간 측정
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<MessageDto> create(
       @RequestPart("messageCreateRequest") MessageCreateRequest request,
