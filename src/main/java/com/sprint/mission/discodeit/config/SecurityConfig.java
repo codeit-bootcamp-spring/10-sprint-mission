@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.security.Http401UnauthorizedEntryPoint;
 import com.sprint.mission.discodeit.security.Http403ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
@@ -30,7 +31,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -50,46 +50,45 @@ public class SecurityConfig {
       LoginFailureHandler loginFailureHandler,
       ObjectMapper objectMapper,
       JwtAuthenticationFilter jwtAuthenticationFilter,
-      JwtLogoutHandler jwtLogoutHandler
-  )
+      JwtLogoutHandler jwtLogoutHandler)
       throws Exception {
-    http
-        .csrf(csrf -> csrf
-            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-        )
-        .formLogin(login -> login
-            .loginProcessingUrl("/api/auth/login")
-            .successHandler(jwtLoginSuccessHandler)
-            .failureHandler(loginFailureHandler)
-        )
-        .logout(logout -> logout
-            .logoutUrl("/api/auth/logout")
-            .addLogoutHandler(jwtLogoutHandler)
-            .logoutSuccessHandler(
-                new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
-        )
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers(
-                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
-                new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
-            ).permitAll()
-            .anyRequest().authenticated()
-        )
-        .exceptionHandling(ex -> ex
-            .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
-            .accessDeniedHandler(new Http403ForbiddenAccessDeniedHandler(objectMapper))
-        )
-        .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
+    http.csrf(
+            csrf ->
+                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                    .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
+        .formLogin(
+            login ->
+                login
+                    .loginProcessingUrl("/api/auth/login")
+                    .successHandler(jwtLoginSuccessHandler)
+                    .failureHandler(loginFailureHandler))
+        .logout(
+            logout ->
+                logout
+                    .logoutUrl("/api/auth/logout")
+                    .addLogoutHandler(jwtLogoutHandler)
+                    .logoutSuccessHandler(
+                        new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers(
+                        AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
+                        AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
+                        AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
+                        AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh"),
+                        AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
+                        new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**")))
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
+        .exceptionHandling(
+            ex ->
+                ex.authenticationEntryPoint(new Http401UnauthorizedEntryPoint(objectMapper))
+                    .accessDeniedHandler(new Http403ForbiddenAccessDeniedHandler(objectMapper)))
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         // Add JWT authentication filter
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-    ;
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
 
@@ -97,10 +96,14 @@ public class SecurityConfig {
   public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
     return args -> {
       int filterSize = filterChain.getFilters().size();
-      List<String> filterNames = IntStream.range(0, filterSize)
-          .mapToObj(idx -> String.format("\t[%s/%s] %s", idx + 1, filterSize,
-              filterChain.getFilters().get(idx).getClass()))
-          .toList();
+      List<String> filterNames =
+          IntStream.range(0, filterSize)
+              .mapToObj(
+                  idx ->
+                      String.format(
+                          "\t[%s/%s] %s",
+                          idx + 1, filterSize, filterChain.getFilters().get(idx).getClass()))
+              .toList();
       log.debug("Debug Filter Chain...\n{}", String.join(System.lineSeparator(), filterNames));
     };
   }
@@ -115,10 +118,8 @@ public class SecurityConfig {
     return RoleHierarchyImpl.withDefaultRolePrefix()
         .role(Role.ADMIN.name())
         .implies(Role.USER.name(), Role.CHANNEL_MANAGER.name())
-
         .role(Role.CHANNEL_MANAGER.name())
         .implies(Role.USER.name())
-
         .build();
   }
 

@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -18,6 +19,8 @@ import com.sprint.mission.discodeit.service.AuthService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -34,7 +37,9 @@ public class BasicAuthService implements AuthService {
   private final JwtRegistry jwtRegistry;
   private final JwtTokenProvider tokenProvider;
   private final UserDetailsService userDetailsService;
+  private final ApplicationEventPublisher eventPublisher;
 
+  @CacheEvict(cacheNames = "users", allEntries = true)
   @PreAuthorize("hasRole('ADMIN')")
   @Transactional
   @Override
@@ -46,13 +51,23 @@ public class BasicAuthService implements AuthService {
   @Override
   public UserDto updateRoleInternal(RoleUpdateRequest request) {
     UUID userId = request.userId();
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> UserNotFoundException.withId(userId));
+    User user =
+        userRepository.findById(userId).orElseThrow(() -> UserNotFoundException.withId(userId));
 
+    // 변경 전 권한은 DB에서 조회한 User 엔티티에서
+    Role previousRole = user.getRole();
     Role newRole = request.newRole();
+
+    // 권한변경
     user.updateRole(newRole);
 
+    // 권한이 바뀐기존 JWT는 x
     jwtRegistry.invalidateJwtInformationByUserId(userId);
+
+    // 실제로 권한이 변경된 경우에만 알림 이벤트를 발행합니다.
+    if (previousRole != newRole) {
+      eventPublisher.publishEvent(new RoleUpdatedEvent(userId, previousRole, newRole));
+    }
 
     return userMapper.toDto(user);
   }
@@ -78,15 +93,9 @@ public class BasicAuthService implements AuthService {
       String newRefreshToken = tokenProvider.generateRefreshToken(discodeitUserDetails);
       log.info("Access token refreshed for user: {}", username);
 
-      JwtInformation newJwtInformation = new JwtInformation(
-          discodeitUserDetails.getUserDto(),
-          newAccessToken,
-          newRefreshToken
-      );
-      jwtRegistry.rotateJwtInformation(
-          refreshToken,
-          newJwtInformation
-      );
+      JwtInformation newJwtInformation =
+          new JwtInformation(discodeitUserDetails.getUserDto(), newAccessToken, newRefreshToken);
+      jwtRegistry.rotateJwtInformation(refreshToken, newJwtInformation);
 
       return newJwtInformation;
 

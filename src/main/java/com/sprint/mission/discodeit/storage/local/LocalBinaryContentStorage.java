@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
@@ -19,15 +20,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
 @Component
 public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   private final Path root;
 
-  public LocalBinaryContentStorage(
-      @Value("${discodeit.storage.local.root-path}") Path root
-  ) {
+  public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") Path root) {
     this.root = root;
   }
 
@@ -44,7 +44,20 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   }
 
   public UUID put(UUID binaryContentId, byte[] bytes) {
+
+    log.info("파일 저장 시작: id={}, thread={}", binaryContentId, Thread.currentThread().getName());
+
+    try {
+      Thread.sleep(3000);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException("Thread interrupted while simulating delay", e);
+    }
+
+    log.info("파일 저장 지연 종료: id={}, thread={}", binaryContentId, Thread.currentThread().getName());
+
     Path filePath = resolvePath(binaryContentId);
+
     if (Files.exists(filePath)) {
       throw new IllegalArgumentException("File with key " + binaryContentId + " already exists");
     }
@@ -78,10 +91,9 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     InputStream inputStream = get(metaData.id());
     Resource resource = new InputStreamResource(inputStream);
 
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .header(HttpHeaders.CONTENT_DISPOSITION,
-            "attachment; filename=\"" + metaData.fileName() + "\"")
+    return ResponseEntity.status(HttpStatus.OK)
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + metaData.fileName() + "\"")
         .header(HttpHeaders.CONTENT_TYPE, metaData.contentType())
         .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(metaData.size()))
         .body(resource);
