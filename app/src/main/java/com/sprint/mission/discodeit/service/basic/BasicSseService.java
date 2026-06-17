@@ -171,7 +171,7 @@ public class BasicSseService implements SseService {
             .data(data, MediaType.TEXT_PLAIN);
         emitter.send(event);
       } catch (IOException e) {
-        log.error("[SSE] 시스템 이벤트 전송 실패 및 파이프 폐기: receiverId={}, eventName={}", receiverId,
+        log.debug("[SSE] 시스템 이벤트 전송 실패 및 파이프 폐기: receiverId={}, eventName={}", receiverId,
             eventName, e);
         sseEmitterRepository.delete(receiverId, emitter);
       }
