@@ -23,6 +23,14 @@ public class DiscodeitAuthenticationEntryPoint implements AuthenticationEntryPoi
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response,
       AuthenticationException authException) throws IOException, ServletException {
+    String acceptHeader = request.getHeader("Accept");
+    boolean isSseRequest = "/api/sse".equals(request.getRequestURI()) ||
+        (acceptHeader != null && acceptHeader.contains("text/event-stream"));
+
+    if (isSseRequest) {
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized SSE Request");
+      return;
+    }
     resolver.resolveException(request, response, null, authException);
   }
 }
