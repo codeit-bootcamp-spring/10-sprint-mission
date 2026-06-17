@@ -132,7 +132,7 @@ public class BasicSseService implements SseService {
             .data("권한 변경 로그아웃", MediaType.TEXT_PLAIN);
         emitter.send(event);
       } catch (IOException e) {
-        log.warn("[SSE] 강제 종료 이벤트 전송 실패: userId={}", receiverId);
+        log.debug("[SSE] 강제 종료 이벤트 전송 실패: userId={}", receiverId);
       } finally {
         emitter.complete();
         sseEmitterRepository.delete(receiverId, emitter);
@@ -157,7 +157,7 @@ public class BasicSseService implements SseService {
             .data(data, MediaType.APPLICATION_JSON);
         emitter.send(event);
       } catch (IOException e) {
-        log.error("[SSE] 전송 실패 및 파이프 폐기: receiverId={}", receiverId, e);
+        log.debug("[SSE] 전송 실패 및 파이프 폐기: receiverId={}", receiverId, e);
         sseEmitterRepository.delete(receiverId, emitter);
       }
     });
