@@ -43,15 +43,17 @@ public class SseService {
         if(lastEventId != null){
             List<SseMessage> lastMessages = sseMessageRepository.findAllAfter(lastEventId);
             for(SseMessage message : lastMessages){
-                try {
-                    sseEmitter.send(
-                            SseEmitter.event()
-                                    .id(message.getEventId().toString())
-                                    .name(message.getEventName())
-                                    .data(message.getData())
-                    );
-                } catch (IOException e) {
-                    sseEmitter.completeWithError(e);
+                if(message.getReceiverId().equals(receiverId)){
+                    try {
+                        sseEmitter.send(
+                                SseEmitter.event()
+                                        .id(message.getEventId().toString())
+                                        .name(message.getEventName())
+                                        .data(message.getData())
+                        );
+                    } catch (IOException e) {
+                        sseEmitter.completeWithError(e);
+                    }
                 }
             }
         }
@@ -66,11 +68,12 @@ public class SseService {
     }
 
     public void send(Collection<UUID> receiverIds, String eventName, Object data) {
-        SseMessage message = new SseMessage(UUID.randomUUID(), eventName, data);
-        sseMessageRepository.save(message);
 
         for(UUID receiverId : receiverIds){
             List<SseEmitter> emitters = emitterRepository.findAllByReceiverId(receiverId);
+            SseMessage message = new SseMessage(receiverId,UUID.randomUUID(), eventName, data);
+            sseMessageRepository.save(message);
+
             for(SseEmitter emitter : emitters){
                 try{
                     emitter.send(
