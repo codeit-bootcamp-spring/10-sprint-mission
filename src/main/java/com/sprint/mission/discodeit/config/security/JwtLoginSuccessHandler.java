@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
@@ -23,6 +25,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper objectMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
+    private final CacheManager cacheManager;
 
     @Override
     public void onAuthenticationSuccess(
@@ -45,13 +48,16 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         );
         jwtRegistry.registerJwtInformation(jwtInformation);
 
-        ResponseCookie refreshTokenCookie = ResponseCookie.from(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, refreshToken)
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .sameSite("Strict")
-                .maxAge(Duration.ofMinutes(jwtTokenProvider.getRefreshTokenExpirationMinutes()))
-                .build();
+        ResponseCookie refreshTokenCookie = ResponseCookie.from(
+                JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME,
+                refreshToken
+            )
+            .httpOnly(true)
+            .secure(false)
+            .path("/")
+            .sameSite("Strict")
+            .maxAge(Duration.ofMinutes(jwtTokenProvider.getRefreshTokenExpirationMinutes()))
+            .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
@@ -59,6 +65,11 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 userDetails.toAuthenticatedUserDto(),
                 accessToken
         );
+
+        Cache usersCache = cacheManager.getCache("users");
+        if (usersCache != null) {
+            usersCache.clear();
+        }
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");

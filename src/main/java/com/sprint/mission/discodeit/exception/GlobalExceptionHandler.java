@@ -87,6 +87,7 @@ public class GlobalExceptionHandler {
       case INVALID_USER_CREDENTIALS -> HttpStatus.UNAUTHORIZED;
       case PRIVATE_CHANNEL_UPDATE, INVALID_REQUEST -> HttpStatus.BAD_REQUEST;
       case INTERNAL_SERVER_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
+      case NOTIFICATION_NOT_FOUND -> HttpStatus.NOT_FOUND;
     };
   }
 }

@@ -19,8 +19,9 @@ CREATE TABLE binary_contents
     created_at   timestamp with time zone NOT NULL,
     file_name    varchar(255)             NOT NULL,
     size         bigint                   NOT NULL,
-    content_type varchar(100)             NOT NULL
---     ,bytes        bytea        NOT NULL
+    content_type varchar(100)             NOT NULL,
+    updated_at timestamp with time zone,
+    status varchar(20) NOT NULL
 );
 
 -- Channel
@@ -62,7 +63,17 @@ CREATE TABLE read_statuses
     user_id      uuid                     NOT NULL,
     channel_id   uuid                     NOT NULL,
     last_read_at timestamp with time zone NOT NULL,
+    notification_enabled boolean          NOT NULL,
     UNIQUE (user_id, channel_id)
+);
+
+CREATE TABLE notifications
+(
+    id          uuid PRIMARY KEY,
+    created_at  timestamp with time zone NOT NULL,
+    receiver_id uuid                     NOT NULL,
+    title       varchar(255)             NOT NULL,
+    content     text                     NOT NULL
 );
 
 
@@ -107,4 +118,10 @@ ALTER TABLE read_statuses
     ADD CONSTRAINT fk_read_status_channel
         FOREIGN KEY (channel_id)
             REFERENCES channels (id)
+            ON DELETE CASCADE;
+
+ALTER TABLE notifications
+    ADD CONSTRAINT fk_notification_receiver
+        FOREIGN KEY (receiver_id)
+            REFERENCES users (id)
             ON DELETE CASCADE;
