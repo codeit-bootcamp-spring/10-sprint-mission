@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-@Component
+//@Component
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationRequiredEventListener {
