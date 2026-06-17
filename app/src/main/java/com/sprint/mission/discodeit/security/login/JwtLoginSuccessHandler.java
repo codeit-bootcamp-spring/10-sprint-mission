@@ -33,7 +33,6 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final ObjectMapper objectMapper;
   private final JwtRegistry jwtRegistry;
   private final CacheManager cacheManager;
-  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -68,7 +67,6 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         log.debug("[CACHE] 유저 로그인 성공 users 캐시 초기화 완료");
       }
       log.debug("[LOGIN] 로그인 성공: username={}", userDetails.getUsername());
-      eventPublisher.publishEvent(new UserChangedEvent(userDto, Action.UPDATED));
     } else {
       Object principal = authentication.getPrincipal();
       String principalType = (principal != null) ? principal.getClass().getName() : "null";

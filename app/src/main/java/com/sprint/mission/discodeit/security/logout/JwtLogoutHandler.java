@@ -30,7 +30,6 @@ public class JwtLogoutHandler implements LogoutHandler {
   private final JwtRegistry jwtRegistry;
   private final JwtTokenProvider jwtTokenProvider;
   private final CacheManager cacheManager;
-  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public void logout(HttpServletRequest request, HttpServletResponse response,
@@ -56,18 +55,6 @@ public class JwtLogoutHandler implements LogoutHandler {
           try {
             if (jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
               UUID userId = UUID.fromString(jwtTokenProvider.getSubject(refreshToken));
-              UserDto userDto = jwtRegistry.getJwtInformationByUserIdAndRefreshToken(
-                  userId, refreshToken).userDto();
-              UserDto logoutDto = new UserDto(
-                  userDto.id(),
-                  userDto.username(),
-                  userDto.email(),
-                  userDto.profile(),
-                  false,
-                  userDto.role()
-              );
-              eventPublisher.publishEvent(
-                  new UserChangedEvent(logoutDto, Action.UPDATED));
               jwtRegistry.invalidateJwtInformationByUserId(userId);
             }
           } catch (Exception e) {
