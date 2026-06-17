@@ -7,6 +7,10 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.sprint.mission.discodeit.config.jwt.JwtProperties;
 import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.exception.security.InvalidAccessTokenException;
+import com.sprint.mission.discodeit.exception.security.InvalidJwtTokenException;
+import com.sprint.mission.discodeit.exception.security.InvalidRefreshTokenException;
+import com.sprint.mission.discodeit.exception.security.JwtTokenCreateFailedException;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +80,7 @@ public class JwtTokenProvider {
 
         // Refresh Token의 subject와 현재 사용자의 id가 다를 경우, 예외 발생
         if (!userId.equals(jwtClaimsSet.getSubject())) {
-            throw new IllegalArgumentException("사용자 정보와 일치하지 않음");
+            throw new InvalidRefreshTokenException();
         }
 
         // 인증된 사용자 정보를 담은 Access Token 생성
@@ -94,7 +98,7 @@ public class JwtTokenProvider {
             // JWT 토큰의 서명과 만료 시간을 검증
             getAndVerifyToken(token);
             return true;
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidJwtTokenException e) {
             // 토큰 파싱, 서명 검증, 만료 검증 중 하나라도 실패할 경우, 유효하지 않은 토큰(false)
             return false;
         }
@@ -104,7 +108,7 @@ public class JwtTokenProvider {
     public JWTClaimsSet getAndValidateAccessToken(String token) {
         // 토큰이 없거나 공백일 경우, 유효하지 않은 토큰
         if (token == null || token.isBlank()) {
-            throw new IllegalArgumentException("토큰이 존재하지 않습니다.");
+            throw new InvalidJwtTokenException("토큰이 존재하지 않습니다.");
         }
 
         // JWT 토큰의 서명과 만료 시간을 검증하고 claims를 반환
@@ -120,7 +124,7 @@ public class JwtTokenProvider {
     public JWTClaimsSet getAndValidateRefreshToken(String token) {
         // 토큰이 없거나 공백일 경우, 유효하지 않은 토큰
         if (token == null || token.isBlank()) {
-            throw new IllegalArgumentException("토큰이 존재하지 않습니다.");
+            throw new InvalidJwtTokenException("토큰이 존재하지 않습니다.");
         }
 
         // JWT 토큰의 서명과 만료 시간을 검증하고 claims를 반환
@@ -139,7 +143,7 @@ public class JwtTokenProvider {
 
           return signedJWT.getJWTClaimsSet().getSubject();
         } catch (ParseException e) {
-            throw new IllegalArgumentException("Jwt에서 subject 추출 불가능합니다.");
+            throw new InvalidJwtTokenException("Jwt에서 subject 추출에 실패했습니다.", e);
         }
     }
 
@@ -162,7 +166,7 @@ public class JwtTokenProvider {
             return signedJWT.serialize();
         } catch (JOSEException e) {
             // JWT 서명 생성 과정에서 오류가 발생할 경우, 서버 내부의 토큰 생성 실패로 보고 예외 발생
-            throw new IllegalStateException("JWT 생성에 실패했습니다.", e);
+            throw new JwtTokenCreateFailedException("JWT 생성에 실패했습니다.", e);
         }
     }
 
@@ -177,7 +181,7 @@ public class JwtTokenProvider {
             // JWT 서명이 secret key로 검증되지 않을 경우, 예외 발생
             if (!signedJWT.verify(jwsVerifier)) {
                 // 변조되었거나 신뢰할 수 없는 토큰
-                throw new IllegalArgumentException("JWT 서명이 유효하지 않습니다.");
+                throw new InvalidJwtTokenException("JWT 서명이 유효하지 않습니다.");
             }
 
             JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
@@ -186,13 +190,15 @@ public class JwtTokenProvider {
             // 만료 시간이 없거나 이미 지난 경우, 예외 발생
             if (expirationTime == null || expirationTime.before(new Date())) {
                 // 사용할 수 없는 토큰
-                throw new IllegalArgumentException("JWT가 만료되었습니다.");
+                throw new InvalidJwtTokenException("JWT가 만료되었습니다.");
             }
 
             return jwtClaimsSet;
-        } catch (ParseException | JOSEException e) {
+        } catch (ParseException e) {
             // JWT 문자열 파싱 실패나 서명 검증 객체 처리 중 오류가 발생할 경우, 예외 발생
-            throw new IllegalArgumentException("JWT 검증에 실패");
+            throw new InvalidJwtTokenException("JWT 파싱에 실패했습니다.", e);
+        } catch (JOSEException e) {
+            throw new InvalidJwtTokenException("JWT 검증에 실패했습니다.", e);
         }
     }
 
@@ -208,11 +214,11 @@ public class JwtTokenProvider {
 
             // claims의 token_type이 access_token이 아닐 경우, 예외 발생
             if (!ACCESS_TOKEN_TYPE.equals(tokenType)) {
-                throw new IllegalArgumentException("Access Token이 아닙니다.");
+                throw new InvalidAccessTokenException();
             }
         } catch (ParseException e) {
             // token_type claim의 형식이 잘못된 경우, 파싱 처리 오류로 예외 발생
-            throw new IllegalArgumentException("TOKEN_TYPE이 잘못된 형식입나다.");
+            throw new InvalidAccessTokenException(e);
         }
     }
 
@@ -223,11 +229,11 @@ public class JwtTokenProvider {
 
             // claims의 token_type이 refresh_token이 아닐 경우, 예외 발생
             if (!REFRESH_TOKEN_TYPE.equals(tokenType)) {
-                throw new IllegalArgumentException("Refresh Token이 아닙니다.");
+                throw new InvalidRefreshTokenException();
             }
         } catch (ParseException e) {
             // token_type claim의 형식이 잘못된 경우, 파싱 처리 오류로 예외 발생
-            throw new IllegalArgumentException("TOKEN_TYPE이 잘못된 형식입니다.");
+            throw new InvalidRefreshTokenException(e);
         }
     }
 }

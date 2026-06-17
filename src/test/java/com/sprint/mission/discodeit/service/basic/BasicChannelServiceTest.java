@@ -317,8 +317,8 @@ class BasicChannelServiceTest {
             UUID readStatusId3 = UUID.randomUUID();
             UUID readStatusId4 = UUID.randomUUID();
 
-            ReadStatus readStatus3 = new ReadStatus(user, channel3, null);
-            ReadStatus readStatus4 = new ReadStatus(user, channel4, Instant.now());
+            ReadStatus readStatus3 = new ReadStatus(user, channel3, null, true);
+            ReadStatus readStatus4 = new ReadStatus(user, channel4, Instant.now(), true);
 
             ReflectionTestUtils.setField(readStatus3, "id", readStatusId3);
             ReflectionTestUtils.setField(readStatus4, "id", readStatusId4);

@@ -38,8 +38,20 @@ public enum ErrorCode {
     DUPLICATED_READ_STATUS("이미 존재하는 마지막 메시지 읽음 상태 정보가 있습니다."),
     READ_STATUS_NOT_FOUND("마지막 메시지 읽음 상태 정보를 찾을 수 없습니다."),
 
+    // Notification
+    NOTIFICATION_NOT_FOUNT("알림을 찾을 수 없습니다."),
+
     // Security - Token
+    JWT_TOKEN_CREATE_FAILED("JWT Token 생성에 실패했습니다."),
+    INVALID_JWT_TOKEN("유효하지 않은 Token입니다."),
+    INVALID_ACCESS_TOKEN("유효하지 않은 Access Token입니다."),
     INVALID_REFRESH_TOKEN("유효하지 않은 Refresh Token입니다."),
+    INVALID_JWT_INFORMATION("유효하지 않은 Jwt Information입니다."),
+    JWT_INFORMATION_NOT_FOUND("Jwt Information을 찾을 수 없습니다."),
+
+    // Event
+    EVENT_SERIALIZATION_FAILED("이벤트 직렬화에 실패했습니다."),
+    EVENT_DESERIALIZATION_FAILED("이벤트 역직렬화에 실패했습니다."),
 
     // Server
     INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."); // 커스텀 예외로 처리하지 못하는 예외 코드

@@ -9,6 +9,9 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true # 실행되는 sql문을 console에 출력
+    properties:
+      hibernate:
+        format_sql: false # SQL을 줄바꿈/들여쓰기 형태로 보기 좋게 출력
   sql:
     init:
       mode: always # 애플리케이션 실행 시 sql 스크립트 실행
@@ -22,7 +25,7 @@ logging:
 #    org.springframework.transaction.interceptor: TRACE # 트랜잭션 인터셉터 로그
 #    org.springframework.transaction.support: TRACE # 트랜잭션 처리 상세 로그
 #    org.springframework.orm.jpa: TRACE # Spring ORM/JPA 상세 로그
-    org.springframework.security: TRACE # Spring Security 전체 로그
+    org.springframework.security: INFO # Spring Security 전체 로그
 
 management:
   endpoint:

@@ -15,7 +15,7 @@ import java.util.UUID;
 // MVC Interceptor
 public class MDCLoggingInterceptor implements HandlerInterceptor {
 
-    private static final String MDC_REQUEST_ID = "requestId";
+    public static final String MDC_REQUEST_ID = "requestId";
     private static final String MDC_REQUEST_METHOD = "requestMethod";
     private static final String MDC_REQUEST_URI = "requestUri";
 

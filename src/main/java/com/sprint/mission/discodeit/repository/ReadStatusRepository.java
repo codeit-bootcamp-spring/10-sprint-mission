@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
+
     Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId);
 
     @Query(value = "SELECT r FROM ReadStatus AS r " +
@@ -21,22 +22,28 @@ public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
     @Query(value = "SELECT r FROM ReadStatus AS r " +
             "LEFT JOIN FETCH r.channel " +
             "LEFT JOIN FETCH r.user " +
-            "Where r.user.id = :userId")
+            "WHERE r.user.id = :userId")
     List<ReadStatus> findAllByUserIdWithUserAndChannel(@Param("userId") UUID userId);
 
     @Query(value = "SELECT r FROM ReadStatus AS r " +
             "LEFT JOIN FETCH r.channel " +
             "LEFT JOIN FETCH r.user AS u " +
             "LEFT JOIN FETCH u.profile " +
-            "Where r.channel.id = :channelId")
+            "WHERE r.channel.id = :channelId")
     List<ReadStatus> findAllByChannelIdWithUserAndChannel(@Param("channelId") UUID channelId);
 
     @Query(value = "SELECT r FROM ReadStatus AS r " +
             "LEFT JOIN FETCH r.channel " +
             "LEFT JOIN FETCH r.user AS u " +
             "LEFT JOIN FETCH u.profile " +
-            "Where r.channel.id IN :channelIds")
+            "WHERE r.channel.id IN :channelIds")
     List<ReadStatus> findAllByChannelIdsWithUserAndChannel(@Param("channelIds") List<UUID> channelIds);
+
+    @Query(value = "SELECT r FROM ReadStatus AS r " +
+            "LEFT JOIN FETCH r.user AS u " +
+            "WHERE r.channel.id = :channelId " +
+            "and r.notificationEnabled IS TRUE")
+    List<ReadStatus> findAllByChannelIdAndNotificationEnabledIsTrue(UUID channelId);
 
     void deleteByChannelId(UUID channelId);
 

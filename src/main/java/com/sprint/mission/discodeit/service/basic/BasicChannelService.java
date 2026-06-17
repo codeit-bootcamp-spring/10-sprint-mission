@@ -18,6 +18,8 @@ import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +41,7 @@ public class BasicChannelService implements ChannelService {
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
 
+    @CacheEvict(value = "channelList", allEntries = true)
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     public ChannelDto createPublicChannel(PublicChannelCreateRequest request) {
@@ -58,9 +61,11 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDto(channel);
     }
 
+    @CacheEvict(value = "channelList", allEntries = true)
     @Override
     public ChannelDto createPrivateChannel(PrivateChannelCreateRequest request) {
-        log.debug("[PRIVATE_CHANNEL_CREATE] 비공개 채널 생성 시작: count={}", request.participantIds() != null ? request.participantIds().size() : 0);
+        log.debug("[PRIVATE_CHANNEL_CREATE] 비공개 채널 생성 시작: count={}",
+                request.participantIds() != null ? request.participantIds().size() : 0);
 
         if (request.participantIds() == null || request.participantIds().isEmpty()) {
             throw new PrivateChannelParticipantRequiredException();
@@ -76,7 +81,7 @@ public class BasicChannelService implements ChannelService {
 
         Instant now = Instant.now();
         participants.forEach(participant -> {
-            ReadStatus participantReadStatus = new ReadStatus(participant, channel, now);
+            ReadStatus participantReadStatus = new ReadStatus(participant, channel, now, true);
             readStatusRepository.save(participantReadStatus);
         });
 
@@ -100,6 +105,7 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDto(channel);
     }
 
+    @Cacheable(value = "channelList", key = "#userId", unless = "#result.isEmpty()")
     @Transactional(readOnly = true)
     @Override
     public List<ChannelDto> findAllByUserId(UUID userId) {
@@ -123,22 +129,25 @@ public class BasicChannelService implements ChannelService {
                 .toList();
 
         // 각 채널의 마지막 메시지 createdAt 시간
-        Map<UUID, Instant> lastMessageAtMap = messageRepository.findLastMessageAtDtoByChannelIds(channelIds).stream()
-                .collect(Collectors.toMap(
-                                dto -> dto.id(),
-                                dto -> dto.lastMessageAt()
-                        )
-                );
+        Map<UUID, Instant> lastMessageAtMap =
+                messageRepository.findLastMessageAtDtoByChannelIds(channelIds)
+                        .stream()
+                        .collect(Collectors.toMap(
+                                        dto -> dto.id(),
+                                        dto -> dto.lastMessageAt()
+                                )
+                        );
 
         // 채널별 참가자 목록 조회
         Map<UUID, List<UserDto>> participantMap =
-                readStatusRepository.findAllByChannelIdsWithUserAndChannel(privateChannelIds).stream()
+                readStatusRepository.findAllByChannelIdsWithUserAndChannel(privateChannelIds)
+                        .stream()
                         .collect(
                                 Collectors.groupingBy(readStatus ->
                                                 readStatus.getChannel().getId(),
                                         Collectors.mapping(readStatus ->
-                                                userMapper.toDto(readStatus.getUser()),
-                                        Collectors.toList()
+                                                        userMapper.toDto(readStatus.getUser()),
+                                                Collectors.toList()
                                         )
                                 )
                         );
@@ -158,6 +167,7 @@ public class BasicChannelService implements ChannelService {
         return channelDtoList;
     }
 
+    @CacheEvict(value = "channelList", allEntries = true)
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
@@ -190,6 +200,7 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDto(channel);
     }
 
+    @CacheEvict(value = "channelList", allEntries = true)
     @PreAuthorize("@channelAuthorizationEvaluator.canDelete(#channelId, authentication)")
     @Override
     public void delete(UUID channelId) {

@@ -12,6 +12,33 @@ spring:
     open-in-view: false
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  cache:
+    type: ${CACHE_TYPE:caffeine}
+    cache-names:
+      - channelList
+      - notificationList
+      - userList
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterWrite=300s,
+        recordStats
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:discodeit-group}
+      auto-offset-reset: ${KAFKA_AUTO_OFFSET_RESET:earliest}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 discodeit:
   admin:
@@ -42,10 +69,13 @@ management:
   endpoints:
     web:
       exposure:
-        include: 'health, info, metrics, loggers'
+        include: 'health, info, metrics, loggers, caches'
   info:
     env:
       enabled: true
+  observations:
+    annotations:
+      enabled: true # @Timed 같은 Micrometer 관찰/metric 애너테이션 동작 설정
 
 info:
   app:

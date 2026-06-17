@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.security.jwt;
 
 import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.exception.security.InvalidJwtInformationException;
+import com.sprint.mission.discodeit.exception.security.InvalidJwtTokenException;
 import lombok.Getter;
 
 @Getter
@@ -27,7 +29,7 @@ public class JwtInformation {
     ) {
         if ((accessToken == null || accessToken.isBlank())
                 || (refreshToken == null || refreshToken.isBlank())) {
-            throw new IllegalArgumentException("Token은 필수입니다.");
+            throw new InvalidJwtInformationException();
         }
 
         this.accessToken = accessToken;

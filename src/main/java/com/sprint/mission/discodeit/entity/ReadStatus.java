@@ -7,10 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
- * 사용자가 채널 별 마지막으로 메세지를 읽은 시간을 표현하는 도메인 모델로,
+ * 사용자가 채널 별 마지막으로 메세지를 읽은 시간 및 알림 여부를 표현하는 도메인 모델로,
  * 사용자별 각 채널에 읽지 않은 메시지를 확인하기 위해 활용
  */
 @Entity
@@ -39,15 +38,25 @@ public class ReadStatus extends BaseUpdatableEntity {
     @Column(nullable = false)
     private Instant lastReadAt;
 
+    @Column(nullable = false)
+    private boolean notificationEnabled;
+
     // 생성자
-    public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+    public ReadStatus(
+            User user,
+            Channel channel,
+            Instant lastReadAt,
+            boolean notificationEnabled
+    ) {
         this.user = user;
         this.channel = channel;
         this.lastReadAt = lastReadAt;
+        this.notificationEnabled = notificationEnabled;
     }
 
     // update - 메세지 확인 시, 시간 업데이트
-    public void updateLastReadTime(Instant lastReadAt) {
-        this.lastReadAt = lastReadAt;
+    public void update(Instant lastReadAt, Boolean notificationEnabled) {
+        if (lastReadAt != null) this.lastReadAt = lastReadAt;
+        if (notificationEnabled != null) this.notificationEnabled = notificationEnabled;
     }
 }

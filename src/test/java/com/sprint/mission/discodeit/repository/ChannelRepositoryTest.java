@@ -64,10 +64,10 @@ class ChannelRepositoryTest {
         Channel channel3 = createChannel(ChannelType.PRIVATE, "test3Channel", "test3Channel입니다.");
         Channel channel4 = createChannel(ChannelType.PRIVATE, "test4Channel", "test4Channel입니다.");
 
-        readStatusRepository.save(new ReadStatus(user1, channel1, Instant.now()));
-        readStatusRepository.save(new ReadStatus(user1, channel2, Instant.now()));
-        readStatusRepository.save(new ReadStatus(user1, channel3, Instant.now()));
-        readStatusRepository.save(new ReadStatus(user2, channel4, Instant.now()));
+        readStatusRepository.save(new ReadStatus(user1, channel1, Instant.now(), false));
+        readStatusRepository.save(new ReadStatus(user1, channel2, Instant.now(), false));
+        readStatusRepository.save(new ReadStatus(user1, channel3, Instant.now(), false));
+        readStatusRepository.save(new ReadStatus(user2, channel4, Instant.now(), false));
 
         // 영속성 해제
         testEntityManager.flush();
@@ -94,8 +94,8 @@ class ChannelRepositoryTest {
         Channel channel3 = createChannel(ChannelType.PRIVATE, "test3Channel", "test3Channel입니다.");
         Channel channel4 = createChannel(ChannelType.PRIVATE, "test4Channel", "test4Channel입니다.");
 
-        readStatusRepository.save(new ReadStatus(user2, channel3, Instant.now()));
-        readStatusRepository.save(new ReadStatus(user2, channel4, Instant.now()));
+        readStatusRepository.save(new ReadStatus(user2, channel3, Instant.now(), false));
+        readStatusRepository.save(new ReadStatus(user2, channel4, Instant.now(), false));
 
         // 영속성 해제
         testEntityManager.flush();

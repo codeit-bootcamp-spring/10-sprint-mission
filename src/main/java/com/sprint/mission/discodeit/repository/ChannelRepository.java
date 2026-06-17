@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChannelRepository extends JpaRepository<Channel, UUID> {
+
     @Query(value = "SELECT DISTINCT c FROM Channel AS c " +
             "LEFT JOIN ReadStatus AS r ON r.channel = c " +
             "WHERE c.type = :type OR r.user.id = :userId")

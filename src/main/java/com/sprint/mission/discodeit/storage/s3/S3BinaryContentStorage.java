@@ -2,14 +2,21 @@ package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.config.aws.AwsProperties;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.AwsServerConnectFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentReadFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentSaveFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.PresignedUrlCreateFailedException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -26,6 +33,8 @@ import java.time.Duration;
 import java.util.UUID;
 
 @Component
+@Slf4j
+@RequiredArgsConstructor
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
 public class S3BinaryContentStorage implements BinaryContentStorage {
 
@@ -33,12 +42,17 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
 
-    public S3BinaryContentStorage(AwsProperties awsProperties, S3Client s3Client, S3Presigner s3Presigner) {
-        this.awsProperties = awsProperties;
-        this.s3Client = s3Client;
-        this.s3Presigner = s3Presigner;
-    }
+    private final ApplicationEventPublisher applicationEventPublisher;
 
+    @Retryable(
+            retryFor = {
+                    BinaryContentSaveFailedException.class,
+                    AwsServerConnectFailedException.class
+            },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000, multiplier = 2),
+            recover = "putFallback"
+    )
     @Override
     public UUID put(UUID binaryContentId, byte[] bytes) {
         String key = resolveKey(binaryContentId);
@@ -59,6 +73,40 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         }
 
         return binaryContentId;
+    }
+
+    // BinaryContentSaveFailedException 예외 발생 시 실행되는 복구 메서드
+    @Recover
+    public UUID putFallback(BinaryContentSaveFailedException e, UUID binaryContentId) {
+        log.error("[S3_UPLOAD_FALLBACK] S3 업로드 Fallback 실행: errorMessage={}",
+                e.getMessage(), e);
+
+        applicationEventPublisher.publishEvent(
+                new S3UploadFailedEvent(
+                        binaryContentId,
+                        e
+                )
+        );
+
+        // binaryContent 상태를 Fail로 변경시키기 위해서는 예외를 던져야 함.
+        throw e;
+    }
+
+    // AwsServerConnectFailedException 예외 발생 시 실행되는 복구 메서드
+    @Recover
+    public UUID putFallback(AwsServerConnectFailedException e, UUID binaryContentId) {
+        log.error("[S3_UPLOAD_FALLBACK] S3 업로드 Fallback 실행: errorMessage={}",
+                e.getMessage(), e);
+
+        applicationEventPublisher.publishEvent(
+                new S3UploadFailedEvent(
+                        binaryContentId,
+                        e
+                )
+        );
+
+        // binaryContent 상태를 Fail로 변경시키기 위해서는 예외를 던져야 함.
+        throw e;
     }
 
     @Override

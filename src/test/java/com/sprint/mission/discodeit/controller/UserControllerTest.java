@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
@@ -83,7 +84,7 @@ class UserControllerTest {
 
     private BinaryContentDto createBinaryContentDto(String fileName, String contentType, Long size) {
         UUID binaryContentId = UUID.randomUUID();
-        return new BinaryContentDto(binaryContentId, fileName, size, contentType);
+        return new BinaryContentDto(binaryContentId, fileName, size, contentType, BinaryContentStatus.SUCCESS);
     }
 
     @Nested

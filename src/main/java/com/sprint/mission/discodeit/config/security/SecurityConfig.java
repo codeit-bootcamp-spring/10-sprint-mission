@@ -67,10 +67,19 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
                         // 회원가입
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        // Swagger / API Docs
+                        .requestMatchers(
+                                "/swagger-ui.html", "/swagger-ui/**",
+                                "/v3/api-docs", "/v3/api-docs/**"
+                        ).permitAll()
+                        // Actuator (prod일 때 조정 필요)
+                        .requestMatchers("/actuator/**").permitAll()
+                        // 프론트엔드
+                        .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
                         // 그 외 나머지 `/api/**` 요청
                         .requestMatchers("/api/**").authenticated()
-                        // `/api/**` 가 아닌 요청 (`/swagger-ui.html`, `/actuator/**` 등)
-                        .anyRequest().permitAll()
+                        // 그 외 나머지 `/api/**` 가 아닌 요청
+                        .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
                         // 인증되지 않은 사용자가 인증이 필요한 API에 접근했을 때 실행
@@ -86,11 +95,11 @@ public class SecurityConfig {
 
         SecurityFilterChain chain = http.build();
 
-        log.debug("========== [Spring Security Filter List - START] ==========");
-        chain.getFilters().forEach(filter ->
-                log.debug("{}", filter.getClass().getSimpleName())
-        );
-        log.debug("========== [Spring Security Filter List - END] ==========");
+//        log.debug("========== [Spring Security Filter List - START] ==========");
+//        chain.getFilters().forEach(filter ->
+//                log.debug("{}", filter.getClass().getSimpleName())
+//        );
+//        log.debug("========== [Spring Security Filter List - END] ==========");
 
         return chain;
     }

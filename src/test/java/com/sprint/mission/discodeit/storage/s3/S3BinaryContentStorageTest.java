@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.config.aws.AwsProperties;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.exception.binarycontent.AwsServerConnectFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentReadFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentSaveFailedException;
@@ -173,7 +174,7 @@ class S3BinaryContentStorageTest {
 
     private BinaryContentDto createBinaryContentDto(String fileName, String contentType, Long size) {
         UUID binaryContentId = UUID.randomUUID();
-        return new BinaryContentDto(binaryContentId, fileName, size, contentType);
+        return new BinaryContentDto(binaryContentId, fileName, size, contentType, BinaryContentStatus.SUCCESS);
     }
 
     @Nested

@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.*;
@@ -15,6 +16,10 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,9 +41,14 @@ public class BasicUserService implements UserService {
     private final BinaryContentStorage binaryContentStorage;
 
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
+    @CacheEvict(value = "userList", allEntries = true)
     @Override
-    public UserDto create(UserCreateRequest request, MultipartFile profile) {
+    public UserDto create(
+            UserCreateRequest request,
+            MultipartFile profile
+    ) {
         log.debug("[USER_CREATE] 사용자 등록 시작: email={}, username={}",
                 request.email(), request.username());
 
@@ -60,10 +70,17 @@ public class BasicUserService implements UserService {
                         profile.getSize()
                 );
                 binaryContentRepository.save(binaryContent); // 없으면 UUID가 생성 안됨
-                binaryContentStorage.put(binaryContent.getId(), bytes);
 
-                log.info("[USER_CREATE_PROFILE_SAVE] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}",
-                        binaryContent.getId(), binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
+                UUID binaryContentId = binaryContent.getId();
+                applicationEventPublisher.publishEvent(
+                        new BinaryContentCreatedEvent(
+                                binaryContentId,
+                                bytes
+                        )
+                );
+
+                log.info("[USER_CREATE_PROFILE_UPLOAD_EVENT_PUBLISH] 프로필 업로드 이벤트 발행: profileId={}, fileName={}, contentType={}, count={}",
+                        binaryContentId, binaryContent.getFileName(), binaryContent.getContentType(), binaryContent.getSize());
 
             } catch (IOException e) {
                 throw new ProfileUploadFailedException(email, username, e);
@@ -95,6 +112,7 @@ public class BasicUserService implements UserService {
         return userMapper.toDto(user);
     }
 
+    @Cacheable(value = "userList", unless = "#result.isEmpty()")
     @Transactional(readOnly = true)
     @Override
     public List<UserDto> findAll() {
@@ -109,9 +127,17 @@ public class BasicUserService implements UserService {
         return userDtoList;
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "userList", allEntries = true),
+            @CacheEvict(value = "channelList", allEntries = true) // 채팅창 내 사용자 정보
+    })
     @PreAuthorize("#userId != null and #userId.equals(authentication.principal.userDto.id)")
     @Override
-    public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile profile) {
+    public UserDto update(
+            UUID userId,
+            UserUpdateRequest request,
+            MultipartFile profile
+    ) {
         log.debug("[USER_UPDATE] 사용자 정보 수정 시작: userId={}, newEmail={}, newUsername={}, isInputNewPassword={}",
                 userId, request.newEmail(), request.newUsername(), request.newPassword() != null);
 
@@ -119,9 +145,18 @@ public class BasicUserService implements UserService {
         User user = validateAndGetUserByUserId(userId);
 
         // 입력값과 현재 값을 비교해서 같으면 null, 새롭게 입력된 값이면 입력값
-        String newEmail = changedString(request.newEmail(), user.getEmail());
-        String newUsername = changedString(request.newUsername(), user.getUsername());
-        String newPassword = changedPassword(request.newPassword(), user.getPassword());
+        String newEmail = changedString(
+                request.newEmail(),
+                user.getEmail()
+        );
+        String newUsername = changedString(
+                request.newUsername(),
+                user.getUsername()
+        );
+        String newPassword = changedPassword(
+                request.newPassword(),
+                user.getPassword()
+        );
 
         // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
         byte[] bytes = null;
@@ -153,9 +188,14 @@ public class BasicUserService implements UserService {
                     (long) bytes.length
             );
             binaryContentRepository.save(newProfile); // 없으면 UUID가 생성 안됨
-            binaryContentStorage.put(newProfile.getId(), bytes);
+            applicationEventPublisher.publishEvent(
+                    new BinaryContentCreatedEvent(
+                            newProfile.getId(),
+                            bytes
+                    )
+            );
 
-            log.info("[USER_UPDATE_PROFILE_SAVE] 프로필 저장 완료: profileID={}, fileName={}, contentType={}, count={}",
+            log.info("[USER_UPDATE_PROFILE_UPLOAD_EVENT_PUBLISH] 프로필 업로드 이벤트 발행: profileId={}, fileName={}, contentType={}, count={}",
                     newProfile.getId(), newProfile.getFileName(), newProfile.getContentType(), newProfile.getSize());
         }
 
@@ -167,15 +207,16 @@ public class BasicUserService implements UserService {
         return userMapper.toDto(user);
     }
 
+    @CacheEvict(value = "userList", allEntries = true)
     @PreAuthorize("#userId != null and #userId.equals(authentication.principal.userDto.id)")
     @Override
     public void delete(UUID userId) {
         log.debug("[USER_DELETE] 사용자 삭제 시작: userId={}", userId);
 
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        validateAndGetUserByUserId(userId);
+        User user = validateAndGetUserByUserId(userId);
 
-        userRepository.deleteById(userId);
+        userRepository.delete(user);
 
         log.info("[USER_DELETE] 사용자 삭제 완료: userId={}", userId);
     }
@@ -219,15 +260,26 @@ public class BasicUserService implements UserService {
     }
 
     // 전부 입력 X이거나 전부 현재 값과 동일(전부 null)할 때 검증
-    private void validateAllRequestExistingOrNull(String email, String username, String password, boolean binaryContentChanged) {
-        if (email == null && username == null && password == null && !binaryContentChanged
+    private void validateAllRequestExistingOrNull(
+            String email,
+            String username,
+            String password,
+            boolean binaryContentChanged
+    ) {
+        if (email == null
+                && username == null
+                && password == null
+                && !binaryContentChanged
         ) {
             throw new NoChangeValueException("All UpdateRequestField", null);
         }
     }
 
     // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
-    private boolean isProfileChanged(byte[] bytes, BinaryContent profile) {
+    private boolean isProfileChanged(
+            byte[] bytes,
+            BinaryContent profile
+    ) {
         if (profile == null) { // 기존에 BinaryContent 없을 때
             return true; // 새로운 BinaryContent 들어옴
         }

@@ -34,7 +34,6 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -109,7 +108,7 @@ class MessageControllerTest {
 
     private BinaryContentDto createBinaryContent(String fileName, String contentType, Long size) {
         UUID binaryContentId = UUID.randomUUID();
-        return new BinaryContentDto(binaryContentId, fileName, size, contentType);
+        return new BinaryContentDto(binaryContentId, fileName, size, contentType, BinaryContentStatus.SUCCESS);
     }
 
     @Nested

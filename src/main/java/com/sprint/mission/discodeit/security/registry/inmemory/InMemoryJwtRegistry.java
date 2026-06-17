@@ -1,10 +1,15 @@
 package com.sprint.mission.discodeit.security.registry.inmemory;
 
+import com.sprint.mission.discodeit.exception.security.InvalidJwtInformationException;
+import com.sprint.mission.discodeit.exception.security.InvalidJwtTokenException;
+import com.sprint.mission.discodeit.exception.security.InvalidRefreshTokenException;
+import com.sprint.mission.discodeit.exception.security.JwtInformationNotFoundException;
 import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +37,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     /**
      * 로그인 성공 시 JwtInformation 등록(저장)
      */
+    @CacheEvict(value = "userList", allEntries = true)
     @Override
     public JwtInformation registerJwtInformation(JwtInformation jwtInformation) {
         UUID userId = jwtInformation.getUserDto().id();
@@ -62,6 +68,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     /**
      * UserId로 해당 유저의 모든 JwtInformation 삭제
      */
+    @CacheEvict(value = "userList", allEntries = true)
     @Override
     public void invalidateJwtInformationByUserId(UUID userId) {
         // InMemory(map)에서 제거
@@ -143,11 +150,11 @@ public class InMemoryJwtRegistry implements JwtRegistry {
             JwtInformation newJwtInformation
     ) {
         if (refreshToken == null || refreshToken.isBlank()) {
-            throw new IllegalArgumentException("유효하지 않은 Refresh Token입니다.");
+            throw new InvalidRefreshTokenException();
         }
 
         if (newJwtInformation == null || newJwtInformation.getUserDto() == null) {
-            throw new IllegalArgumentException("새로운 JwtInformation이 유효하지 않습니다.");
+            throw new InvalidJwtInformationException();
         }
 
         UUID oldUserId = getUserIdInRefreshToken(refreshToken);
@@ -155,7 +162,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
         // 기존 userId와 newJwtInformation의 userId 비교
         if (!oldUserId.equals(newUserId)) {
-            throw new IllegalArgumentException("Refresh Token과 사용자 정보가 일치하지 않습니다.");
+            throw new InvalidRefreshTokenException();
         }
 
         String newAccessToken = newJwtInformation.getAccessToken();
@@ -165,7 +172,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         if ((newRefreshToken == null || newRefreshToken.isBlank())
                 || (newAccessToken == null || newAccessToken.isBlank())
         ) {
-            throw new IllegalArgumentException("새로운 Access/Refresh Token이 비어있습니다.");
+            throw new InvalidJwtTokenException("새로운 Access/Refresh Token이 비어있습니다.");
         }
 
         JwtInformation oldJwtInformation = getJwtInformationByRefreshToken(
@@ -186,6 +193,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     /**
      * 만료된 JwtInformation 삭제
      */
+    @CacheEvict(value = "userList", allEntries = true) // token 만료로도 online 상태 변경되기 때문
     @Scheduled(fixedDelay = 1000 * 60 * 5) // 5분 간격
     @Override
     public void clearExpiredJwtInformation() {
@@ -228,7 +236,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     private JwtInformation getJwtInformationByRefreshToken(UUID userId, String refreshToken) {
         Queue<JwtInformation> jwtInformationQueue = getActiveJwtInformationQueue(userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Active Jwt Information을 찾을 수 없습니다.")
+                        new JwtInformationNotFoundException("Active Jwt Information을 찾을 수 없습니다.")
                 );
 
         return jwtInformationQueue.stream()
@@ -237,7 +245,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
                 )
                 .findFirst()
                 .orElseThrow(()->
-                        new IllegalArgumentException("기존 JwtInformation을 찾을 수 없음")
+                        new JwtInformationNotFoundException("기존 JwtInformation을 찾을 수 없음")
                 );
     }
 

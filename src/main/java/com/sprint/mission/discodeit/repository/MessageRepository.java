@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
+
     @Query(value = "SELECT DISTINCT m FROM Message AS m " +
             "LEFT JOIN FETCH m.channel " +
             "LEFT JOIN FETCH m.author " +

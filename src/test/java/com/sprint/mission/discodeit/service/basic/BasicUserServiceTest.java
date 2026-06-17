@@ -5,8 +5,10 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.*;
@@ -22,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -55,6 +58,9 @@ class BasicUserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private BasicUserService basicUserService;
@@ -106,7 +112,7 @@ class BasicUserServiceTest {
             verify(userRepository).existsByUsername(request.username());
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userRepository).save(argThat(user ->
                     user.getPassword().equals("encodedPassword")));
@@ -133,11 +139,16 @@ class BasicUserServiceTest {
             BinaryContent profile = new BinaryContent(profileFile.getOriginalFilename(), profileFile.getContentType(), profileFile.getSize());
             ReflectionTestUtils.setField(profile, "id", profileId);
 
-            BinaryContentDto profileDto = new BinaryContentDto(profileId, profileFile.getOriginalFilename(), profileFile.getSize(), profileFile.getContentType());
+            BinaryContentDto profileDto = new BinaryContentDto(profileId, profileFile.getOriginalFilename(), profileFile.getSize(), profileFile.getContentType(), BinaryContentStatus.SUCCESS);
             UserDto expectedUserDto = new UserDto(userId, request.username(), request.email(), profileDto, false, Role.USER);
 
             given(userRepository.existsByEmail(request.email())).willReturn(false);
             given(userRepository.existsByUsername(request.username())).willReturn(false);
+            given(binaryContentRepository.save(any(BinaryContent.class))).willAnswer(invocation -> {
+                BinaryContent binaryContent = invocation.getArgument(0);
+                ReflectionTestUtils.setField(binaryContent, "id", profileId);
+                return binaryContent;
+            });
             given(userMapper.toDto(any(User.class))).willReturn(expectedUserDto);
 
             // when(실행)
@@ -153,7 +164,7 @@ class BasicUserServiceTest {
             verify(userRepository).existsByUsername(request.username());
 
             verify(binaryContentRepository).save(any(BinaryContent.class));
-            verify(binaryContentStorage).put(any(), eq(profileBytes));
+            verify(applicationEventPublisher).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userRepository).save(any(User.class));
             verify(userMapper).toDto(any(User.class));
@@ -172,7 +183,7 @@ class BasicUserServiceTest {
                     () -> basicUserService.create(request, null));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userRepository, never()).save(any(User.class));
             verify(userMapper, never()).toDto(any(User.class));
@@ -192,7 +203,7 @@ class BasicUserServiceTest {
                     () -> basicUserService.create(request, null));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userRepository, never()).save(any(User.class));
             verify(userMapper, never()).toDto(any(User.class));
@@ -216,7 +227,7 @@ class BasicUserServiceTest {
                     () -> basicUserService.create(request, profile));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userRepository, never()).save(any(User.class));
             verify(userMapper, never()).toDto(any(User.class));
@@ -379,7 +390,8 @@ class BasicUserServiceTest {
             given(newProfileFile.getOriginalFilename()).willReturn("newProfile");
             given(newProfileFile.getContentType()).willReturn("image/png");
 
-            BinaryContentDto newProfileDto = new BinaryContentDto(null, newProfileFile.getOriginalFilename(), newProfileFile.getSize(), newProfileFile.getContentType());
+            UUID newProfileId = UUID.randomUUID();
+            BinaryContentDto newProfileDto = new BinaryContentDto(newProfileId, newProfileFile.getOriginalFilename(), newProfileFile.getSize(), newProfileFile.getContentType(), BinaryContentStatus.SUCCESS);
             UserDto expectedUpdateUserDto = new UserDto(userId, "updateUsername", "updateEmail@gmail.com", newProfileDto, false, Role.USER);
 
             given(userRepository.findByIdWithProfile(userId)).willReturn(Optional.of(user));
@@ -387,6 +399,16 @@ class BasicUserServiceTest {
             given(binaryContentStorage.get(oldProfileId)).willReturn(new ByteArrayInputStream(oldProfileBytes));
             given(userRepository.isUsernameUsedByOther(userId, request.newUsername())).willReturn(false);
             given(userRepository.isEmailUsedByOther(userId, request.newEmail())).willReturn(false);
+
+            // 해당 메서드 호출 시, 동작 직접 정의
+            given(binaryContentRepository.save(any(BinaryContent.class))).willAnswer(invocation -> {
+                // invocation은 실제 mock 메서드가 호출될 때 정보를 담고 있는 객체로,
+                // getArgument(0)는 save(...)의 첫 번째 Argument를 꺼내는 메서드
+                BinaryContent binaryContent = invocation.getArgument(0);
+                ReflectionTestUtils.setField(binaryContent, "id", newProfileId);
+                // 실제 binaryContent.save(...)처럼 BinaryContent 객체 반환
+                return binaryContent;
+            });
             given(userMapper.toDto(user)).willReturn(expectedUpdateUserDto);
             
             // when(실행)
@@ -405,7 +427,7 @@ class BasicUserServiceTest {
             verify(binaryContentStorage).get(oldProfileId);
 
             verify(binaryContentRepository).save(any(BinaryContent.class));
-            verify(binaryContentStorage).put(any(), eq(newProfileBytes));
+            verify(applicationEventPublisher).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userMapper).toDto(user);
         }
@@ -425,7 +447,7 @@ class BasicUserServiceTest {
             verify(binaryContentStorage, never()).get(any());
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userMapper, never()).toDto(any(User.class));
         }
@@ -448,7 +470,7 @@ class BasicUserServiceTest {
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userMapper, never()).toDto(any(User.class));
         }
@@ -487,7 +509,7 @@ class BasicUserServiceTest {
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userMapper, never()).toDto(any(User.class));
         }
@@ -530,7 +552,7 @@ class BasicUserServiceTest {
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userMapper, never()).toDto(any(User.class));
         }
@@ -564,7 +586,7 @@ class BasicUserServiceTest {
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userMapper, never()).toDto(any(User.class));
         }
@@ -590,7 +612,7 @@ class BasicUserServiceTest {
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userMapper, never()).toDto(any(User.class));
         }
@@ -612,7 +634,7 @@ class BasicUserServiceTest {
             verify(userRepository, never()).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userMapper, never()).toDto(any(User.class));
         }
@@ -635,7 +657,7 @@ class BasicUserServiceTest {
             verify(userRepository).isEmailUsedByOther(any(), eq(request.newEmail()));
 
             verify(binaryContentRepository, never()).save(any(BinaryContent.class));
-            verify(binaryContentStorage, never()).put(any(), any());
+            verify(applicationEventPublisher, never()).publishEvent(any(BinaryContentCreatedEvent.class));
 
             verify(userMapper, never()).toDto(any(User.class));
         }
@@ -656,7 +678,7 @@ class BasicUserServiceTest {
 
             // then(검증)
             verify(userRepository).findByIdWithProfile(userId);
-            verify(userRepository).deleteById(userId);
+            verify(userRepository).delete(user);
         }
 
         @Test
@@ -667,7 +689,7 @@ class BasicUserServiceTest {
                     () -> basicUserService.delete(null));
 
             verify(userRepository, never()).findByIdWithProfile(null);
-            verify(userRepository, never()).deleteById(null);
+            verify(userRepository, never()).delete(null);
         }
 
         @Test
@@ -681,7 +703,7 @@ class BasicUserServiceTest {
                     () -> basicUserService.delete(userId));
 
             verify(userRepository).findByIdWithProfile(userId);
-            verify(userRepository, never()).deleteById(userId);
+            verify(userRepository, never()).delete(user);
         }
     }
 }
