@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.JwtRefreshResultDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.exception.auth.InvalidRefreshTokenException;
+import com.sprint.mission.discodeit.exception.auth.JwtException;
 import com.sprint.mission.discodeit.security.JwtInformation;
 import com.sprint.mission.discodeit.security.JwtRegistry;
 import com.sprint.mission.discodeit.security.JwtTokenProvider;
@@ -34,7 +35,7 @@ public class BasicAuthService implements AuthService {
         Map<String, Object> claims;
         try {
             claims = jwtTokenProvider.getClaims(refreshToken);
-        } catch (RuntimeException e) {
+        } catch (JwtException e) {
             log.debug("리프레시 토큰 검증 실패: {}", e.getMessage());
             throw new InvalidRefreshTokenException("invalid");
         }

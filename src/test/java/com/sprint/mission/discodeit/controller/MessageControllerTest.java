@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.*;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -45,7 +46,7 @@ class MessageControllerTest {
         UUID authorId = UUID.randomUUID();
         CreateMessageRequestDto request = new CreateMessageRequestDto("Hello", channelId, authorId, null);
 
-        UserDto authorDto = new UserDto(authorId, "tester", "test@test.com", null, true);
+        UserDto authorDto = new UserDto(authorId, "tester", "test@test.com", null, Role.USER, true);
         MessageDto response = new MessageDto(UUID.randomUUID(), request.content(), channelId, authorDto, List.of(), Instant.now(), Instant.now());
 
         given(messageService.create(any(), any())).willReturn(response);
@@ -71,7 +72,7 @@ class MessageControllerTest {
         UUID messageId = UUID.randomUUID();
         UpdateMessageRequestDto request = new UpdateMessageRequestDto("Updated Content");
 
-        UserDto authorDto = new UserDto(UUID.randomUUID(), "tester", "test@test.com", null, true);
+        UserDto authorDto = new UserDto(UUID.randomUUID(), "tester", "test@test.com", null, Role.USER, true);
         MessageDto response = new MessageDto(messageId, request.newContent(), UUID.randomUUID(), authorDto, List.of(), Instant.now(), Instant.now());
 
         given(messageService.update(eq(messageId), any())).willReturn(response);
@@ -96,7 +97,7 @@ class MessageControllerTest {
     @DisplayName("채널 내 메시지 목록 페이징 조회 성공 시 200 OK 반환")
     void find_all_messages_success() throws Exception {
         UUID channelId = UUID.randomUUID();
-        UserDto authorDto = new UserDto(UUID.randomUUID(), "tester", "test@test.com", null, true);
+        UserDto authorDto = new UserDto(UUID.randomUUID(), "tester", "test@test.com", null, Role.USER, true);
         MessageDto messageDto = new MessageDto(UUID.randomUUID(), "Hello", channelId, authorDto, List.of(), Instant.now(), Instant.now());
 
         PageResponse<MessageDto> response = new PageResponse<>(List.of(messageDto), null, 50, false);

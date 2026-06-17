@@ -1,6 +1,11 @@
 server:
   port: 80 # 운영 환경 서버 포트
 
+discodeit:
+  security:
+    cookie:
+      secure: true # 운영(HTTPS)에서는 refresh 쿠키를 Secure로 전송
+
 spring:
   application:
     name: discodeit

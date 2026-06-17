@@ -1,4 +1,10 @@
+discodeit:
+  jwt:
+    key: test-jwt-secret-key-must-be-at-least-256-bits-long-1234567890
+
 spring:
+  cache:
+    type: simple
   sql:
     init:
       mode: never

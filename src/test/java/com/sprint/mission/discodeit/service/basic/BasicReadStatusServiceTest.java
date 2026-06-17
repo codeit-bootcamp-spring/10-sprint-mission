@@ -56,7 +56,7 @@ class BasicReadStatusServiceTest {
         Channel channel = new Channel(ChannelType.PUBLIC, "ch", "desc");
         ReadStatus readStatus = new ReadStatus(user, channel);
         ReadStatusDto expectedDto =
-            new ReadStatusDto(UUID.randomUUID(), channelId, userId, Instant.now());
+            new ReadStatusDto(UUID.randomUUID(), channelId, userId, Instant.now(), false);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
@@ -136,13 +136,13 @@ class BasicReadStatusServiceTest {
         // given
         UUID readStatusId = UUID.randomUUID();
         Instant specificTime = Instant.now().minusSeconds(60);
-        UpdateReadStatusRequestDto request = new UpdateReadStatusRequestDto(specificTime);
+        UpdateReadStatusRequestDto request = new UpdateReadStatusRequestDto(specificTime, null);
 
         User user = new User("tester", "t@t.com", "pass");
         Channel channel = new Channel(ChannelType.PUBLIC, "ch", "desc");
         ReadStatus readStatus = new ReadStatus(user, channel);
         ReadStatusDto expectedDto =
-            new ReadStatusDto(readStatusId, UUID.randomUUID(), UUID.randomUUID(), specificTime);
+            new ReadStatusDto(readStatusId, UUID.randomUUID(), UUID.randomUUID(), specificTime, false);
 
         given(readStatusRepository.findById(readStatusId)).willReturn(Optional.of(readStatus));
         given(readStatusMapper.toDto(readStatus)).willReturn(expectedDto);
@@ -160,13 +160,13 @@ class BasicReadStatusServiceTest {
     void update_with_null_time_success() {
         // given
         UUID readStatusId = UUID.randomUUID();
-        UpdateReadStatusRequestDto request = new UpdateReadStatusRequestDto(null);
+        UpdateReadStatusRequestDto request = new UpdateReadStatusRequestDto(null, null);
 
         User user = new User("tester", "t@t.com", "pass");
         Channel channel = new Channel(ChannelType.PUBLIC, "ch", "desc");
         ReadStatus readStatus = new ReadStatus(user, channel);
         ReadStatusDto expectedDto =
-            new ReadStatusDto(readStatusId, UUID.randomUUID(), UUID.randomUUID(), Instant.now());
+            new ReadStatusDto(readStatusId, UUID.randomUUID(), UUID.randomUUID(), Instant.now(), false);
 
         given(readStatusRepository.findById(readStatusId)).willReturn(Optional.of(readStatus));
         given(readStatusMapper.toDto(readStatus)).willReturn(expectedDto);
@@ -187,7 +187,7 @@ class BasicReadStatusServiceTest {
 
         // when & then
         assertThrows(ReadStatusNotFoundException.class,
-            () -> basicReadStatusService.update(fakeId, new UpdateReadStatusRequestDto(null)));
+            () -> basicReadStatusService.update(fakeId, new UpdateReadStatusRequestDto(null, null)));
     }
 
     @Test
@@ -202,7 +202,7 @@ class BasicReadStatusServiceTest {
         given(userRepository.existsById(userId)).willReturn(true);
         given(readStatusRepository.findAllByUserId(userId)).willReturn(List.of(readStatus));
         given(readStatusMapper.toDto(readStatus))
-            .willReturn(new ReadStatusDto(UUID.randomUUID(), UUID.randomUUID(), userId, Instant.now()));
+            .willReturn(new ReadStatusDto(UUID.randomUUID(), UUID.randomUUID(), userId, Instant.now(), false));
 
         // when
         List<ReadStatusDto> results = basicReadStatusService.findAllByUserId(userId);

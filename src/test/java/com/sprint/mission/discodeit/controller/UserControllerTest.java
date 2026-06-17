@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.*;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -42,7 +43,7 @@ class UserControllerTest {
     @DisplayName("user 등록 성공 시 201 Created 반환")
     void create_user_success() throws Exception {
         CreateUserRequestDto request = new CreateUserRequestDto("tester", "test@test.com", "password123", null);
-        UserDto response = new UserDto(UUID.randomUUID(), "tester", "test@test.com", null, true);
+        UserDto response = new UserDto(UUID.randomUUID(), "tester", "test@test.com", null, Role.USER, true);
 
         given(userService.create(any())).willReturn(response);
 
@@ -64,7 +65,7 @@ class UserControllerTest {
     @Test
     @DisplayName("전체 user 목록 조회 성공 시 200 OK 반환")
     void find_all_users_success() throws Exception {
-        UserDto userDto = new UserDto(UUID.randomUUID(), "tester", "test@test.com", null, true);
+        UserDto userDto = new UserDto(UUID.randomUUID(), "tester", "test@test.com", null, Role.USER, true);
         given(userService.findAll()).willReturn(List.of(userDto));
 
         mockMvc.perform(get("/api/users")
@@ -79,7 +80,7 @@ class UserControllerTest {
         // given
         UUID userId = UUID.randomUUID();
         UpdateUserRequestDto request = new UpdateUserRequestDto("newTester", "new@test.com", "newPassword", null);
-        UserDto response = new UserDto(userId, "newTester", "new@test.com", null, true);
+        UserDto response = new UserDto(userId, "newTester", "new@test.com", null, Role.USER, true);
 
         given(userService.update(eq(userId), any())).willReturn(response);
 

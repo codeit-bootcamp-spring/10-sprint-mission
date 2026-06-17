@@ -15,6 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
@@ -30,6 +32,10 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper objectMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
+    private final CacheManager cacheManager;
+
+    @Value("${discodeit.security.cookie.secure:false}")
+    private boolean cookieSecure;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -51,10 +57,16 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         // 동시 로그인 제한 정책에 따라 등록 (기존 세션은 registry 내부에서 자동 무효화)
         jwtRegistry.registerJwtInformation(new JwtInformation(userDto, accessToken, refreshToken));
 
+        // 로그인으로 online 상태가 바뀌므로 사용자 목록 캐시 무효화
+        var usersCache = cacheManager.getCache("users");
+        if (usersCache != null) {
+            usersCache.clear();
+        }
+
         ResponseCookie refreshCookie = ResponseCookie.from(
                         JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, refreshToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(cookieSecure)
                 .path("/")
                 .sameSite("Lax")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpirationMinutes() * 60L)

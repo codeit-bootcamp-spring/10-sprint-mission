@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -34,9 +35,12 @@ public class AuthController {
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Value("${discodeit.security.cookie.secure:false}")
+    private boolean cookieSecure;
+
     @RequestMapping(method = RequestMethod.GET, value = "/csrf-token")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
-        log.debug("CSRF 토큰 요청: {}", csrfToken.getToken());
+        log.debug("CSRF 토큰 요청");
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -49,7 +53,7 @@ public class AuthController {
         ResponseCookie refreshCookie = ResponseCookie.from(
                         JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, result.refreshToken())
                 .httpOnly(true)
-                .secure(false)
+                .secure(cookieSecure)
                 .path("/")
                 .sameSite("Lax")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpirationMinutes() * 60L)

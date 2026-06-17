@@ -67,7 +67,7 @@ class BasicMessageServiceTest {
         User author = new User("tester", "test@test.com", "pass");
         Message message = new Message(request.content(), channel, author);
 
-        UserDto authorDto = new UserDto(authorId, author.getUsername(), author.getEmail(), null, true);
+        UserDto authorDto = new UserDto(authorId, author.getUsername(), author.getEmail(), null, Role.USER, true);
         MessageDto expectedDto = new MessageDto(UUID.randomUUID(), request.content(), channelId, authorDto, List.of(), Instant.now(), Instant.now());
 
         given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
@@ -112,7 +112,7 @@ class BasicMessageServiceTest {
         UpdateMessageRequestDto request = new UpdateMessageRequestDto("Updated Content");
         Message message = new Message("Old Content", new Channel(ChannelType.PUBLIC, "C", "D"), new User("jiho", "jiho@codeit.kr", "asdf1234"));
 
-        UserDto authorDto = new UserDto(UUID.randomUUID(), "jiho", "jiho@codeit.kr", null, true);
+        UserDto authorDto = new UserDto(UUID.randomUUID(), "jiho", "jiho@codeit.kr", null, Role.USER, true);
         MessageDto expectedDto = new MessageDto(messageId, request.newContent(), UUID.randomUUID(), authorDto, List.of(), Instant.now(), Instant.now());
 
         given(messageRepository.findById(messageId)).willReturn(Optional.of(message));
@@ -187,7 +187,7 @@ class BasicMessageServiceTest {
         Message message = new Message("Content", new Channel(ChannelType.PUBLIC, "C", "D"), new User("jiho", "jiho@page.kr", "sdf234"));
         Slice<Message> slice = new SliceImpl<>(List.of(message), pageable, false);
 
-        UserDto authorDto = new UserDto(UUID.randomUUID(), "jiho", "jiho@page.kr", null, true);
+        UserDto authorDto = new UserDto(UUID.randomUUID(), "jiho", "jiho@page.kr", null, Role.USER, true);
         MessageDto messageDto = new MessageDto(UUID.randomUUID(), "Content", channelId, authorDto, List.of(), Instant.now(), Instant.now());
         PageResponse<MessageDto> expectedResponse = new PageResponse<>(List.of(messageDto), null, 10, false);
 

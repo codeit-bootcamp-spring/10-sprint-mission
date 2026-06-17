@@ -41,7 +41,6 @@ public class SecurityConfig {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
                 )
-//                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )

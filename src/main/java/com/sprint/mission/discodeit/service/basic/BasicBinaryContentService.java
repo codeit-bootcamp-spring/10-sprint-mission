@@ -3,13 +3,17 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.CreateBinaryContentRequestDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -24,6 +28,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
     private final BinaryContentStorage binaryContentStorage;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -36,9 +41,10 @@ public class BasicBinaryContentService implements BinaryContentService {
                 request.size()
         );
         binaryContent = binaryContentRepository.save(binaryContent);
-        binaryContentStorage.put(binaryContent.getId(), request.contents());
 
-        log.info("첨부 파일 업로드 완료: contentId={}", binaryContent.getId());
+        eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), request.contents()));
+
+        log.info("첨부 파일 업로드 요청 완료(저장 대기): contentId={}", binaryContent.getId());
         return binaryContentMapper.toDto(binaryContent);
     }
 
@@ -67,6 +73,22 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContent binaryContent = getBinaryContentEntity(contentId);
         binaryContentRepository.delete(binaryContent);
         log.info("첨부 파일 삭제 완료: contentId={}", contentId);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateStatus(UUID contentId, BinaryContentStatus status) {
+        binaryContentRepository.findById(contentId).ifPresentOrElse(
+                content -> {
+                    if (status == BinaryContentStatus.SUCCESS) {
+                        content.markSuccess();
+                    } else {
+                        content.markFail();
+                    }
+                    log.info("바이너리 상태 갱신: contentId={}, status={}", contentId, status);
+                },
+                () -> log.warn("상태 갱신 대상 BinaryContent 없음: contentId={}", contentId)
+        );
     }
 
     // ------ 내부 메서드 -------

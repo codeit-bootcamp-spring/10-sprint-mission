@@ -87,6 +87,11 @@ public class BasicReadStatusService implements ReadStatusService {
             readStatus.updateLastReadAt();
         }
 
+        // 요청에 포함된 경우에만 알림 수신 여부 변경
+        if (request.newNotificationEnabled() != null) {
+            readStatus.updateNotificationEnabled(request.newNotificationEnabled());
+        }
+
         return readStatusMapper.toDto(readStatus);
     }
 

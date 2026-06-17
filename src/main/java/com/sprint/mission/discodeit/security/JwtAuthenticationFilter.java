@@ -4,13 +4,16 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.exception.auth.JwtException;
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -23,7 +26,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final DiscodeitUserDetailsService userDetailsService;
     private final JwtRegistry jwtRegistry;
 
     @Override
@@ -39,8 +41,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     log.debug("JWT 레지스트리에 등록되지 않은 토큰, 익명으로 처리");
                     SecurityContextHolder.clearContext();
                 } else {
-                    String username = (String) claims.get("username");
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    // 토큰 페이로드(sub/username/role)만으로 인증 주체를 구성한다 (DB 재조회 제거).
+                    // 권한 변경 즉시 반영은 JwtRegistry 무효화(강제 로그아웃)로 처리된다.
+                    UserDto principal = new UserDto(
+                            UUID.fromString((String) claims.get("sub")),
+                            (String) claims.get("username"),
+                            null,
+                            null,
+                            Role.valueOf((String) claims.get("role")),
+                            false);
+                    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(principal, null);
 
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
@@ -48,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
-            } catch (RuntimeException e) {
+            } catch (JwtException e) {
                 log.debug("JWT 인증 실패, 익명으로 처리: {}", e.getMessage());
                 SecurityContextHolder.clearContext();
             }

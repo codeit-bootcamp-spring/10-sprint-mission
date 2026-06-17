@@ -39,6 +39,13 @@ dependencies {
     testImplementation 'com.h2database:h2'
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -48,6 +55,7 @@ dependencies {
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.awaitility:awaitility:4.2.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     implementation 'software.amazon.awssdk:s3:2.31.7'

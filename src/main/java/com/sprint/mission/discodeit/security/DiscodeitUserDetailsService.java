@@ -20,7 +20,8 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
-                .map(user -> new DiscodeitUserDetails(userMapper.toDto(user), user.getPassword()))
+                // 인증 주체 DTO는 실시간 접속 여부가 의미 없으므로 online=false로 매핑
+                .map(user -> new DiscodeitUserDetails(userMapper.toDto(user, false), user.getPassword()))
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
     }
 }

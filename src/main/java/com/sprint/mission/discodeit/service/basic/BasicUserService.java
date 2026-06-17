@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -20,6 +22,9 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -42,9 +47,11 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtRegistry jwtRegistry;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto create(CreateUserRequestDto request) {
         log.debug("사용자 가입 요청: username={}, email={}", request.username(), request.email());
         validateDuplicateUser(request.username(), request.email());
@@ -59,30 +66,36 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(status);
 
         log.info("사용자 가입 성공: userId={}", user.getId());
-        return userMapper.toDto(user);
+        return userMapper.toDto(user, isOnline(user));
     }
 
     @Override
     public Optional<UserDto> findById(UUID userId) {
         return userRepository.findById(userId)
-                .map(userMapper::toDto);
+                .map(user -> userMapper.toDto(user, isOnline(user)));
+    }
+
+    private boolean isOnline(User user) {
+        return jwtRegistry.hasActiveJwtInformationByUserId(user.getId());
     }
 
     @Override
     public UserDto find(UUID userId) {
         User user = getUserEntity(userId);
-        return userMapper.toDto(user);
+        return userMapper.toDto(user, isOnline(user));
     }
 
     @Override
+    @Cacheable("users")
     public List<UserDto> findAll() {
         return userRepository.findAll().stream()
-                .map(userMapper::toDto)
+                .map(user -> userMapper.toDto(user, isOnline(user)))
                 .toList();
     }
 
     @Override
     @Transactional
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto update(UUID userId, UpdateUserRequestDto request) {
         log.debug("사용자 정보 수정 요청: userId={}", userId);
         User user = getUserEntity(userId);
@@ -94,26 +107,31 @@ public class BasicUserService implements UserService {
         }
 
         log.info("사용자 정보 수정 완료: userId={}", user.getId());
-        return userMapper.toDto(user);
+        return userMapper.toDto(user, isOnline(user));
     }
 
     @Override
     @Transactional
+    @CacheEvict(value = "users", allEntries = true)
     @PreAuthorize("hasRole('ADMIN')")
     public UserDto updateRole(UserRoleUpdateRequestDto request) {
         log.info("사용자 권한 변경 요청: userId={}, newRole={}", request.userId(), request.newRole());
         User user = getUserEntity(request.userId());
+        Role previousRole = user.getRole();           // 변경 전 권한 캡처
         user.updateRole(request.newRole());
         log.info("사용자 권한 변경 완료: userId={}, role={}", user.getId(), user.getRole());
 
         // 권한 변경 즉시 기존 세션 무효화 → 재로그인 시 새 권한 반영
         jwtRegistry.invalidateJwtInformationByUserId(user.getId());
+        // 권한 변경 당사자에게 알림을 생성하기 위한 이벤트 발행
+        eventPublisher.publishEvent(new RoleUpdatedEvent(user.getId(), previousRole, request.newRole()));
 
-        return userMapper.toDto(user);
+        return userMapper.toDto(user, isOnline(user));
     }
 
     @Override
     @Transactional
+    @CacheEvict(value = "users", allEntries = true)
     public void delete(UUID userId) {
         log.info("사용자 삭제 요청: userId={}", userId);
         User user = getUserEntity(userId);
@@ -138,7 +156,7 @@ public class BasicUserService implements UserService {
                 contentDto.size()
         );
         content = binaryContentRepository.save(content);
-        binaryContentStorage.put(content.getId(), contentDto.bytes());
+        eventPublisher.publishEvent(new BinaryContentCreatedEvent(content.getId(), contentDto.bytes()));
 
         user.updateProfileImageId(content);
     }

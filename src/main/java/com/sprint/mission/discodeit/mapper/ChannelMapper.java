@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.security.JwtRegistry;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -28,6 +29,9 @@ public abstract class ChannelMapper {
     @Autowired
     protected UserMapper userMapper;
 
+    @Autowired
+    protected JwtRegistry jwtRegistry;
+
     @Mapping(target = "lastMessageAt", expression = "java(getLastMessageAt(channel))")
     @Mapping(target = "participants", expression = "java(getParticipants(channel))")
     public abstract ChannelDto toDto(Channel channel);
@@ -48,7 +52,8 @@ public abstract class ChannelMapper {
     protected List<UserDto> getParticipants(Channel channel) {
         return readStatusRepository.findAllByChannelId(channel.getId()).stream()
                 .filter(rs -> rs.getChannel().getId().equals(channel.getId()))
-                .map(rs -> userMapper.toDto(rs.getUser()))
+                .map(rs -> userMapper.toDto(rs.getUser(),
+                        jwtRegistry.hasActiveJwtInformationByUserId(rs.getUser().getId())))
                 .toList();
     }
 }

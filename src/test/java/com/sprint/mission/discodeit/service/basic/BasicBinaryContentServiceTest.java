@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.CreateBinaryContentRequestDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.exception.binary_content.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -47,7 +48,7 @@ class BasicBinaryContentServiceTest {
         ReflectionTestUtils.setField(entity, "id", savedId);
 
         BinaryContentDto expectedDto =
-            new BinaryContentDto(savedId, "test.png", "image/png", (long) bytes.length, null);
+            new BinaryContentDto(savedId, "test.png", "image/png", (long) bytes.length, BinaryContentStatus.SUCCESS, null);
 
         given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(entity);
         given(binaryContentMapper.toDto(entity)).willReturn(expectedDto);
@@ -67,7 +68,7 @@ class BasicBinaryContentServiceTest {
         UUID id = UUID.randomUUID();
         BinaryContent entity = new BinaryContent("img.png", "image/png", 1024L);
         BinaryContentDto expectedDto =
-            new BinaryContentDto(id, "img.png", "image/png", 1024L, null);
+            new BinaryContentDto(id, "img.png", "image/png", 1024L, BinaryContentStatus.SUCCESS, null);
 
         given(binaryContentRepository.findById(id)).willReturn(Optional.of(entity));
         given(binaryContentMapper.toDto(entity)).willReturn(expectedDto);
@@ -104,9 +105,9 @@ class BasicBinaryContentServiceTest {
 
         given(binaryContentRepository.findAllById(ids)).willReturn(List.of(e1, e2));
         given(binaryContentMapper.toDto(e1))
-            .willReturn(new BinaryContentDto(id1, "a.png", "image/png", 100L, null));
+            .willReturn(new BinaryContentDto(id1, "a.png", "image/png", 100L, BinaryContentStatus.SUCCESS, null));
         given(binaryContentMapper.toDto(e2))
-            .willReturn(new BinaryContentDto(id2, "b.pdf", "application/pdf", 200L, null));
+            .willReturn(new BinaryContentDto(id2, "b.pdf", "application/pdf", 200L, BinaryContentStatus.SUCCESS, null));
 
         // when
         List<BinaryContentDto> results = basicBinaryContentService.findAllByIdIn(ids);

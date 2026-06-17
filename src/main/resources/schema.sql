@@ -1,9 +1,11 @@
 CREATE TABLE IF NOT EXISTS binary_contents (
     id UUID PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE,
     file_name VARCHAR(255) NOT NULL,
     size BIGINT NOT NULL,
-    content_type VARCHAR(100) NOT NULL
+    content_type VARCHAR(100) NOT NULL,
+    status VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS channels (
@@ -43,9 +45,19 @@ CREATE TABLE IF NOT EXISTS read_statuses (
     user_id UUID NOT NULL,
     channel_id UUID NOT NULL,
     last_read_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    notification_enabled BOOLEAN NOT NULL,
     CONSTRAINT uk_read_statuses_user_channel UNIQUE (user_id, channel_id),
     CONSTRAINT fk_read_statuses_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_read_statuses_channel FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    receiver_id UUID NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    CONSTRAINT fk_notifications_receiver FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS messages (

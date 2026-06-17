@@ -1,6 +1,25 @@
 spring:
   application:
     name: discodeit
+  cache:
+    type: redis
+    cache-names: channels, notifications, users
+    caffeine:
+      spec: maximumSize=100,expireAfterAccess=600s,recordStats
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
   boot:
     admin:
       client:
@@ -28,9 +47,12 @@ discodeit:
     email: ${ADMIN_EMAIL:admin@codeit.kr}
     password: ${ADMIN_PASSWORD:admin1234}
   jwt:
-    key: ${JWT_KEY:discodeit-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256}
+    key: ${JWT_KEY} # 필수 주입(기본값 없음): 미주입 시 부팅 실패
     access-token-expiration-minutes: ${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES:15}      # 기본값: 15분
     refresh-token-expiration-minutes: ${JWT_REFRESH_TOKEN_EXPIRATION_MINUTES:10080} # 기본값: 7일(10080분)
+  security:
+    cookie:
+      secure: ${COOKIE_SECURE:false} # 로컬 기본 false, 운영(HTTPS)에서는 true
 
 springdoc:
   swagger-ui:
@@ -47,6 +69,9 @@ logging:
     root: INFO
 
 management:
+  observations:
+    annotations:
+      enabled: true
   endpoint:
     health:
       show-details: always
@@ -58,6 +83,7 @@ management:
           - health
           - loggers
           - metrics
+          - caches
   info:
     env:
       enabled: true

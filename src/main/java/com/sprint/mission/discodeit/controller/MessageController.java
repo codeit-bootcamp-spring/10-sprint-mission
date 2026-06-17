@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.dto.UpdateMessageRequestDto;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -47,6 +48,7 @@ public class MessageController {
     })
     @RequestMapping(method = RequestMethod.POST,
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @Timed("message.create.async")
     @ResponseStatus(HttpStatus.CREATED)
     public MessageDto send(
             @RequestPart("messageCreateRequest") @Valid CreateMessageRequestDto request,

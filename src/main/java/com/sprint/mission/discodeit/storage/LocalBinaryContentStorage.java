@@ -42,10 +42,14 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     @Override
     public UUID put(UUID id, byte[] bytes) {
         try {
+            Thread.sleep(3000);
             Files.write(resolvePath(id), bytes);
             return id;
         } catch (IOException e) {
             throw new RuntimeException("파일을 저장할 수 없습니다. id: " + id, e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("파일 저장이 중단되었습니다. id: " + id, e);
         }
     }
 
