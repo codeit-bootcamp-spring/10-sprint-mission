@@ -12,9 +12,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +27,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -32,7 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @Transactional
 @ActiveProfiles("test")
 class UserIntegrationTest {
@@ -48,6 +53,7 @@ class UserIntegrationTest {
 
   @Test
   @DisplayName("유저 생성 API 호출 시, DB에 유저가 저장되고 정보를 반환할 수 있어야 한다.")
+  @WithMockUser(username = "testUser", roles = "ADMIN")
   void should_return_response_and_save_in_db_when_create_user() throws Exception {
     // given
     UserCreateRequest request = new UserCreateRequest("김코딩", "hello@hello.com", "1234");
@@ -83,6 +89,7 @@ class UserIntegrationTest {
 
   @Test
   @DisplayName("유저 수정 API 호출 시, DB에 수정사항이 저장되고 정보를 반환할 수 있어야 한다.")
+  @WithMockUser(username = "testUser", roles = "ADMIN")
   void should_return_response_and_save_in_db_when_update_user() throws Exception {
     // given
     User savedUser = userRepository.save(new User("구코딩", "old@hello.com", "1234", null));
@@ -101,6 +108,22 @@ class UserIntegrationTest {
         MediaType.APPLICATION_JSON_VALUE,
         obj.writeValueAsBytes(request)
     );
+
+    UserDto userDto = new UserDto(
+        savedUser.getId(),
+        savedUser.getUsername(),
+        savedUser.getEmail(),
+        null,
+        true,
+        savedUser.getRole()
+    );
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, savedUser.getPassword());
+    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+        userDetails,
+        userDetails.getPassword(),
+        userDetails.getAuthorities()
+    );
+    SecurityContextHolder.getContext().setAuthentication(authentication);
 
     // when
     ResultActions actions = mockMvc.perform(
@@ -123,6 +146,7 @@ class UserIntegrationTest {
 
   @Test
   @DisplayName("유저 목록 조회 API 호출 시, 유저 정보를 반환할 수 있어야 한다.")
+  @WithMockUser(username = "testUser", roles = "ADMIN")
   void should_return_response_when_find_all_user() throws Exception {
     // given
     User user1 = new User("김코딩", "hello@hello.com", "1234", null);
@@ -139,11 +163,11 @@ class UserIntegrationTest {
     // then
     actions.andExpect(status().isOk())
         .andDo(print())
-        .andExpect(jsonPath("$.length()").value(2))
-        .andExpect(jsonPath("$[*].username").value(hasItems("김코딩", "이코딩")))
-        .andExpect(jsonPath("$[*].email").value(hasItems("hello@hello.com", "hi@hi.com")));
+        .andExpect(jsonPath("$.length()").value(3))
+        .andExpect(jsonPath("$[*].username").value(hasItems("admin", "김코딩", "이코딩")))
+        .andExpect(jsonPath("$[*].email").value(hasItems("test@test.com", "hello@hello.com", "hi@hi.com")));
     long userCount = userRepository.count();
-    assertThat(userCount).isEqualTo(2);
+    assertThat(userCount).isEqualTo(3);
   }
 
   @Test
@@ -151,6 +175,22 @@ class UserIntegrationTest {
   void should_delete_in_db_when_delete_user() throws Exception {
     // given
     User targetUser = userRepository.save(new User("김코딩", "hello@hello.com", "1234", null));
+
+    UserDto userDto = new UserDto(
+        targetUser.getId(),
+        targetUser.getUsername(),
+        targetUser.getEmail(),
+        null,
+        true,
+        targetUser.getRole()
+    );
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, targetUser.getPassword());
+    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+        userDetails,
+        userDetails.getPassword(),
+        userDetails.getAuthorities()
+    );
+    SecurityContextHolder.getContext().setAuthentication(authentication);
 
     // when
     ResultActions actions = mockMvc.perform(

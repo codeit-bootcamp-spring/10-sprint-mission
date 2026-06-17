@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,7 +28,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +47,15 @@ class BasicUserServiceTest {
 
   @Mock
   private BinaryContentRepository binaryContentRepository;
+
+  @Mock
+  AuthService authService;
+
+  @Mock
+  ApplicationEventPublisher eventPublisher;
+
+  @Mock
+  PasswordEncoder passwordEncoder;
 
   @InjectMocks
   private BasicUserService basicUserService;
@@ -62,9 +74,6 @@ class BasicUserServiceTest {
     User expectedUser = new User("김코딩", "hello@hello.com", "1234", expectedProfile);
 
     given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(expectedProfile);
-    given(binaryContentStorage.put(any(), any(byte[].class))).willReturn(fixedUuid);
-    given(userMapper.toEntity(any(UserCreateRequest.class), any(BinaryContent.class))).willReturn(
-        expectedUser);
     given(userRepository.save(any(User.class))).willReturn(expectedUser);
 
     // when
@@ -72,8 +81,7 @@ class BasicUserServiceTest {
 
     // then
     then(binaryContentRepository).should(times(1)).save(any(BinaryContent.class));
-    then(binaryContentStorage).should(times(1)).put(any(), any(byte[].class));
-    then(userRepository).should(times(1)).save(expectedUser);
+    then(userRepository).should(times(1)).save(any(User.class));
   }
 
   @Test
@@ -83,15 +91,13 @@ class BasicUserServiceTest {
     UserCreateRequest request = new UserCreateRequest("김코딩", "hello@hello.com", "1234");
     User expectedUser = new User("김코딩", "hello@hello.com", "1234", null);
 
-    given(userMapper.toEntity(any(UserCreateRequest.class), isNull())).willReturn(expectedUser);
     given(userRepository.save(any(User.class))).willReturn(expectedUser);
     // when
     basicUserService.create(request, null);
 
     // then
     then(binaryContentRepository).should(never()).save(any(BinaryContent.class));
-    then(binaryContentStorage).should(never()).put(any(), any(byte[].class));
-    then(userRepository).should(times(1)).save(expectedUser);
+    then(userRepository).should(times(1)).save(any(User.class));
   }
 
   @Test
@@ -124,7 +130,6 @@ class BasicUserServiceTest {
     given(userRepository.findById(fixedUuid)).willReturn(Optional.of(existingUser));
 
     given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(newProfile);
-    given(binaryContentStorage.put(any(), any(byte[].class))).willReturn(fixedUuid);
 
     // when
     basicUserService.update(fixedUuid, request, multipartFile);
@@ -133,7 +138,6 @@ class BasicUserServiceTest {
     assertEquals("김코딩", existingUser.getUsername());
     assertEquals("hello@hello.com", existingUser.getEmail());
     then(binaryContentRepository).should(times(1)).save(any(BinaryContent.class));
-    then(binaryContentStorage).should(times(1)).put(any(), any(byte[].class));
   }
 
   @Test
@@ -154,7 +158,6 @@ class BasicUserServiceTest {
     assertEquals("김코딩", existingUser.getUsername());
     assertEquals("hello@hello.com", existingUser.getEmail());
     then(binaryContentRepository).should(never()).save(any(BinaryContent.class));
-    then(binaryContentStorage).should(never()).put(any(), any(byte[].class));
   }
 
   @Test
@@ -169,7 +172,6 @@ class BasicUserServiceTest {
     assertThrows(UserNotFoundException.class, () -> {
       basicUserService.update(fixedUuid, request, null);
     });
-    then(userMapper).should(never()).toDto(any(User.class));
   }
 
   @Test

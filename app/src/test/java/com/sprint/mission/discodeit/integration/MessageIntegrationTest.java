@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -20,6 +21,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,13 +30,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @Transactional
 @ActiveProfiles("test")
 class MessageIntegrationTest {
@@ -56,6 +61,7 @@ class MessageIntegrationTest {
 
   @Test
   @DisplayName("메시지 생성 API 호출 시, DB에 메시지가 저장되고 정보를 반환할 수 있어야 한다.")
+  @WithMockUser(username = "testUser", roles = "ADMIN")
   void should_return_response_and_save_in_db_when_create_message() throws Exception {
     // given
     User author = createdAndSaveUser();
@@ -108,6 +114,22 @@ class MessageIntegrationTest {
     MessageUpdateRequest request = new MessageUpdateRequest("수정된 메시지");
     String body = obj.writeValueAsString(request);
 
+    UserDto userDto = new UserDto(
+        author.getId(),
+        author.getUsername(),
+        author.getEmail(),
+        null,
+        true,
+        author.getRole()
+    );
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, author.getPassword());
+    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+        userDetails,
+        userDetails.getPassword(),
+        userDetails.getAuthorities()
+    );
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
     // when
     ResultActions actions = mockMvc.perform(
         patch("/api/messages/" + targetMessage.getId())
@@ -131,6 +153,22 @@ class MessageIntegrationTest {
     Channel channel = createdAndSaveChannel();
     Message targetMessage = messageRepository.save(new Message("삭제될 메시지", channel, author));
 
+    UserDto userDto = new UserDto(
+        author.getId(),
+        author.getUsername(),
+        author.getEmail(),
+        null,
+        true,
+        author.getRole()
+    );
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, author.getPassword());
+    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+        userDetails,
+        userDetails.getPassword(),
+        userDetails.getAuthorities()
+    );
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
     // when
     mockMvc.perform(delete("/api/messages/" + targetMessage.getId()));
 
@@ -141,6 +179,7 @@ class MessageIntegrationTest {
 
   @Test
   @DisplayName("채널별 메시지 목록 조회 API 호출 시, 해당 채널의 메시지들을 반환할 수 있어야 한다.")
+  @WithMockUser(username = "testUser", roles = "ADMIN")
   void should_return_messages_when_find_all_by_channel_id() throws Exception {
     // given
     User author = createdAndSaveUser();

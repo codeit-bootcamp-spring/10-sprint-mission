@@ -27,13 +27,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @Transactional
 @ActiveProfiles("test")
 class ChannelIntegrationTest {
@@ -52,6 +53,7 @@ class ChannelIntegrationTest {
 
   @Test
   @DisplayName("PUBLIC 채널 생성 API 호출 시, DB에 PUBLIC 채널이 저장되고 정보를 반환할 수 있어야 한다.")
+  @WithMockUser(username = "testUser", roles = "ADMIN")
   void should_return_response_and_save_in_db_when_create_public_channel() throws Exception {
     // given
     PublicChannelCreateRequest request = new PublicChannelCreateRequest("공개 채널", "공개 채널입니다.");
@@ -78,6 +80,7 @@ class ChannelIntegrationTest {
 
   @Test
   @DisplayName("PRIVATE 채널 생성 API 호출 시, DB에 PRIVATE 채널이 저장되고 정보를 반환할 수 있어야 한다.")
+  @WithMockUser(username = "testUser", roles = "ADMIN")
   void should_return_response_and_save_in_db_when_create_private_channel() throws Exception {
     // given
     User user1 = userRepository.save(new User("가짜 유저1", "fake1@email.com", "1234", null));
@@ -106,6 +109,7 @@ class ChannelIntegrationTest {
 
   @Test
   @DisplayName("PUBLIC 채널 수정 API 호출 시, DB에 수정사항이 저장되고 정보를 반환할 수 있어야 한다.")
+  @WithMockUser(username = "testUser", roles = "ADMIN")
   void should_return_response_and_save_in_db_when_update_public_channel() throws Exception {
     // given
     Channel targetChannel = channelRepository.save(
@@ -132,6 +136,7 @@ class ChannelIntegrationTest {
 
   @Test
   @DisplayName("채널 삭제 API 호출 시, DB에도 삭제되어야 한다.")
+  @WithMockUser(username = "testUser", roles = "ADMIN")
   void should_delete_in_db_when_delete_channel() throws Exception {
     // given
     Channel targetChannel = channelRepository.save(

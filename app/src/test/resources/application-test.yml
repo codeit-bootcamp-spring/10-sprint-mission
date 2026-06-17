@@ -12,6 +12,9 @@ spring:
     init:
       mode: always
 
+  cache:
+    type: none
+
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -32,6 +35,9 @@ discodeit:
     type: local   # local | remote
     local:
       root-path: "${user.dir}/data/test"
+  admin:
+    email: test@test.com
+    password: test_admin_1234
 
 server:
   port: 0  # RANDOM_PORT와 조합해 충돌 방지

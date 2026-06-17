@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.ChannelParticipantException;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -74,6 +76,9 @@ class BasicMessageServiceTest {
   @Mock
   private PageMapper pageMapper;
 
+  @Mock
+  ApplicationEventPublisher eventPublisher;
+
   @InjectMocks
   private BasicMessageService basicMessageService;
 
@@ -99,7 +104,6 @@ class BasicMessageServiceTest {
     given(channelRepository.findById(any())).willReturn(Optional.of(fixedChannel));
     given(messageMapper.toEntity(request, fixedChannel, fixedUser)).willReturn(expectedMessage);
     given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(expectedAttachment);
-    given(binaryContentStorage.put(any(), any(byte[].class))).willReturn(fixedUuid);
     given(messageRepository.save(any(Message.class))).willReturn(expectedMessage);
     // when
     basicMessageService.create(request, multipartFiles);
@@ -108,7 +112,6 @@ class BasicMessageServiceTest {
     then(channelRepository).should(times(1)).findById(any(UUID.class));
     then(binaryContentRepository).should(times(multipartFiles.size()))
         .save(any(BinaryContent.class));
-    then(binaryContentStorage).should(times(multipartFiles.size())).put(any(), any(byte[].class));
     then(messageRepository).should(times(1)).save(expectedMessage);
   }
 
@@ -164,7 +167,7 @@ class BasicMessageServiceTest {
   void should_find_all_message_by_channel_id() {
     // given
     UUID fixedUuid = UUID.randomUUID();
-    UserDto fixedUserDto = new UserDto(fixedUuid, "가짜 유저", "fake@email.com", null, true);
+    UserDto fixedUserDto = new UserDto(fixedUuid, "가짜 유저", "fake@email.com", null, true, Role.USER);
     Instant cursor = Instant.now();
     Pageable pageable = PageRequest.of(0, 2);
     Instant msg1Time = cursor.minusSeconds(10);
@@ -196,7 +199,7 @@ class BasicMessageServiceTest {
   void should_return_null_next_cursor_when_last_page() {
     // given
     UUID fixedUuid = UUID.randomUUID();
-    UserDto fixedUserDto = new UserDto(fixedUuid, "가짜 유저", "fake@email.com", null, true);
+    UserDto fixedUserDto = new UserDto(fixedUuid, "가짜 유저", "fake@email.com", null, true, Role.USER);
     Instant cursor = Instant.now();
     Pageable pageable = PageRequest.of(0, 2);
     Instant msg1Time = cursor.minusSeconds(10);
