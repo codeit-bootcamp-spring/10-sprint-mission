@@ -13,7 +13,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-//@Component
+@Component
 @RequiredArgsConstructor
 @Slf4j
 public class KafkaProduceRequiredEventListener {

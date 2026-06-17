@@ -8,7 +8,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
+import com.sprint.mission.discodeit.event.sse.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -17,6 +19,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.scheduling.annotation.Async;
@@ -26,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-//@Component
+@Component
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationRequiredTopicListener {
@@ -35,6 +38,8 @@ public class NotificationRequiredTopicListener {
   private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
   private final ObjectMapper objectMapper;
+  private final NotificationMapper notificationMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   @CacheEvict(value = "notifications", allEntries = true)
   @KafkaListener(topics = "discodeit.MessageCreatedEvent")
@@ -57,6 +62,9 @@ public class NotificationRequiredTopicListener {
           ))
           .toList();
       notificationRepository.saveAll(notifications);
+      eventPublisher.publishEvent(new NotificationCreatedEvent(notifications.stream()
+          .map(notificationMapper::toDto)
+          .toList()));
     } catch (JsonProcessingException e) {
       log.error("[KAFKA_CONSUMER] MessageCreatedEvent 역직렬화 실패", e);
       throw new RuntimeException(e);
@@ -80,6 +88,8 @@ public class NotificationRequiredTopicListener {
           content
       );
       notificationRepository.save(notification);
+      eventPublisher.publishEvent(
+          new NotificationCreatedEvent(List.of(notificationMapper.toDto(notification))));
     } catch (JsonProcessingException e) {
       log.error("[KAFKA_CONSUMER] MessageCreatedEvent 역직렬화 실패", e);
       throw new RuntimeException(e);
@@ -106,7 +116,9 @@ public class NotificationRequiredTopicListener {
           ))
           .toList();
       notificationRepository.saveAll(notifications);
-
+      eventPublisher.publishEvent(new NotificationCreatedEvent(notifications.stream()
+          .map(notificationMapper::toDto)
+          .toList()));
     } catch (JsonProcessingException e) {
       log.error("[KAFKA_CONSUMER] RoleUpdatedEvent 역직렬화 실패", e);
       throw new RuntimeException(e);
