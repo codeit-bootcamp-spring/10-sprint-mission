@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.user.UserCreateEvent;
 import com.sprint.mission.discodeit.event.user.UserDeleteEvent;
 import com.sprint.mission.discodeit.event.user.UserUpdateEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
@@ -82,7 +83,7 @@ public class BasicUserService implements UserService {
     User user = new User(username, email, encodedPassword, nullableProfile);
     userRepository.save(user);
     UserDto userDto = userMapper.toDto(user);
-    eventPublisher.publishEvent(new UserUpdateEvent(userDto));
+    eventPublisher.publishEvent(new UserCreateEvent(userDto));
 
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
     return userDto;

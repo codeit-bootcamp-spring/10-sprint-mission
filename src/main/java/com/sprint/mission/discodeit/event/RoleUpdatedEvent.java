@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.event;
 
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,4 +15,6 @@ public class RoleUpdatedEvent {
     Role previousRole;
     /// 새로운 권한
     Role newRole;
+
+    UserDto user;
 }

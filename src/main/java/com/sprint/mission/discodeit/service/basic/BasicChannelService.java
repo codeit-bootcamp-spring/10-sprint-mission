@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.event.channel.ChannelCreateEvent;
+import com.sprint.mission.discodeit.event.channel.ChannelDeleteEvent;
 import com.sprint.mission.discodeit.event.channel.ChannelUpdateEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
@@ -148,7 +149,7 @@ public class BasicChannelService implements ChannelService {
     Channel channel = channelRepository.findById(channelId).orElseThrow(() -> ChannelNotFoundException.withId(channelId));
     ChannelDto channelDto = channelMapper.toDto(channel);
 
-    eventPublisher.publishEvent(new ChannelCreateEvent(channelDto));
+    eventPublisher.publishEvent(new ChannelDeleteEvent(channelDto));
 
     messageRepository.deleteAllByChannelId(channelId);
     readStatusRepository.deleteAllByChannelId(channelId);
