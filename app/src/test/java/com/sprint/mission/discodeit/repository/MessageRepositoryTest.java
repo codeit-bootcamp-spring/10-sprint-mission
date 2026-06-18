@@ -50,9 +50,9 @@ class MessageRepositoryTest {
   void should_find_first_message_by_created_at() throws InterruptedException {
     // given
     Message message1 = new Message("첫 메시지", channel, author);
-    Thread.sleep(500);
+    Thread.sleep(1000);
     Message message2 = new Message("두번째 메시지", channel, author);
-    Thread.sleep(500);
+    Thread.sleep(1000);
     Message message3 = new Message("세번째 메시지", channel, author);
     messageRepository.save(message1);
     messageRepository.save(message2);
@@ -73,9 +73,9 @@ class MessageRepositoryTest {
   void should_find_all_message_by_cursor() throws InterruptedException {
     // given
     Message message1 = new Message("첫 메시지", channel, author);
-    Thread.sleep(500);
+    Thread.sleep(1000);
     Message message2 = new Message("두번째 메시지", channel, author);
-    Thread.sleep(500);
+    Thread.sleep(1000);
     Message message3 = new Message("세번째 메시지", channel, author);
     messageRepository.save(message1);
     messageRepository.save(message2);
