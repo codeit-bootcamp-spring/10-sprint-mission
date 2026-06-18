@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: discodeit
+
+  datasource:
+    url: jdbc:h2:mem:test-practice-test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  sql:
+    init:
+      mode: always
+
+  cache:
+    type: none
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+    open-in-view: false
+
+logging:
+  level:
+    org.hibernate.SQL: debug          # 실행되는 SQL 쿼리 출력
+    com.sprint.mission.discodeit: debug # 내 코드의 디버그 로그 출력
+
+discodeit:
+  storage:
+    type: local   # local | remote
+    local:
+      root-path: "${user.dir}/data/test"
+  admin:
+    email: test@test.com
+    password: test_admin_1234
+
+server:
+  port: 0  # RANDOM_PORT와 조합해 충돌 방지

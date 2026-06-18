@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # 1. Nginx (리버스 프록시 및 정적 파일 서빙)
+  nginx:
+    build:
+      context: ./nginx
+    ports:
+      - "3000:80"  # 외부에서 유일하게 접근 가능한 포트
+    depends_on:
+      - app
+    networks:
+      - sprint-network
+
+  # 2. Backend (Spring Boot 애플리케이션)
+  app:
+    build:
+      context: ./app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+      - broker
+    deploy:
+      replicas: 3
+    networks:
+      - sprint-network
+
+  # 3. PostgreSQL (데이터베이스)
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=discodeit
+      - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
+      - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - sprint-network
+
+  # 4. Redis (메모리 DB)
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - sprint-network
+
+  # 5. Kafka (메시지 브로커 - KRaft 모드)
+  broker:
+    image: apache/kafka:latest
+    hostname: broker
+    container_name: broker
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - sprint-network
+
+# 컨테이너 간 데이터를 영구 저장하기 위한 볼륨 선언
+volumes:
+  redis-data:
+  db-data:
+
+# 모든 컨테이너를 하나로 묶는 가상 네트워크 선언
+networks:
+  sprint-network:
+    driver: bridge
