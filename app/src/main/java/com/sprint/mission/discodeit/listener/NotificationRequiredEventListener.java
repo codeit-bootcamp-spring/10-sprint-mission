@@ -1,13 +1,21 @@
 package com.sprint.mission.discodeit.listener;
 
+import com.sprint.mission.discodeit.dto.message.MessageDto;
+import com.sprint.mission.discodeit.dto.notification.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.kafka.KafkaBinaryContentUpdateEvent;
+import com.sprint.mission.discodeit.event.kafka.KafkaChannelChangedEvent;
+import com.sprint.mission.discodeit.event.kafka.KafkaUserChangedEvent;
+import com.sprint.mission.discodeit.event.kafka.KafkaUserLogInOutEvent;
+import com.sprint.mission.discodeit.event.sse.ChannelChangedEvent.ChannelAction;
 import com.sprint.mission.discodeit.event.sse.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.listener.kafka.KafkaProducer;
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -26,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-//@Component
+@Component
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationRequiredEventListener {
@@ -36,6 +44,7 @@ public class NotificationRequiredEventListener {
   private final NotificationRepository notificationRepository;
   private final NotificationMapper notificationMapper;
   private final ApplicationEventPublisher eventPublisher;
+  private final KafkaProducer kafkaProducer;
 
   @CacheEvict(value = "notifications", allEntries = true)
   @Async("eventTaskExecutor")
@@ -56,10 +65,12 @@ public class NotificationRequiredEventListener {
             content
         ))
         .toList();
+    if (notifications.isEmpty()) return;
     notificationRepository.saveAll(notifications);
-    eventPublisher.publishEvent(new NotificationCreatedEvent(notifications.stream()
+    List<NotificationDto> notificationDtos = notifications.stream()
         .map(notificationMapper::toDto)
-        .toList()));
+        .toList();
+    kafkaProducer.broadcastNotifications(notificationDtos);
   }
 
   @CacheEvict(value = "notifications", allEntries = true)
@@ -78,8 +89,8 @@ public class NotificationRequiredEventListener {
         content
     );
     notificationRepository.save(notification);
-    eventPublisher.publishEvent(
-        new NotificationCreatedEvent(List.of(notificationMapper.toDto(notification))));
+    NotificationDto dto = notificationMapper.toDto(notification);
+    kafkaProducer.broadcastNotifications(List.of(dto));
   }
 
   @CacheEvict(value = "notifications", allEntries = true)
@@ -100,8 +111,37 @@ public class NotificationRequiredEventListener {
         ))
         .toList();
     notificationRepository.saveAll(notifications);
-    eventPublisher.publishEvent(new NotificationCreatedEvent(notifications.stream()
+    List<NotificationDto> notificationDtos = notifications.stream()
         .map(notificationMapper::toDto)
-        .toList()));
+        .toList();
+    kafkaProducer.broadcastNotifications(notificationDtos);
+  }
+
+  @Async("eventTaskExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void on(KafkaChannelChangedEvent event) {
+    log.debug("[KAFKA] kafka 채널 갱신 이벤트 수신: channelId={}", event.channelDto().id());
+    kafkaProducer.broadcastChannelChange(event.channelDto(), event.action());
+  }
+
+  @Async("eventTaskExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void on(KafkaUserChangedEvent event) {
+    log.debug("[KAFKA] kafka 유저 갱신 이벤트 수신: userId={}", event.userDto().id());
+    kafkaProducer.broadcastUserChange(event.userDto(), event.action());
+  }
+
+  @Async("eventTaskExecutor")
+  @EventListener
+  public void on(KafkaUserLogInOutEvent event) {
+    log.debug("[KAFKA] kafka 유저 갱신 이벤트 수신: userId={}", event.userId());
+    kafkaProducer.broadcastUserLogInOut(event.userId(), event.isOnline());
+  }
+
+  @Async("eventTaskExecutor")
+  @EventListener
+  public void on(KafkaBinaryContentUpdateEvent event) {
+    log.debug("[KAFKA] kafka 파일 갱신 이벤트 수신: binaryContentId={}", event.binaryContentDto().id());
+    kafkaProducer.broadcastBinaryContentUpdate(event.binaryContentDto(), event.receiverIds());
   }
 }
