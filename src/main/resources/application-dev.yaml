@@ -12,6 +12,18 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  kafka:
+    bootstrap-servers: localhost:9092
+
+discodeit:
+  admin:
+    username: admin
+    email: admin@discodeit.com
+    password: admin1234
 
 logging:
   level:

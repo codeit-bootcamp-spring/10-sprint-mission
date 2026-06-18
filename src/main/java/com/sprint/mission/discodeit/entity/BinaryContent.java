@@ -16,24 +16,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BinaryContent extends BaseUpdatableEntity {
 
-    @Column(nullable = false)
-    private String fileName;
-    @Column(nullable = false)
-    private Long size;
-    @Column(length = 100, nullable = false)
-    private String contentType;
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = false)
-    private BinaryContentStatus status;
+  @Column(nullable = false)
+  private String fileName;
+  @Column(nullable = false)
+  private Long size;
+  @Column(length = 100, nullable = false)
+  private String contentType;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private BinaryContentStatus status = BinaryContentStatus.PROCESSING;
 
-    public BinaryContent(String fileName, Long size, String contentType) {
-        this.fileName = fileName;
-        this.size = size;
-        this.contentType = contentType;
-        this.status = BinaryContentStatus.PROCESSING;
-    }
 
-    public void updateStatus(BinaryContentStatus status) {
-        this.status = status;
-    }
+  public BinaryContent(String fileName, Long size, String contentType) {
+    this.fileName = fileName;
+    this.size = size;
+    this.contentType = contentType;
+  }
+
+  public void updateStatus(BinaryContentStatus status) {
+    this.status = status;
+  }
 }

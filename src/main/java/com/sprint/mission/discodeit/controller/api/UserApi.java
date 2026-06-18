@@ -24,7 +24,7 @@ public interface UserApi {
   @Operation(summary = "User 등록")
   @ApiResponses(value = {
       @ApiResponse(
-          responseCode = "200", description = "User가 성공적으로 생성됨",
+          responseCode = "201", description = "User가 성공적으로 생성됨",
           content = @Content(schema = @Schema(implementation = UserDto.class))
       ),
       @ApiResponse(

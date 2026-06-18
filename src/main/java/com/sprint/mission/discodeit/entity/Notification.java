@@ -15,18 +15,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification extends BaseEntity {
 
-    @Column(name = "receiver_id", columnDefinition = "uuid", nullable = false)
-    private UUID receiverId;
+  @Column(name = "receiver_id", columnDefinition = "uuid", nullable = false)
+  private UUID receiverId;
 
-    @Column(nullable = false, length = 255)
-    private String title;
+  @Column(nullable = false)
+  private String title;
 
-    @Column(nullable = false, columnDefinition = "text")
-    private String content;
+  @Column(nullable = false)
+  private String content;
 
-    public Notification(UUID receiverId, String title, String content) {
-        this.receiverId = receiverId;
-        this.title = title;
-        this.content = content;
-    }
-}
+  public Notification(UUID receiverId, String title, String content) {
+    this.receiverId = receiverId;
+    this.title = title;
+    this.content = content;
+  }
+} 

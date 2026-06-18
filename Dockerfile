@@ -1,28 +1,28 @@
-# Build stage
+# 빌드 스테이지
 FROM amazoncorretto:17 AS builder
-WORKDIR /build
 
-COPY gradlew gradlew
-COPY gradle gradle
-COPY settings.gradle settings.gradle
-COPY build.gradle build.gradle
-
-RUN chmod +x ./gradlew
-RUN ./gradlew --no-daemon dependencies || true
-
-COPY src ./src
-RUN ./gradlew --no-daemon clean bootJar -x test
-
-# Runtime stage
-FROM amazoncorretto:17-alpine
 WORKDIR /app
 
-COPY --from=builder /build/build/libs/ /app/libs/
+COPY gradle ./gradle
+COPY gradlew ./gradlew
+COPY build.gradle settings.gradle ./
+
+RUN ./gradlew dependencies
+
+COPY src ./src
+RUN ./gradlew bootJar -x test
+
+
+# 런타임 스테이지
+FROM amazoncorretto:17-alpine3.21
+
+WORKDIR /app
+
+ENV JVM_OPTS=""
+
+# 버전과 무관하게 부트 JAR 단일 파일을 app.jar로 복사
+COPY --from=builder /app/build/libs/discodeit-*.jar ./app.jar
 
 EXPOSE 80
 
-ENV PROJECT_NAME=discodeit
-ENV PROJECT_VERSION=1.2-M8
-ENV JVM_OPTS=""
-
-ENTRYPOINT ["sh", "-c", "java $JVM_OPTS -jar /app/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar --server.port=80"]
+ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} -jar app.jar"]

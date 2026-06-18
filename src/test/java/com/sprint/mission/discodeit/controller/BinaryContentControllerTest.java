@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -19,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -26,7 +29,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(BinaryContentController.class)
+@WebMvcTest(value = BinaryContentController.class,
+    excludeFilters = @ComponentScan.Filter(
+        type = FilterType.REGEX,
+        pattern = ".*\\.security\\.jwt\\..*"))
 @AutoConfigureMockMvc(addFilters = false)
 class BinaryContentControllerTest {
 
@@ -51,7 +57,8 @@ class BinaryContentControllerTest {
         binaryContentId,
         "test.jpg",
         10240L,
-        MediaType.IMAGE_JPEG_VALUE
+        MediaType.IMAGE_JPEG_VALUE,
+        BinaryContentStatus.SUCCESS
     );
 
     given(binaryContentService.find(binaryContentId)).willReturn(binaryContent);
@@ -91,8 +98,8 @@ class BinaryContentControllerTest {
     List<UUID> binaryContentIds = List.of(id1, id2);
 
     List<BinaryContentDto> binaryContents = List.of(
-        new BinaryContentDto(id1, "test1.jpg", 10240L, MediaType.IMAGE_JPEG_VALUE),
-        new BinaryContentDto(id2, "test2.pdf", 20480L, MediaType.APPLICATION_PDF_VALUE)
+        new BinaryContentDto(id1, "test1.jpg", 10240L, MediaType.IMAGE_JPEG_VALUE, BinaryContentStatus.SUCCESS),
+        new BinaryContentDto(id2, "test2.pdf", 20480L, MediaType.APPLICATION_PDF_VALUE, BinaryContentStatus.SUCCESS)
     );
 
     given(binaryContentService.findAllByIdIn(binaryContentIds)).willReturn(binaryContents);
@@ -117,7 +124,8 @@ class BinaryContentControllerTest {
         binaryContentId,
         "test.jpg",
         10240L,
-        MediaType.IMAGE_JPEG_VALUE
+        MediaType.IMAGE_JPEG_VALUE,
+        BinaryContentStatus.SUCCESS
     );
 
     given(binaryContentService.find(binaryContentId)).willReturn(binaryContent);

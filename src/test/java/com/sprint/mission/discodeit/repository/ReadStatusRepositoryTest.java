@@ -60,7 +60,7 @@ class ReadStatusRepositoryTest {
    * TestFixture: 테스트용 읽음 상태 생성
    */
   private ReadStatus createTestReadStatus(User user, Channel channel, Instant lastReadAt) {
-    ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt, false);
+    ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
     return readStatusRepository.save(readStatus);
   }
 
@@ -185,11 +185,13 @@ class ReadStatusRepositoryTest {
 
     // then
     // 해당 채널의 읽음 상태는 삭제되었는지 확인
-    List<ReadStatus> channelReadStatuses = readStatusRepository.findAllByChannelIdWithUser(channel.getId());
+    List<ReadStatus> channelReadStatuses = readStatusRepository.findAllByChannelIdWithUser(
+        channel.getId());
     assertThat(channelReadStatuses).isEmpty();
 
     // 다른 채널의 읽음 상태는 그대로인지 확인
-    List<ReadStatus> otherChannelReadStatuses = readStatusRepository.findAllByChannelIdWithUser(otherChannel.getId());
+    List<ReadStatus> otherChannelReadStatuses = readStatusRepository.findAllByChannelIdWithUser(
+        otherChannel.getId());
     assertThat(otherChannelReadStatuses).hasSize(1);
   }
 } 

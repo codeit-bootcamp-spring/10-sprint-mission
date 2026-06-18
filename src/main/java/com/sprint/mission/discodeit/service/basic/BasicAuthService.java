@@ -1,23 +1,29 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.nimbusds.jose.JOSEException;
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.message.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.user.UserUpdatedEvent;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.jwt.JwtRegistry;
-import com.sprint.mission.discodeit.jwt.JwtTokenProvider;
-import com.sprint.mission.discodeit.jwt.TokenRefreshResult;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,52 +34,75 @@ public class BasicAuthService implements AuthService {
 
   private final UserRepository userRepository;
   private final UserMapper userMapper;
-  private final JwtTokenProvider jwtTokenProvider;
   private final JwtRegistry jwtRegistry;
+  private final JwtTokenProvider tokenProvider;
+  private final UserDetailsService userDetailsService;
   private final ApplicationEventPublisher eventPublisher;
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @Transactional
+  @Override
+  public UserDto updateRole(RoleUpdateRequest request) {
+    return updateRoleInternal(request);
+  }
 
   @Transactional
   @Override
-  public UserDto updateRole(UserRoleUpdateRequest request) {
-    log.debug("사용자 역할 변경 시작: userId={}, newRole={}", request.userId(), request.role());
+  public UserDto updateRoleInternal(RoleUpdateRequest request) {
+    UUID userId = request.userId();
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> UserNotFoundException.withId(userId));
 
-    User user = userRepository.findById(request.userId())
-        .orElseThrow(() -> UserNotFoundException.withId(request.userId()));
-
-    Role oldRole = user.getRole();
-    Role newRole = request.role();
-
+    Role previousRole = user.getRole();
+    Role newRole = request.newRole();
     user.updateRole(newRole);
-    userRepository.save(user);
 
-    jwtRegistry.invalidateJwtInformationByUserId(request.userId());
+    jwtRegistry.invalidateJwtInformationByUserId(userId);
+    eventPublisher.publishEvent(
+        new RoleUpdatedEvent(user.getId(), previousRole, newRole, user.getUpdatedAt())
+    );
 
-    if (oldRole != newRole) {
-      eventPublisher.publishEvent(new RoleUpdatedEvent(request.userId(), oldRole, newRole));
-    }
-
-    log.info("사용자 역할 변경 완료: userId={}, newRole={}", request.userId(), request.role());
-    return userMapper.toDto(user);
+    UserDto dto = userMapper.toDto(user);
+    eventPublisher.publishEvent(new UserUpdatedEvent(dto));
+    return dto;
   }
 
   @Override
-  public TokenRefreshResult refresh(String refreshToken) {
-    if (refreshToken == null
-        || !jwtTokenProvider.validateRefreshToken(refreshToken)
+  public JwtInformation refreshToken(String refreshToken) {
+    // Validate refresh token
+    if (!tokenProvider.validateRefreshToken(refreshToken)
         || !jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
-      throw new DiscodeitException(ErrorCode.INVALID_REFRESH_TOKEN);
+      log.error("Invalid or expired refresh token: {}", refreshToken);
+      throw new DiscodeitException(ErrorCode.INVALID_TOKEN);
     }
 
-    UUID userId = jwtTokenProvider.getUserId(refreshToken);
-    String username = jwtTokenProvider.getUsername(refreshToken);
-    String role = jwtTokenProvider.getRole(refreshToken);
+    String username = tokenProvider.getUsernameFromToken(refreshToken);
+    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-    String newAccessToken = jwtTokenProvider.generateAccessToken(userId, username, role);
-    String newRefreshToken = jwtTokenProvider.generateRefreshToken(userId, username, role);
+    if (!(userDetails instanceof DiscodeitUserDetails discodeitUserDetails)) {
+      throw new DiscodeitException(ErrorCode.INVALID_USER_DETAILS);
+    }
 
-    jwtRegistry.rotateJwtInformation(newAccessToken, newRefreshToken);
+    try {
+      String newAccessToken = tokenProvider.generateAccessToken(discodeitUserDetails);
+      String newRefreshToken = tokenProvider.generateRefreshToken(discodeitUserDetails);
+      log.info("Access token refreshed for user: {}", username);
 
-    log.info("토큰 재발급: userId={}, username={}", userId, username);
-    return new TokenRefreshResult(newAccessToken, newRefreshToken);
+      JwtInformation newJwtInformation = new JwtInformation(
+          discodeitUserDetails.getUserDto(),
+          newAccessToken,
+          newRefreshToken
+      );
+      jwtRegistry.rotateJwtInformation(
+          refreshToken,
+          newJwtInformation
+      );
+
+      return newJwtInformation;
+
+    } catch (JOSEException e) {
+      log.error("Failed to generate new tokens for user: {}", username, e);
+      throw new DiscodeitException(ErrorCode.INTERNAL_SERVER_ERROR, e);
+    }
   }
 }

@@ -2,161 +2,109 @@ package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.config.CacheNames;
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.Notification;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.Role;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.event.MessageCreatedEvent;
-import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
-import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.NotificationRepository;
+import com.sprint.mission.discodeit.event.message.MessageCreatedEvent;
+import com.sprint.mission.discodeit.event.message.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.message.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import java.util.List;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.NotificationService;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
+@Component
 public class NotificationRequiredTopicListener {
 
-  private static final String ROLE_UPDATED_TITLE = "권한이 변경되었습니다.";
-  private static final String S3_UPLOAD_FAILED_TITLE = "S3 파일 업로드 실패";
-
-  private final ObjectMapper objectMapper;
-  private final NotificationRepository notificationRepository;
-  private final MessageRepository messageRepository;
+  private final NotificationService notificationService;
   private final ReadStatusRepository readStatusRepository;
+  private final ChannelService channelService;
   private final UserRepository userRepository;
-  private final CacheManager cacheManager;
+  private final ObjectMapper objectMapper;
 
-  @KafkaListener(topics = KafkaTopics.MESSAGE_CREATED)
-  @Transactional
+  @Value("${discodeit.admin.username}")
+  private String adminUsername;
+
+
+  @KafkaListener(topics = "discodeit.MessageCreatedEvent")
   public void onMessageCreatedEvent(String kafkaEvent) {
     try {
-      MessageCreatedEvent event = objectMapper.readValue(kafkaEvent, MessageCreatedEvent.class);
-      log.debug("MessageCreatedEvent 수신: messageId={}, channelId={}",
-          event.messageId(), event.channelId());
+      MessageCreatedEvent event = objectMapper.readValue(kafkaEvent,
+          MessageCreatedEvent.class);
 
-      Message message = messageRepository.findById(event.messageId()).orElse(null);
-      if (message == null) {
-        log.warn("메시지가 존재하지 않습니다: messageId={}", event.messageId());
-        return;
-      }
+      MessageDto message = event.getData();
+      UUID channelId = message.channelId();
+      ChannelDto channel = channelService.find(channelId);
 
-      List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelIdWithUser(
-          event.channelId());
+      Set<UUID> receiverIds = readStatusRepository.findAllByChannelIdAndNotificationEnabledTrue(
+              channelId)
+          .stream().map(readStatus -> readStatus.getUser().getId())
+          .filter(receiverId -> !receiverId.equals(message.author().id()))
+          .collect(Collectors.toSet());
+      String title = message.author().username()
+          .concat(
+              channel.type().equals(ChannelType.PUBLIC) ?
+                  String.format(" (#%s)", channel.name()) : ""
+          );
+      String content = message.content();
 
-      List<UUID> notifiedUserIds = readStatuses.stream()
-          .filter(ReadStatus::isNotificationEnabled)
-          .map(readStatus -> readStatus.getUser().getId())
-          .filter(userId -> !userId.equals(event.authorId()))
-          .toList();
-
-      if (notifiedUserIds.isEmpty()) {
-        log.debug("알림 대상 사용자가 없습니다: channelId={}", event.channelId());
-        return;
-      }
-
-      String title = buildMessageTitle(message);
-      String content = message.getContent();
-
-      List<Notification> notifications = notifiedUserIds.stream()
-          .map(userId -> new Notification(userId, title, content))
-          .toList();
-      notificationRepository.saveAll(notifications);
-
-      evictNotificationsCache(notifiedUserIds);
-
-      log.info("메시지 알림 저장 완료: messageId={}, 알림 대상 수={}",
-          event.messageId(), notifiedUserIds.size());
+      notificationService.create(receiverIds, title, content);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
   }
 
-  @KafkaListener(topics = KafkaTopics.ROLE_UPDATED)
-  @Transactional
+  @KafkaListener(topics = "discodeit.RoleUpdatedEvent")
   public void onRoleUpdatedEvent(String kafkaEvent) {
     try {
       RoleUpdatedEvent event = objectMapper.readValue(kafkaEvent, RoleUpdatedEvent.class);
-      log.debug("RoleUpdatedEvent 수신: userId={}, oldRole={}, newRole={}",
-          event.userId(), event.oldRole(), event.newRole());
+      UUID userId = event.getUserId();
+      Role from = event.getFrom();
+      Role to = event.getTo();
 
-      String content = event.oldRole().name() + " -> " + event.newRole().name();
-      Notification notification = new Notification(event.userId(), ROLE_UPDATED_TITLE, content);
-      notificationRepository.save(notification);
+      String title = "권한이 변경되었습니다.";
+      String content = String.format("%s -> %s", from.name(), to.name());
 
-      evictNotificationsCache(List.of(event.userId()));
-
-      log.info("권한 변경 알림 저장 완료: userId={}, content={}", event.userId(), content);
+      notificationService.create(Set.of(userId), title, content);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
   }
 
-  @KafkaListener(topics = KafkaTopics.S3_UPLOAD_FAILED)
-  @Transactional
+  @KafkaListener(topics = "discodeit.S3UploadFailedEvent")
   public void onS3UploadFailedEvent(String kafkaEvent) {
     try {
       S3UploadFailedEvent event = objectMapper.readValue(kafkaEvent, S3UploadFailedEvent.class);
-      log.debug("S3UploadFailedEvent 수신: binaryContentId={}", event.binaryContentId());
+      String requestId = event.getRequestId();
+      UUID binaryContentId = event.getBinaryContentId();
+      Throwable e = event.getE();
 
-      String content = String.format(
-          "RequestId: %s%nOperation: %s%nBinaryContentId: %s%nError: %s",
-          event.requestId(),
-          event.operation(),
-          event.binaryContentId(),
-          event.errorMessage()
-      );
+      String title = "S3 파일 업로드 실패";
 
-      List<User> admins = userRepository.findAllByRole(Role.ADMIN);
-      if (admins.isEmpty()) {
-        log.warn("ADMIN 사용자가 없어 실패 알림을 보낼 수 없습니다.");
-        return;
-      }
+      StringBuffer sb = new StringBuffer();
+      sb.append("RequestId: ").append(requestId).append("\n");
+      sb.append("BinaryContentId: ").append(binaryContentId).append("\n");
+      sb.append("Error: ").append(e.getMessage()).append("\n");
+      String content = sb.toString();
 
-      List<Notification> notifications = admins.stream()
-          .map(admin -> new Notification(admin.getId(), S3_UPLOAD_FAILED_TITLE, content))
-          .toList();
-      notificationRepository.saveAll(notifications);
+      Set<UUID> receiverIds = userRepository.findByUsername(adminUsername)
+          .map(user -> Set.of(user.getId()))
+          .orElse(Set.of());
 
-      List<UUID> adminIds = admins.stream().map(User::getId).toList();
-      evictNotificationsCache(adminIds);
-
-      log.info("S3 업로드 실패 알림 발송 완료: adminCount={}, binaryContentId={}",
-          admins.size(), event.binaryContentId());
+      notificationService.create(receiverIds, title, content);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private String buildMessageTitle(Message message) {
-    String authorName = message.getAuthor() != null
-        ? message.getAuthor().getUsername()
-        : "Unknown";
-    if (message.getChannel().getType() == ChannelType.PUBLIC) {
-      return authorName + " (#" + message.getChannel().getName() + ")";
-    }
-    return authorName;
-  }
-
-  private void evictNotificationsCache(List<UUID> userIds) {
-    Cache cache = cacheManager.getCache(CacheNames.NOTIFICATIONS);
-    if (cache == null) {
-      return;
-    }
-    userIds.forEach(cache::evict);
   }
 }

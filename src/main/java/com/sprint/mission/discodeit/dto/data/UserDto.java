@@ -8,8 +8,8 @@ public record UserDto(
     String username,
     String email,
     BinaryContentDto profile,
-    Role role,
-    boolean online
+    Boolean online,
+    Role role
 ) {
 
 }

@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.hibernate.Hibernate;
@@ -35,7 +34,8 @@ class UserRepositoryTest {
    */
   private User createTestUser(String username, String email) {
     BinaryContent profile = new BinaryContent("profile.jpg", 1024L, "image/jpeg");
-    return new User(username, email, "password123!@#", profile);
+    User user = new User(username, email, "password123!@#", profile);
+    return user;
   }
 
   @Test
@@ -100,8 +100,8 @@ class UserRepositoryTest {
   }
 
   @Test
-  @DisplayName("모든 사용자를 프로필 정보와 함께 조회할 수 있다")
-  void findAllWithProfile_ReturnsUsersWithProfile() {
+  @DisplayName("모든 사용자를 프로필과 함께 조회할 수 있다")
+  void findAllWithProfileAndStatus_ReturnsUsersWithProfileAndStatus() {
     // given
     User user1 = createTestUser("user1", "user1@example.com");
     User user2 = createTestUser("user2", "user2@example.com");
@@ -119,13 +119,14 @@ class UserRepositoryTest {
     assertThat(users).hasSize(2);
     assertThat(users).extracting("username").containsExactlyInAnyOrder("user1", "user2");
 
-    // 프로필 정보가 함께 조회되었는지 확인
+    // 프로필과 상태 정보가 함께 조회되었는지 확인 - 프록시 초기화 없이도 접근 가능한지 테스트
     User foundUser1 = users.stream().filter(u -> u.getUsername().equals("user1")).findFirst()
         .orElseThrow();
     User foundUser2 = users.stream().filter(u -> u.getUsername().equals("user2")).findFirst()
         .orElseThrow();
 
+    // 프록시 초기화 여부 확인
     assertThat(Hibernate.isInitialized(foundUser1.getProfile())).isTrue();
     assertThat(Hibernate.isInitialized(foundUser2.getProfile())).isTrue();
   }
-}
+} 

@@ -9,7 +9,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 public interface MessageService {
 
@@ -20,9 +19,7 @@ public interface MessageService {
 
   PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createdAt, Pageable pageable);
 
-  @PreAuthorize("@messageOwnershipChecker.isOwner(#messageId, authentication)")
   MessageDto update(UUID messageId, MessageUpdateRequest request);
 
-  @PreAuthorize("@messageOwnershipChecker.isOwner(#messageId, authentication)")
   void delete(UUID messageId);
 }

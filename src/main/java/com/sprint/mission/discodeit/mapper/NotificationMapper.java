@@ -8,4 +8,4 @@ import org.mapstruct.Mapper;
 public interface NotificationMapper {
 
   NotificationDto toDto(Notification notification);
-}
+} 

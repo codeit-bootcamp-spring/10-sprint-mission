@@ -8,8 +8,8 @@ CREATE TABLE users
     username   varchar(50) UNIQUE       NOT NULL,
     email      varchar(100) UNIQUE      NOT NULL,
     password   varchar(60)              NOT NULL,
-    role       varchar(20)              NOT NULL DEFAULT 'USER',
-    profile_id uuid
+    profile_id uuid,
+    role       varchar(20)              NOT NULL
 );
 
 -- BinaryContent
@@ -22,12 +22,8 @@ CREATE TABLE binary_contents
     size         bigint                   NOT NULL,
     content_type varchar(100)             NOT NULL,
     status       varchar(20)              NOT NULL
+--     ,bytes        bytea        NOT NULL
 );
-
--- ALTER TABLE binary_contents
---      ADD COLUMN updated_at timestamp with time zone;
--- ALTER TABLE binary_contents
---      ADD COLUMN status varchar(20) NOT NULL;
 
 -- Channel
 CREATE TABLE channels
@@ -62,29 +58,26 @@ CREATE TABLE message_attachments
 -- ReadStatus
 CREATE TABLE read_statuses
 (
-    id           uuid PRIMARY KEY,
-    created_at   timestamp with time zone NOT NULL,
-    updated_at   timestamp with time zone,
-    user_id      uuid                     NOT NULL,
-    channel_id   uuid                     NOT NULL,
-    last_read_at timestamp with time zone NOT NULL,
-    notification_enabled boolean          NOT NULL,
+    id                   uuid PRIMARY KEY,
+    created_at           timestamp with time zone NOT NULL,
+    updated_at           timestamp with time zone,
+    user_id              uuid                     NOT NULL,
+    channel_id           uuid                     NOT NULL,
+    last_read_at         timestamp with time zone NOT NULL,
+    notification_enabled boolean                  NOT NULL,
     UNIQUE (user_id, channel_id)
 );
 
--- ALTER TABLE read_statuses
---      ADD COLUMN notification_enabled boolean NOT NULL;
 
--- Notification
 CREATE TABLE notifications
 (
     id          uuid PRIMARY KEY,
     created_at  timestamp with time zone NOT NULL,
+    updated_at  timestamp with time zone,
     receiver_id uuid                     NOT NULL,
     title       varchar(255)             NOT NULL,
     content     text                     NOT NULL
 );
-
 
 -- 제약 조건
 -- User (1) -> BinaryContent (1)
@@ -127,11 +120,4 @@ ALTER TABLE read_statuses
     ADD CONSTRAINT fk_read_status_channel
         FOREIGN KEY (channel_id)
             REFERENCES channels (id)
-            ON DELETE CASCADE;
-
--- Notification (N) -> User (1)
-ALTER TABLE notifications
-    ADD CONSTRAINT fk_notification_user
-        FOREIGN KEY (receiver_id)
-            REFERENCES users (id)
             ON DELETE CASCADE;
