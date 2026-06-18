@@ -8,6 +8,8 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -20,7 +22,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -28,8 +29,11 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,12 +48,13 @@ public class BasicMessageService implements MessageService {
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher eventPublisher;
   private final MessageMapper messageMapper;
   private final PageResponseMapper pageResponseMapper;
 
   @Transactional
   @Override
+  @CacheEvict(value = "userChannels", allEntries = true)
   public MessageDto create(MessageCreateRequest request,
       List<MultipartFile> attachments) {
     User author = userRepository.findById(request.getAuthorId())
@@ -65,7 +70,10 @@ public class BasicMessageService implements MessageService {
         request.getContent(),
         attachmentContents
     );
+
     Message saved = messageRepository.saveAndFlush(message);
+
+    eventPublisher.publishEvent(new MessageCreatedEvent(saved.getId()));
 
     log.info("[SUCCESS] Created Message: id={}, channelId={}",
         saved.getId(), channel.getId());
@@ -103,6 +111,7 @@ public class BasicMessageService implements MessageService {
 
   @Transactional
   @Override
+  @PreAuthorize("@messageRepository.findWithAuthorAndAttachmentsById(#messageId).orElse(null)?.author?.id == authentication.principal.userDto.id")
   public MessageDto update(UUID messageId, MessageUpdateRequest request) {
     Message message = findMessageEntityById(messageId);
 
@@ -115,6 +124,8 @@ public class BasicMessageService implements MessageService {
 
   @Transactional
   @Override
+  @CacheEvict(value = "userChannels", allEntries = true)
+  @PreAuthorize("@messageRepository.findWithAuthorAndAttachmentsById(#messageId).orElse(null)?.author?.id == authentication.principal.userDto.id")
   public void delete(UUID messageId) {
     Message message = findMessageEntityById(messageId);
 
@@ -138,8 +149,15 @@ public class BasicMessageService implements MessageService {
             file.getContentType()
         );
         BinaryContent saved = binaryContentRepository.save(content);
-        binaryContentStorage.put(saved.getId(), file.getBytes());
+
+        eventPublisher.publishEvent(
+            new BinaryContentCreatedEvent(
+                saved.getId(),
+                file.getBytes())
+        );
+
         results.add(saved);
+
       } catch (IOException e) {
         throw new DiscodeitException(ErrorCode.FILE_SAVE_ERROR);
       }

@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
@@ -45,7 +46,15 @@ public class BasicReadStatusService implements ReadStatusService {
     User user = findUserEntityById(request.getUserId());
     Channel channel = findChannelEntityById(request.getChannelId());
 
-    ReadStatus readStatus = new ReadStatus(user, channel);
+    boolean notificationEnabled = channel.getType() == ChannelType.PRIVATE;
+
+    ReadStatus readStatus =
+        new ReadStatus(
+            user,
+            channel,
+            notificationEnabled
+        );
+
     return readStatusMapper.toDto(readStatusRepository.save(readStatus));
 
   }
@@ -67,6 +76,13 @@ public class BasicReadStatusService implements ReadStatusService {
   public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
     ReadStatus readStatus = findReadStatusEntityById(readStatusId);
     readStatus.updateLastReadAt();
+
+    if (request.getNotificationEnabled() != null) {
+      readStatus.updateNotificationEnabled(
+          request.getNotificationEnabled()
+      );
+    }
+    
     return readStatusMapper.toDto(readStatus);
   }
 

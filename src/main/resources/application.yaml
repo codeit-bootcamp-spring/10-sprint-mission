@@ -13,21 +13,41 @@ spring:
       client:
         instance:
           name: discodeit
+  cache:
+    type: redis
+    cache-names:
+      - users
+      - userChannels
+      - userNotifications
+
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 discodeit:
   storage:
-    type: ${STORAGE_TYPE:local}
+    type: s3
     local:
       root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
-    s3:
-      access-key: ${AWS_S3_ACCESS_KEY}
-      secret-key: ${AWS_S3_SECRET_KEY}
-      region: ${AWS_S3_REGION}
-      bucket: ${AWS_S3_BUCKET}
-      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
   repository:
     type: file
     file-directory: .discodeit
+
+aws:
+  region: ${AWS_S3_REGION:ap-northeast-2}
+  credentials:
+    access-key: ${AWS_S3_ACCESS_KEY:dummy}
+    secret-key: ${AWS_S3_SECRET_KEY:dummy}
+  s3:
+    bucket: ${AWS_S3_BUCKET:dummy}
 
 # Swagger (SpringDoc) 설정 추가
 springdoc:
@@ -50,9 +70,13 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,info,metrics,loggers"
-    health:
-      show-details: always
+        include: "health,info,metrics,loggers,caches"
+  health:
+    show-details: always
+
+  observations:
+    annotations:
+      enabled: true
 
 info:
   app:
@@ -72,3 +96,8 @@ info:
     multipart:
       max-file-size: ${spring.servlet.multipart.max-file-size:10MB}
       max-request-size: ${spring.servlet.multipart.max-request-size:10MB}
+jwt:
+  key: ${JWT_SECRET_KEY}
+  access-token-expiration-minutes: 30
+  refresh-token-expiration-minutes: 420
+  max-active-count: 5

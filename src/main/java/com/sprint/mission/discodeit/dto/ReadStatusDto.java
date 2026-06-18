@@ -27,4 +27,6 @@ public class ReadStatusDto {
   @Schema(description = "마지막으로 읽은 시각", example = "2026-02-20T08:40:00Z")
   private Instant lastReadAt;
 
+  @Schema(description = "채널 알림 활성화 여부", example = "true")
+  private boolean notificationEnabled;
 }

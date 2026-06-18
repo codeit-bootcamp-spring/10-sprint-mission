@@ -1,20 +1,28 @@
 server:
-  port: ${PORT:80}
+  port: 8080
 
 spring:
   datasource:
     url: ${PROD_DB_URL}
     username: ${PROD_DB_USERNAME}
     password: ${PROD_DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-  boot:
-    admin:
-      client:
-        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+
+  kafka:
+    bootstrap-servers: broker:29092
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+    consumer:
+      group-id: discodeit-${HOSTNAME}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
     show-sql: false
     properties:
       hibernate:
@@ -27,12 +35,12 @@ logging:
     org.hibernate.SQL: error
 
 aws:
-  region: ${AWS_S3_REGION}
+  region: ${AWS_S3_REGION:ap-northeast-2}
   credentials:
-    access-key: ${AWS_S3_ACCESS_KEY}
-    secret-key: ${AWS_S3_SECRET_KEY}
+    access-key: ${AWS_S3_ACCESS_KEY:dummy}
+    secret-key: ${AWS_S3_SECRET_KEY:dummy}
   s3:
-    bucket: ${AWS_S3_BUCKET}
+    bucket: ${AWS_S3_BUCKET:dummy}
 
 discodeit:
   storage:

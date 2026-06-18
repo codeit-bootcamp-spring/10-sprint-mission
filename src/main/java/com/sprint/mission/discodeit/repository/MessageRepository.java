@@ -36,6 +36,15 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
   @EntityGraph(attributePaths = {"author", "attachments"})
   Optional<Message> findWithAuthorAndAttachmentsById(UUID id);
 
+  @Query("""
+      SELECT m
+      FROM Message m
+      JOIN FETCH m.author
+      JOIN FETCH m.channel
+      WHERE m.id = :messageId
+      """)
+  Optional<Message> findWithAuthorAndChannelById(UUID messageId);
+
   long countByChannel(Channel channel);
 
   void deleteByChannel(Channel channel);

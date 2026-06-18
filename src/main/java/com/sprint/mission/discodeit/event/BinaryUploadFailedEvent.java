@@ -1,0 +1,11 @@
+package com.sprint.mission.discodeit.event;
+
+import java.util.UUID;
+
+public record BinaryUploadFailedEvent(
+    UUID binaryContentId,
+    String requestId,
+    String errorMessage
+) {
+
+}
