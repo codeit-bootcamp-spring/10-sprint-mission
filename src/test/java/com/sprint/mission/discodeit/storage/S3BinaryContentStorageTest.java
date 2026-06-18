@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 
 import com.sprint.mission.discodeit.config.S3Properties;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.exception.binarycontent.StorageDownloadFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.StorageGetFailedException;
@@ -143,7 +144,8 @@ class S3BinaryContentStorageTest {
   @DisplayName("성공: S3에서 파일 URL 받아서 리다이렉션 반환 성공")
   void downloadFileFromS3Success() throws Exception {
     //given
-    BinaryContentDto dto = new BinaryContentDto(UUID.randomUUID(), "fileName", 50L, "jpg");
+    BinaryContentDto dto = new BinaryContentDto(UUID.randomUUID(), "fileName", 50L, "jpg",
+        BinaryContentStatus.SUCCESS);
     URL fakeUrl = new URI("https://fake-s3-bucket.s3.amazonaws.com/test").toURL();
     PresignedGetObjectRequest presignedRequest = mock(PresignedGetObjectRequest.class);
 
@@ -165,7 +167,8 @@ class S3BinaryContentStorageTest {
   @DisplayName("실패: S3에서 파일 URL 받아서 리다이렉션 반환 중 오류 발생")
   void downloadFileToS3Failure() {
     //given
-    BinaryContentDto dto = new BinaryContentDto(UUID.randomUUID(), "fileName", 50L, "jpg");
+    BinaryContentDto dto = new BinaryContentDto(UUID.randomUUID(), "fileName", 50L, "jpg",
+        BinaryContentStatus.SUCCESS);
     PresignedGetObjectRequest presignedRequest = mock(PresignedGetObjectRequest.class);
 
     AwsErrorDetails errorDetails = AwsErrorDetails.builder()

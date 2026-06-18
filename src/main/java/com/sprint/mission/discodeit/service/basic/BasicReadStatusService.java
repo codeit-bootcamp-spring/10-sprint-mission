@@ -67,7 +67,7 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   public ReadStatusDto update(UUID id, ReadStatusUpdateRequest dto) {
     ReadStatus status = find(id);
-    status.update(dto.lastReadAt());//마지막 시간 현재로 업데이트
+    status.update(dto.lastReadAt(), dto.newNotificationEnabled());//마지막 시간 현재로 업데이트
     return readStatusMapper.toDto(status);
   }
 

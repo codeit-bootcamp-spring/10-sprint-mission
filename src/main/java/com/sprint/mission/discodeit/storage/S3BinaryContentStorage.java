@@ -2,18 +2,26 @@ package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.config.S3Properties;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.notification.NotificationCreateRequest;
+import com.sprint.mission.discodeit.event.ErrorNotificationEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.StorageDownloadFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.StorageGetFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.StorageUploadFailedException;
+import com.sprint.mission.discodeit.service.NotificationService;
 import java.io.InputStream;
 import java.net.URI;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -35,8 +43,16 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   private final S3Presigner s3Presigner;
   private final S3Properties s3Properties;
   private static final String FILE_PREFIX = "uploads/";
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   @Override
+  @Retryable(
+      retryFor = {
+          StorageUploadFailedException.class
+      },
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 1000)
+  )
   public UUID put(UUID id, byte[] bytes) {
     try {
       log.debug("S3 파일 업로드 시도: fileId={}", id);
@@ -132,4 +148,18 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   private String generateKey(UUID id) {
     return FILE_PREFIX + id.toString();
   }
+
+  @Recover
+  public UUID recover(StorageUploadFailedException e, UUID id, byte[] bytes) {
+    // MDC에서 키 꺼내기
+    String requestId = MDC.get("request_id");
+    String content =
+        "RequestId: " + requestId + "\nContentId: " + id + "\nError: " + e.getMessage();
+    applicationEventPublisher.publishEvent(new ErrorNotificationEvent(
+        "S3 파일 업로드 실패",
+        content
+    ));
+    throw e;
+  }
+
 }

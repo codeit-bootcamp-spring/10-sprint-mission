@@ -6,15 +6,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 
-import java.io.Serializable;
 import java.time.Instant;
-import java.util.UUID;
 import lombok.NoArgsConstructor;
 
 @Getter
@@ -36,6 +33,9 @@ public class ReadStatus extends BaseUpdatableEntity {
   @JoinColumn(name = "channel_id", nullable = false)
   private Channel channel;
 
+  @Column(nullable = false)
+  private boolean notificationEnabled;
+
   public static ReadStatus create(User user, Channel channel, Instant lastReadAt) {
     return new ReadStatus(user, channel, lastReadAt);
   }
@@ -44,11 +44,15 @@ public class ReadStatus extends BaseUpdatableEntity {
     this.user = user;
     this.channel = channel;
     this.lastReadAt = lastReadAt;
+    this.notificationEnabled = channel.getType() == ChannelType.PRIVATE;
   }
 
-  public void update(Instant lastReadAt) {
+  public void update(Instant lastReadAt, Boolean notificationEnabled) {
     if (lastReadAt != null) {
       this.lastReadAt = lastReadAt;
+    }
+    if (notificationEnabled != null) {
+      this.notificationEnabled = notificationEnabled;
     }
   }
 }

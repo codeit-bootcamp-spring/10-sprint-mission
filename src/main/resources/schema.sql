@@ -5,7 +5,9 @@ CREATE TABLE binary_contents
     size         BIGINT                   NOT NULL,
     bytes        BYTEA                    NOT NULL,
     content_type VARCHAR(100)             NOT NULL,
-    created_at   TIMESTAMP WITH TIME ZONE NOT NULL
+    status       varchar(20)              NOT NULL,
+    created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at   timestamp with time zone
 );
 
 /*
@@ -20,6 +22,7 @@ CREATE TABLE users
     username   VARCHAR(50)              NOT NULL UNIQUE,
     email      VARCHAR(100)             NOT NULL UNIQUE,
     password   VARCHAR(60)              NOT NULL,
+    role       VARCHAR(20)              NOT NULL,
     profile_id UUID UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE,
@@ -31,14 +34,14 @@ CREATE TABLE users
 
 
 
-CREATE TABLE user_statuses
-(
-    id             UUID PRIMARY KEY,
-    user_id        UUID UNIQUE              NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    last_active_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at     TIMESTAMP WITH TIME ZONE
-);
+-- CREATE TABLE user_statuses
+-- (
+--     id             UUID PRIMARY KEY,
+--     user_id        UUID UNIQUE              NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+--     last_active_at TIMESTAMP WITH TIME ZONE NOT NULL,
+--     created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
+--     updated_at     TIMESTAMP WITH TIME ZONE
+-- );
 
 CREATE TABLE channels
 (
@@ -52,12 +55,13 @@ CREATE TABLE channels
 
 CREATE TABLE read_statuses
 (
-    id           UUID PRIMARY KEY,
-    user_id      UUID                     NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    channel_id   UUID                     NOT NULL REFERENCES channels (id) ON DELETE CASCADE,
-    last_read_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at   TIMESTAMP WITH TIME ZONE,
+    id                   UUID PRIMARY KEY,
+    user_id              UUID                     NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    channel_id           UUID                     NOT NULL REFERENCES channels (id) ON DELETE CASCADE,
+    last_read_at         TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at           TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at           TIMESTAMP WITH TIME ZONE,
+    notification_enabled boolean                  NOT NULL,
     CONSTRAINT user_channel_id UNIQUE (user_id, channel_id)
 );
 
@@ -76,3 +80,20 @@ CREATE TABLE message_attachments
     message_id    UUID NOT NULL REFERENCES messages (id) ON DELETE CASCADE,
     attachment_id UUID NOT NULL REFERENCES binary_contents (id) ON DELETE CASCADE
 );
+
+CREATE TABLE persistent_logins
+(
+    username  VARCHAR(64) NOT NULL,
+    series    VARCHAR(64) PRIMARY KEY,
+    token     VARCHAR(64) NOT NULL,
+    last_used TIMESTAMP   NOT NULL
+);
+
+CREATE TABLE notifications
+(
+    id          UUID PRIMARY KEY,
+    title       VARCHAR(100)             NOT NULL,
+    content     VARCHAR(255)             NOT NULL,
+    receiver_id UUID                     NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    created_at  TIMESTAMP WITH TIME ZONE NOT NULL
+)
