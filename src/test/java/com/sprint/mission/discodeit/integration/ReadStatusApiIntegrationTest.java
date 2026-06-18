@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
@@ -30,14 +31,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.test.context.support.WithMockUser;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class ReadStatusApiIntegrationTest {
 
   @Autowired
@@ -56,6 +60,7 @@ class ReadStatusApiIntegrationTest {
   private ChannelService channelService;
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("읽음 상태 생성 API 통합 테스트")
   void createReadStatus_Success() throws Exception {
     // Given
@@ -87,64 +92,69 @@ class ReadStatusApiIntegrationTest {
     // When & Then
     mockMvc.perform(post("/api/readStatuses")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(requestBody))
+            .content(requestBody)
+            .with(csrf()))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id", notNullValue()))
         .andExpect(jsonPath("$.userId", is(user.id().toString())))
         .andExpect(jsonPath("$.channelId", is(channel.id().toString())))
         .andExpect(jsonPath("$.lastReadAt", is(lastReadAt.toString())));
   }
-//ReadStatusService의 create는 중복이면 예외를 던지는것이아닌 기존꺼를 찾고, lastReadAt만 save하는 방식임.
-//  @Test
-//  @DisplayName("읽음 상태 생성 실패 API 통합 테스트 - 중복 생성")
-//  void createReadStatus_Failure_Duplicate() throws Exception {
-//    // Given
-//    // 테스트 사용자 생성
-//    UserCreateRequest userRequest = new UserCreateRequest(
-//        "duplicateuser",
-//        "duplicate@example.com",
-//        "Password1!"
-//    );
-//    UserDto user = userService.create(userRequest, Optional.empty());
-//
-//    // 공개 채널 생성
-//    PublicChannelCreateRequest channelRequest = new PublicChannelCreateRequest(
-//        "중복 테스트 채널",
-//        "중복 테스트 채널 설명입니다."
-//    );
-//    ChannelDto channel = channelService.create(channelRequest);
-//
-//    // 첫 번째 읽음 상태 생성 요청 (성공)
-//    Instant lastReadAt = Instant.now();
-//    ReadStatusCreateRequest firstCreateRequest = new ReadStatusCreateRequest(
-//        user.id(),
-//        channel.id(),
-//        lastReadAt
-//    );
-//
-//    String firstRequestBody = objectMapper.writeValueAsString(firstCreateRequest);
-//    mockMvc.perform(post("/api/readStatuses")
-//            .contentType(MediaType.APPLICATION_JSON)
-//            .content(firstRequestBody))
-//        .andExpect(status().isCreated());
-//
-//    // 두 번째 읽음 상태 생성 요청 (동일 사용자, 동일 채널) - 실패해야 함
-//    ReadStatusCreateRequest duplicateCreateRequest = new ReadStatusCreateRequest(
-//        user.id(),
-//        channel.id(),
-//        Instant.now()
-//    );
-//
-//    String duplicateRequestBody = objectMapper.writeValueAsString(duplicateCreateRequest);
-//
-//    // When & Then
-//    mockMvc.perform(post("/api/readStatuses")
-//            .contentType(MediaType.APPLICATION_JSON)
-//            .content(duplicateRequestBody))
-//        .andExpect(status().isConflict());
-//  }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
+  @DisplayName("읽음 상태 생성 실패 API 통합 테스트 - 중복 생성")
+  void createReadStatus_Failure_Duplicate() throws Exception {
+    // Given
+    // 테스트 사용자 생성
+    UserCreateRequest userRequest = new UserCreateRequest(
+        "duplicateuser",
+        "duplicate@example.com",
+        "Password1!"
+    );
+    UserDto user = userService.create(userRequest, Optional.empty());
+
+    // 공개 채널 생성
+    PublicChannelCreateRequest channelRequest = new PublicChannelCreateRequest(
+        "중복 테스트 채널",
+        "중복 테스트 채널 설명입니다."
+    );
+    ChannelDto channel = channelService.create(channelRequest);
+
+    // 첫 번째 읽음 상태 생성 요청 (성공)
+    Instant lastReadAt = Instant.now();
+    ReadStatusCreateRequest firstCreateRequest = new ReadStatusCreateRequest(
+        user.id(),
+        channel.id(),
+        lastReadAt
+    );
+
+    String firstRequestBody = objectMapper.writeValueAsString(firstCreateRequest);
+    mockMvc.perform(post("/api/readStatuses")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(firstRequestBody)
+            .with(csrf()))
+        .andExpect(status().isCreated());
+
+    // 두 번째 읽음 상태 생성 요청 (동일 사용자, 동일 채널) - 실패해야 함
+    ReadStatusCreateRequest duplicateCreateRequest = new ReadStatusCreateRequest(
+        user.id(),
+        channel.id(),
+        Instant.now()
+    );
+
+    String duplicateRequestBody = objectMapper.writeValueAsString(duplicateCreateRequest);
+
+    // When & Then
+    mockMvc.perform(post("/api/readStatuses")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(duplicateRequestBody)
+            .with(csrf()))
+        .andExpect(status().isConflict());
+  }
+
+  @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("읽음 상태 업데이트 API 통합 테스트")
   void updateReadStatus_Success() throws Exception {
     // Given
@@ -185,7 +195,8 @@ class ReadStatusApiIntegrationTest {
     // When & Then
     mockMvc.perform(patch("/api/readStatuses/{readStatusId}", readStatusId)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(requestBody))
+            .content(requestBody)
+            .with(csrf()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id", is(readStatusId.toString())))
         .andExpect(jsonPath("$.userId", is(user.id().toString())))
@@ -194,6 +205,7 @@ class ReadStatusApiIntegrationTest {
   }
 
   @Test
+  @WithMockUser(roles = "USER")
   @DisplayName("읽음 상태 업데이트 실패 API 통합 테스트 - 존재하지 않는 읽음 상태")
   void updateReadStatus_Failure_NotFound() throws Exception {
     // Given
@@ -208,11 +220,13 @@ class ReadStatusApiIntegrationTest {
     // When & Then
     mockMvc.perform(patch("/api/readStatuses/{readStatusId}", nonExistentReadStatusId)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(requestBody))
+            .content(requestBody)
+            .with(csrf()))
         .andExpect(status().isNotFound());
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("사용자별 읽음 상태 목록 조회 API 통합 테스트")
   void findAllReadStatusesByUserId_Success() throws Exception {
     // Given

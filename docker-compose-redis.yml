@@ -1,0 +1,14 @@
+#Redis 서버를 Docker 컨테이너로 실행하기 위한 설정.
+# https://developer.confluent.io/confluent-tutorials/kafka-on-docker/#the-docker-compose-file
+services:
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes: #Redis 데이터를 Docker vloume에 저장합니다.
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
+volumes:
+  redis-data:
