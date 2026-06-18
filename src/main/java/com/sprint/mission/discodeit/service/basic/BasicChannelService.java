@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
 import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
@@ -8,6 +9,9 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.channel.ChannelCreatedEvent;
+import com.sprint.mission.discodeit.event.channel.ChannelDeletedEvent;
+import com.sprint.mission.discodeit.event.channel.ChannelUpdatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelDuplicateNameException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelCannotBeUpdatedException;
@@ -25,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +44,7 @@ public class BasicChannelService implements ChannelService {
   private final UserRepository userRepository;
   private final ReadStatusRepository readStatusRepository;
   private final ChannelMapper channelMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   @CacheEvict(cacheNames = "userChannels", allEntries = true)
@@ -67,6 +73,10 @@ public class BasicChannelService implements ChannelService {
       readStatusRepository.save(rs);
     }
 
+    ChannelDto channelDto = channelMapper.toDto(savedChannel, participants, null);
+
+    eventPublisher.publishEvent(new ChannelCreatedEvent(channelDto));
+
     return savedChannel.getId();
   }
 
@@ -90,7 +100,17 @@ public class BasicChannelService implements ChannelService {
 
     Channel channel = new Channel(req.name(), req.description());
 
-    return channelRepository.createChannel(channel);
+    Channel savedChannel = channelRepository.save(channel);
+
+    ChannelDto channelDto = channelMapper.toDto(
+        savedChannel,
+        List.of(),
+        null
+    );
+
+    eventPublisher.publishEvent(new ChannelCreatedEvent(channelDto));
+
+    return savedChannel.getId();
   }
 
   @Override
@@ -146,7 +166,17 @@ public class BasicChannelService implements ChannelService {
     channel.updateChannel(req.name(), req.description());
     channelRepository.saveChannel(channel);
 
-    return find(req.channelId());
+    ChannelResponse response = find(req.channelId());
+
+    ChannelDto channelDto = channelMapper.toDto(
+        channel,
+        List.of(),
+        response.lastMessageTime()
+    );
+
+    eventPublisher.publishEvent(new ChannelUpdatedEvent(channelDto));
+
+    return response;
   }
 
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
@@ -154,8 +184,13 @@ public class BasicChannelService implements ChannelService {
   @CacheEvict(cacheNames = "userChannels", allEntries = true)
   public void delete(UUID channelId) {
     requireNonNull(channelId, "channelId");
+
     Channel channel = findChannelOrThrow(channelId);
+    UUID deletedChannelId = channel.getId();
+
     channelRepository.delete(channel);
+
+    eventPublisher.publishEvent(new ChannelDeletedEvent(deletedChannelId));
   }
 
   @Override

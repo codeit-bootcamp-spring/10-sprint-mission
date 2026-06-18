@@ -8,11 +8,11 @@ import com.sprint.mission.discodeit.service.NotificationService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-@Component
+// kafka로 알림처리를 위한 비활성화
+//@Component
 @RequiredArgsConstructor
 public class NotificationRequiredEventListener {
 
