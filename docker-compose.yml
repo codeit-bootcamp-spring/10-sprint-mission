@@ -3,7 +3,7 @@ services:
     image: discodeit-nginx:local
     build:
       context: .
-      dockerfile: Dockerfile.nginx
+      dockerfile: nginx/Dockerfile
     container_name: discodeit-reverse-proxy
     ports:
       - "3000:80"
