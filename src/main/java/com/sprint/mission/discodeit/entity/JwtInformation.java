@@ -25,7 +25,8 @@ public class JwtInformation extends BaseEntity {
   }
 
   public void rotate(String accessToken, String refreshToken) {
-
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
   }
 
 }

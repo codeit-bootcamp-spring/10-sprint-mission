@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.enums.Role;
 import com.sprint.mission.discodeit.events.MessageCreatedEvent;
+import com.sprint.mission.discodeit.events.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.events.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.events.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -17,79 +18,62 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.sse.SseMessageRepository;
-import com.sprint.mission.discodeit.service.ReadStatusService;
-import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.SseService;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class NotificationRequiredTopicListener {
 
+  private static final String NOTIFICATION_CREATED_TOPIC = "discodeit.NotificationCreatedEvent";
+  private static final String NOTIFICATION_CREATED_EVENT_NAME = "notifications.created";
+
   private final ObjectMapper objectMapper;
+  private final KafkaTemplate<String, String> kafkaTemplate;
   private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
   private final MessageRepository messageRepository;
   private final ReadStatusRepository readStatusRepository;
-  private final ReadStatusService readStatusService;
   private final SseService sseService;
 
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @KafkaListener(topics = "discodeit.MessageCreatedEvent", groupId = "discodeit-group")
   @Caching(evict = {
       @CacheEvict(cacheNames = "channelsByUser", allEntries = true),
-      // 메시지 생성 시 채널 목록 dto가 최신 메시지 시간을 포함->캐시 무효화 필요
       @CacheEvict(cacheNames = "notificationsByUser", allEntries = true)
-      // 메시지 생성 시 알림 생성 -> 알림 캐시 무효화 필요ㅕ
   })
-  public void onMessageCreatedEvent(MessageCreatedEvent event) {
+  public void onMessageCreatedEvent(String kafkaEvent) throws JsonProcessingException {
+    MessageCreatedEvent event = objectMapper.readValue(kafkaEvent, MessageCreatedEvent.class);
+    Message message = messageRepository.findById(event.messageId()).orElse(null);
+    if (message == null) {
+      return;
+    }
 
-    // String의 kafkaEvent를 MessageCreatedEvent로 역직렬화
+    Channel channel = message.getChannel();
+    User author = message.getAuthor();
+    List<ReadStatus> readStatuses =
+        readStatusRepository.findAllByChannelIdAndNotificationEnabledTrue(channel.getId());
 
-    Optional<Message> optMessage = messageRepository.findById(event.messageId());
-    Message message = optMessage.orElse(null); // 메시지
-    Channel channel = Objects.requireNonNull(message).getChannel(); // 해당 채널
-    List<ReadStatus> readStatusList = readStatusRepository
-        .findAllByChannelIdAndNotificationEnabledTrue(channel.getId()); // 채널의 사용자 읽기 정보들
-    User author = message.getAuthor(); // 메시지 작성자
-
-    // 읽기 상태 리스트 순회
-    for (ReadStatus rs : readStatusList) {
-      User receiver = rs.getUser(); // 알림 수신 대상자들
+    for (ReadStatus readStatus : readStatuses) {
+      User receiver = readStatus.getUser();
       if (receiver.getId().equals(author.getId())) {
-        continue; // 메시지 작성자와 알림 수신 대상자가 같으면 무시
+        continue;
       }
 
       Notification notification = notificationRepository.save(new Notification(
-          rs.getUser(),
+          receiver,
           author.getUsername() + " (#" + channel.getName() + ")",
           message.getContent()
       ));
 
-      NotificationDto dto = new NotificationDto(
-          notification.getId(),
-          notification.getCreatedAt(),
-          notification.getReceiver().getId(),
-          notification.getTitle(),
-          notification.getContent()
-      );
-
-      sseService.send(List.of(receiver.getId()),
-          "notifications.created",
-          dto
-      );
-
+      publishNotificationCreated(List.of(receiver.getId()), toDto(notification));
     }
   }
 
@@ -99,90 +83,75 @@ public class NotificationRequiredTopicListener {
       @CacheEvict(cacheNames = "users", allEntries = true)
   })
   public void onRoleUpdatedEvent(String kafkaEvent) throws JsonProcessingException {
-    RoleUpdatedEvent event;
-    try {
-      // String으로 전달받은 event를 객체로 역직렬화
-      event = objectMapper.readValue(kafkaEvent, RoleUpdatedEvent.class);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-
-    // 알림 수신 대상자 (권한이 변경된 사용자)
+    RoleUpdatedEvent event = objectMapper.readValue(kafkaEvent, RoleUpdatedEvent.class);
     User receiver = userRepository.findById(event.userId())
         .orElseThrow(() -> new UserNotFoundException(event.userId()));
 
-    // 알림 객체 생성 및 알림 생성 이벤트 전송
     Notification notification = notificationRepository.save(new Notification(
         receiver,
-        "권한이 변경되었습니다.",
+        "Role changed",
         event.previousRole().name() + " -> " + event.newRole().name()
     ));
 
-    NotificationDto notificationDto = new NotificationDto(
+    publishNotificationCreated(List.of(receiver.getId()), toDto(notification));
+  }
+
+  @KafkaListener(topics = "discodeit.S3UploadFailedEvent", groupId = "discodeit-group")
+  public void onS3UploadFailedEvent(String kafkaEvent) throws JsonProcessingException {
+    S3UploadFailedEvent event = objectMapper.readValue(kafkaEvent, S3UploadFailedEvent.class);
+
+    String content = """
+        Task: S3 file upload failed
+        RequestId: %s
+        BinaryContentId: %s
+        ErrorMessage: %s
+        """.formatted(
+        event.requestId(),
+        event.binaryContentId(),
+        event.errorMessage()
+    );
+
+    List<User> admins = userRepository.findAllByRole(Role.ADMIN);
+    for (User admin : admins) {
+      Notification notification = notificationRepository.save(new Notification(
+          admin,
+          "Task failed: S3 file upload",
+          content
+      ));
+
+      publishNotificationCreated(List.of(admin.getId()), toDto(notification));
+    }
+  }
+
+  @KafkaListener(
+      topics = NOTIFICATION_CREATED_TOPIC,
+      groupId = "realtime-sse-${discodeit.kafka.realtime-group-id}"
+  )
+  public void onNotificationCreatedEvent(String kafkaEvent) throws JsonProcessingException {
+    NotificationCreatedEvent event = objectMapper.readValue(
+        kafkaEvent,
+        NotificationCreatedEvent.class
+    );
+    sseService.send(
+        event.receiverIds(),
+        NOTIFICATION_CREATED_EVENT_NAME,
+        event.notification()
+    );
+  }
+
+  private void publishNotificationCreated(List<java.util.UUID> receiverIds, NotificationDto dto)
+      throws JsonProcessingException {
+    NotificationCreatedEvent event = new NotificationCreatedEvent(receiverIds, dto);
+    kafkaTemplate.send(NOTIFICATION_CREATED_TOPIC, objectMapper.writeValueAsString(event));
+  }
+
+  private NotificationDto toDto(Notification notification) {
+    return new NotificationDto(
         notification.getId(),
         notification.getCreatedAt(),
         notification.getReceiver().getId(),
         notification.getTitle(),
         notification.getContent()
     );
-
-    sseService.send(
-        List.of(receiver.getId()),
-        "notifications.created",
-        notificationDto
-    );
-
-  }
-
-  @KafkaListener(topics = "discodeit.S3UploadFailedEvent", groupId = "discodeit-group")
-  public void onS3UploadFailedEvent(String kafkaEvent) {
-    S3UploadFailedEvent event;
-
-    // 역직렬화
-    try {
-      event = objectMapper.readValue(kafkaEvent, S3UploadFailedEvent.class);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-
-    String content = """
-        Task: %s
-        RequestId: %s
-        BinaryContentId: %s
-        ErrorMessage: %s
-        """.formatted(
-        "S3 파일 업로드 실패",
-        event.requestId(),
-        event.binaryContentId(),
-        event.errorMessage()
-    );
-
-    // 권한이 ADMIN 유저를 리스트 형식으로 뽑고
-    List<User> admins = userRepository.findAllByRole(Role.ADMIN);
-    // 유저 리스트를 순회하면서 알림 객체 생성 및 저장
-    for (User admin : admins) {
-      Notification notification = notificationRepository.save(new Notification(
-          admin,
-          "작업 실패: " + "S3 파일 업로드 실패",
-          content
-      ));
-
-      NotificationDto notificationDto = new NotificationDto(
-          notification.getId(),
-          notification.getCreatedAt(),
-          notification.getReceiver().getId(),
-          notification.getTitle(),
-          notification.getContent()
-      );
-
-      sseService.send(
-          List.of(admin.getId()),
-          "notifications.created",
-          notificationDto
-      );
-    }
-
-
   }
 }
-

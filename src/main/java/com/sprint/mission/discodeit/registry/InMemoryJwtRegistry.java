@@ -10,10 +10,12 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("dev")
 public class InMemoryJwtRegistry implements JwtRegistry {
 
   // Jwt를 저장할 Map 자료구조 origin
