@@ -1,11 +1,6 @@
 package com.sprint.mission.discodeit.security.logout;
 
-import com.sprint.mission.discodeit.dto.jwt.JwtInformation;
-import com.sprint.mission.discodeit.dto.user.UserDto;
-import com.sprint.mission.discodeit.event.sse.UserChangedEvent;
-import com.sprint.mission.discodeit.event.sse.UserChangedEvent.Action;
 import com.sprint.mission.discodeit.registry.JwtRegistry;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;

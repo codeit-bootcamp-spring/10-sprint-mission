@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.kafka.KafkaBinaryContentUpdateEvent;
 import com.sprint.mission.discodeit.event.sse.BinaryContentUpdateEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentUploadException;
@@ -87,7 +88,7 @@ public class BasicBinaryContentService implements BinaryContentService {
             Map.of("binaryContentId", binaryContentId)));
     binaryContent.updateStatus(status);
     BinaryContentDto dto = binaryContentMapper.toDto(binaryContent);
-    eventPublisher.publishEvent(new BinaryContentUpdateEvent(dto, receiverIds));
+    eventPublisher.publishEvent(new KafkaBinaryContentUpdateEvent(dto, receiverIds));
     return dto;
   }
 

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.registry.redis;
 
 import com.sprint.mission.discodeit.dto.jwt.JwtInformation;
+import com.sprint.mission.discodeit.event.kafka.KafkaUserLogInOutEvent;
 import com.sprint.mission.discodeit.event.sse.UserLogInOutEvent;
 import com.sprint.mission.discodeit.exception.user.DiscodeitUnauthorizedException;
 import com.sprint.mission.discodeit.registry.JwtRegistry;
@@ -65,7 +66,7 @@ public class RedisJwtRegistry implements JwtRegistry {
       redisLockProvider.releaseLock(lockKey);
     }
 
-    eventPublisher.publishEvent(new UserLogInOutEvent(jwtInformation.userDto().id(), true));
+    eventPublisher.publishEvent(new KafkaUserLogInOutEvent(jwtInformation.userDto().id(), true));
   }
 
   @CacheEvict(value = "users", key = "'all'")
@@ -83,7 +84,7 @@ public class RedisJwtRegistry implements JwtRegistry {
     }
 
     redisTemplate.delete(userKey);
-    eventPublisher.publishEvent(new UserLogInOutEvent(userId, false));
+    eventPublisher.publishEvent(new KafkaUserLogInOutEvent(userId, false));
   }
 
   @Override

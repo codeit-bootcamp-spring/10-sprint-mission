@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.user.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
@@ -9,9 +8,8 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
-import com.sprint.mission.discodeit.event.sse.ChannelChangedEvent;
-import com.sprint.mission.discodeit.event.sse.UserChangedEvent;
-import com.sprint.mission.discodeit.event.sse.UserChangedEvent.Action;
+import com.sprint.mission.discodeit.event.kafka.KafkaUserChangedEvent;
+import com.sprint.mission.discodeit.event.sse.UserChangedEvent.UserAction;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentUploadException;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateUsernameException;
@@ -85,7 +83,7 @@ public class BasicUserService implements UserService {
     userRepository.save(user);
     log.info("[USER] 유저 생성 완료: userId={}", user.getId());
     UserDto dto = userMapper.toDto(user, false);
-    eventPublisher.publishEvent(new UserChangedEvent(dto, Action.CREATED));
+    eventPublisher.publishEvent(new KafkaUserChangedEvent(dto, UserAction.CREATED.name()));
     return dto;
   }
 
@@ -148,7 +146,7 @@ public class BasicUserService implements UserService {
     log.info("[USER] 유저 수정 완료: userId={}", user.getId());
     boolean isOnline = authService.isUserLoggedIn(userId);
     UserDto dto = userMapper.toDto(user, isOnline);
-    eventPublisher.publishEvent(new UserChangedEvent(dto, Action.UPDATED));
+    eventPublisher.publishEvent(new KafkaUserChangedEvent(dto, UserAction.UPDATED.name()));
     return dto;
   }
 
@@ -176,7 +174,7 @@ public class BasicUserService implements UserService {
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
     userRepository.delete(user);
     UserDto dto = userMapper.toDto(user, false);
-    eventPublisher.publishEvent(new UserChangedEvent(dto, Action.DELETED));
+    eventPublisher.publishEvent(new KafkaUserChangedEvent(dto, UserAction.DELETED.name()));
     log.info("[USER] 유저 삭제 완료: userId={}", userId);
   }
 

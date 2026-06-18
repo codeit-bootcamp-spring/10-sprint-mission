@@ -7,8 +7,8 @@ import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.event.sse.ChannelChangedEvent;
-import com.sprint.mission.discodeit.event.sse.ChannelChangedEvent.Action;
+import com.sprint.mission.discodeit.event.kafka.KafkaChannelChangedEvent;
+import com.sprint.mission.discodeit.event.sse.ChannelChangedEvent.ChannelAction;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -47,7 +47,7 @@ public class BasicChannelService implements ChannelService {
     channelRepository.save(channel);
     log.info("[CHANNEL] Public 채널 생성 완료: channelId={}", channel.getId());
     ChannelDto dto = channelMapper.toDto(channel);
-    eventPublisher.publishEvent(new ChannelChangedEvent(dto, Action.CREATED));
+    eventPublisher.publishEvent(new KafkaChannelChangedEvent(dto, ChannelAction.CREATED.name()));
     return dto;
   }
 
@@ -65,7 +65,7 @@ public class BasicChannelService implements ChannelService {
         request.participantIds().size());
     log.info("[CHANNEL] Private 채널 생성 완료: channelId={}", channel.getId());
     ChannelDto dto = channelMapper.toDto(channel);
-    eventPublisher.publishEvent(new ChannelChangedEvent(dto, Action.CREATED));
+    eventPublisher.publishEvent(new KafkaChannelChangedEvent(dto, ChannelAction.CREATED.name()));
     return dto;
   }
 
@@ -102,7 +102,7 @@ public class BasicChannelService implements ChannelService {
     channel.update(request);
     log.info("[CHANNEL] Public 채널 수정 완료: channelId={}", channelId);
     ChannelDto dto = channelMapper.toDto(channel);
-    eventPublisher.publishEvent(new ChannelChangedEvent(dto, Action.UPDATED));
+    eventPublisher.publishEvent(new KafkaChannelChangedEvent(dto, ChannelAction.UPDATED.name()));
     return dto;
   }
 
@@ -113,7 +113,7 @@ public class BasicChannelService implements ChannelService {
         .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", channelId)));
     channelRepository.delete(channel);
     ChannelDto dto = channelMapper.toDto(channel);
-    eventPublisher.publishEvent(new ChannelChangedEvent(dto, Action.DELETED));
+    eventPublisher.publishEvent(new KafkaChannelChangedEvent(dto, ChannelAction.DELETED.name()));
     log.info("[CHANNEL] 채널 삭제 완료: channelId={}", channelId);
   }
 }
