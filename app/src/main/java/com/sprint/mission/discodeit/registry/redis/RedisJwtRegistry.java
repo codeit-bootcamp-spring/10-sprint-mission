@@ -127,9 +127,7 @@ public class RedisJwtRegistry implements JwtRegistry {
               jwtInfo.refreshToken().equals(refreshToken)) {
 
             removeTokenIndex(jwtInfo.accessToken(), jwtInfo.refreshToken());
-            jwtInfo.rotate(newJwtInformation.accessToken(),
-                newJwtInformation.refreshToken());
-            redisTemplate.opsForList().set(userKey, i, jwtInfo);
+            redisTemplate.opsForList().set(userKey, i, newJwtInformation);
             addTokenIndex(newJwtInformation.accessToken(),
                 newJwtInformation.refreshToken());
             redisTemplate.expire(userKey, DEFAULT_TTL);
