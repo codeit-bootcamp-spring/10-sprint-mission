@@ -48,14 +48,14 @@ public class SseEventListener {
   }
 
   @Async("eventTaskExecutor")
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @EventListener
   public void on(RoleUpdatedEvent event) {
     log.info("[SSE] 권한 변경 감지, 유저 SSE 연결 강제 종료 userId={}", event.userId());
     sseService.disconnect(event.userId());
   }
 
   @Async("eventTaskExecutor")
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @EventListener
   public void on(BinaryContentUpdateEvent event) {
     log.debug("[SSE] 파일 업로드 상태 변경 이벤트 수신: binaryContentId={}", event.binaryContentDto().id());
     if (event.receiverIds() == null || event.receiverIds().isEmpty()) {
@@ -70,7 +70,7 @@ public class SseEventListener {
   }
 
   @Async("eventTaskExecutor")
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @EventListener
   public void on(ChannelChangedEvent event) {
     log.debug("[SSE] 채널 갱신 이벤트 수신: channelId={}", event.channelDto().id());
     sseService.broadcast(
@@ -80,7 +80,7 @@ public class SseEventListener {
   }
 
   @Async("eventTaskExecutor")
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+  @EventListener
   public void on(UserChangedEvent event) {
     log.debug("[SSE] 사용자 갱신 이벤트 수신: channelId={}", event.userDto().id());
     sseService.broadcast(
