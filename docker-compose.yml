@@ -7,23 +7,25 @@ services:
     build:
       context: .
       dockerfile: nginx/Dockerfile
-    container_name: nginx-reverse-proxy
+    container_name: nginx-loadbalancer
     ports:
       - "3000:80"
-    depends_on: [app]
+    depends_on: [backend]
     networks:
       - discodeit-network
 
   #Discodeit Spring Boot
-  app:
+  backend:
     image: discodeit:local
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: discodeit
+#    container_name: discodeit
     #discodeit이라는 컨테이너에서 내부적으로 8080포트를 사용
     expose:
       - "8080"
+    deploy:
+      replicas: 3
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/discodeit
