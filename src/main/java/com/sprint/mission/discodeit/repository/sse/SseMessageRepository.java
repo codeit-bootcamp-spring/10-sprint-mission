@@ -14,6 +14,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class SseMessageRepository {
 
+  // 큐의 최대 사이즈
+  private final int MAX_QUEUE_SIZE = 1000;
+
   // 생성된 EventID를 순서대로 저장하는 큐
   private final ConcurrentLinkedDeque<UUID> eventIdQueue = new ConcurrentLinkedDeque<>();
   // <K-V> 가 <이벤트ID, SseMessage>인 SseMessage를 담는 map 객체
@@ -61,15 +64,21 @@ public class SseMessageRepository {
   // 파라미터들을 조합하여 SseMessage 조립 후 저장
   private SseMessage save(String eventName, Object data, Set<UUID> receiverIds,
       boolean broadcast) {
+
+    SseMessage sseMessage = null;
+    if (eventIdQueue.size() >= MAX_QUEUE_SIZE) {
+      throw new IllegalStateException("eventIdQueue size 자리없음!");
+    }
     UUID eventId = UUID.randomUUID(); // 고유의 eventID 부여
     eventIdQueue.add(eventId); // 큐에 해당 ID 추가
 
     // SseMessage 생성
-    SseMessage sseMessage = new SseMessage(eventId, eventName, data, receiverIds, broadcast);
+    sseMessage = new SseMessage(eventId, eventName, data, receiverIds, broadcast);
     // SseMessage를 담아놓는 map에 put
     messages.put(eventId, sseMessage);
 
     // 생성되고 저장된 SseMessage 객체 반환
     return sseMessage;
+
   }
 }
