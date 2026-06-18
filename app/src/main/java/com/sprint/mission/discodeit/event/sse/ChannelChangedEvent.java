@@ -4,10 +4,10 @@ import com.sprint.mission.discodeit.dto.channel.ChannelDto;
 
 public record ChannelChangedEvent(
     ChannelDto channelDto,
-    Action action
+    ChannelAction action
 ) {
 
-  public enum Action {
+  public enum ChannelAction {
     CREATED, UPDATED, DELETED
   }
 }

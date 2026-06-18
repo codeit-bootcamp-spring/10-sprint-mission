@@ -4,10 +4,10 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 
 public record UserChangedEvent(
     UserDto userDto,
-    Action action
+    UserAction action
 ) {
 
-  public enum Action {
+  public enum UserAction {
     CREATED, UPDATED, DELETED
   }
 }
