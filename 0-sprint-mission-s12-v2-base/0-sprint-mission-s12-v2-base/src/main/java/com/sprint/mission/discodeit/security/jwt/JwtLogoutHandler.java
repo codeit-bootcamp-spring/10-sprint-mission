@@ -1,5 +1,9 @@
 package com.sprint.mission.discodeit.security.jwt;
 
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.event.message.UserUpdatedEvent;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -7,6 +11,7 @@ import java.util.Arrays;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
@@ -18,6 +23,9 @@ public class JwtLogoutHandler implements LogoutHandler {
 
   private final JwtTokenProvider tokenProvider;
   private final JwtRegistry jwtRegistry;
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public void logout(HttpServletRequest request, HttpServletResponse response,
@@ -34,6 +42,21 @@ public class JwtLogoutHandler implements LogoutHandler {
           String refreshToken = cookie.getValue();
           UUID userId = tokenProvider.getUserId(refreshToken);
           jwtRegistry.invalidateJwtInformationByUserId(userId);
+          userRepository.findById(userId)
+              .map(userMapper::toDto)
+              .ifPresent(updated -> {
+                UserDto previous = new UserDto(
+                    updated.id(),
+                    updated.username(),
+                    updated.email(),
+                    updated.profile(),
+                    true,
+                    updated.role()
+                );
+                eventPublisher.publishEvent(
+                    new UserUpdatedEvent(previous, updated, java.time.Instant.now())
+                );
+              });
         });
 
     log.debug("JWT logout handler executed - refresh token cookie cleared");

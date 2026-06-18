@@ -28,6 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -42,6 +43,9 @@ class BasicNotificationServiceTest {
 
   @Mock
   private ApplicationEventPublisher eventPublisher;
+
+  @Mock
+  private CacheManager cacheManager;
 
   @InjectMocks
   private BasicNotificationService notificationService;
@@ -142,6 +146,7 @@ class BasicNotificationServiceTest {
     Set<UUID> receiverIds = Set.of(receiverId1, receiverId2);
     String title = "Test Title";
     String content = "Test Content";
+    given(notificationMapper.toDto(any(Notification.class))).willReturn(notificationDto);
 
     // when
     notificationService.create(receiverIds, title, content);
@@ -172,6 +177,7 @@ class BasicNotificationServiceTest {
     Set<UUID> receiverIds = Set.of(receiverId);
     String title = "Test Title";
     String content = "Test Content";
+    given(notificationMapper.toDto(any(Notification.class))).willReturn(notificationDto);
 
     // when
     notificationService.create(receiverIds, title, content);
@@ -189,6 +195,7 @@ class BasicNotificationServiceTest {
     Set<UUID> receiverIds = Set.of(receiverId1, receiverId2);
     String title = "Role Updated";
     String content = "USER -> ADMIN";
+    given(notificationMapper.toDto(any(Notification.class))).willReturn(notificationDto);
 
     // when
     notificationService.create(receiverIds, title, content);

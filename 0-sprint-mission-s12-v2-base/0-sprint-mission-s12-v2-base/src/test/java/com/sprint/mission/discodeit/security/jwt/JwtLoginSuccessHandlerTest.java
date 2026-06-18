@@ -11,6 +11,7 @@ import com.nimbusds.jose.JOSEException;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 
@@ -43,6 +45,9 @@ class JwtLoginSuccessHandlerTest {
   @Mock
   private JwtRegistry jwtRegistry;
 
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
+
   private JwtLoginSuccessHandler jwtLoginSuccessHandler;
   private ObjectMapper objectMapper;
   private DiscodeitUserDetails userDetails;
@@ -51,7 +56,8 @@ class JwtLoginSuccessHandlerTest {
   void setUp() {
     objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
-    jwtLoginSuccessHandler = new JwtLoginSuccessHandler(objectMapper, tokenProvider, jwtRegistry);
+    jwtLoginSuccessHandler = new JwtLoginSuccessHandler(objectMapper, tokenProvider, jwtRegistry,
+        eventPublisher);
 
     UUID userId = UUID.randomUUID();
     UserDto userDto = new UserDto(
@@ -77,6 +83,10 @@ class JwtLoginSuccessHandlerTest {
     when(authentication.getPrincipal()).thenReturn(userDetails);
     given(tokenProvider.generateAccessToken(any(DiscodeitUserDetails.class)))
         .willReturn("test.jwt.token");
+    given(tokenProvider.generateRefreshToken(any(DiscodeitUserDetails.class)))
+        .willReturn("test.refresh.token");
+    given(tokenProvider.genereateRefreshTokenCookie("test.refresh.token"))
+        .willReturn(new Cookie(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, "test.refresh.token"));
 
     // When
     jwtLoginSuccessHandler.onAuthenticationSuccess(request, response, authentication);
@@ -86,6 +96,7 @@ class JwtLoginSuccessHandlerTest {
     verify(response).setContentType(MediaType.APPLICATION_JSON_VALUE);
     verify(response).setStatus(HttpServletResponse.SC_OK);
     verify(tokenProvider).generateAccessToken(userDetails);
+    verify(eventPublisher).publishEvent(any(Object.class));
 
     String responseBody = stringWriter.toString();
     assert responseBody.contains("\"accessToken\":\"test.jwt.token\"");

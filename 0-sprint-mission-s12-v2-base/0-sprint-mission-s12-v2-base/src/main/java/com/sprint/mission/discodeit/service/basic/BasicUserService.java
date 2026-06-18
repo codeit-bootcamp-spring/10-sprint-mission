@@ -7,6 +7,9 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.message.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.message.UserCreatedEvent;
+import com.sprint.mission.discodeit.event.message.UserDeletedEvent;
+import com.sprint.mission.discodeit.event.message.UserUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -77,7 +80,9 @@ public class BasicUserService implements UserService {
 
     userRepository.save(user);
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
-    return userMapper.toDto(user);
+    UserDto userDto = userMapper.toDto(user);
+    eventPublisher.publishEvent(new UserCreatedEvent(userDto, user.getCreatedAt()));
+    return userDto;
   }
 
   @Transactional(readOnly = true)
@@ -120,6 +125,7 @@ public class BasicUserService implements UserService {
 
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
+    UserDto previous = userMapper.toDto(user);
 
     if (userRepository.existsByEmail(newEmail)) {
       throw UserAlreadyExistsException.withEmail(newEmail);
@@ -153,7 +159,9 @@ public class BasicUserService implements UserService {
     user.update(newUsername, newEmail, encodedPassword, nullableProfile);
 
     log.info("사용자 수정 완료: id={}", userId);
-    return userMapper.toDto(user);
+    UserDto updated = userMapper.toDto(user);
+    eventPublisher.publishEvent(new UserUpdatedEvent(previous, updated, user.getUpdatedAt()));
+    return updated;
   }
 
   @CacheEvict(value = "users", key = "'all'")
@@ -163,11 +171,12 @@ public class BasicUserService implements UserService {
   public void delete(UUID userId) {
     log.debug("사용자 삭제 시작: id={}", userId);
 
-    if (!userRepository.existsById(userId)) {
-      throw UserNotFoundException.withId(userId);
-    }
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> UserNotFoundException.withId(userId));
+    UserDto deleted = userMapper.toDto(user);
 
     userRepository.deleteById(userId);
+    eventPublisher.publishEvent(new UserDeletedEvent(deleted, java.time.Instant.now()));
     log.info("사용자 삭제 완료: id={}", userId);
   }
 }

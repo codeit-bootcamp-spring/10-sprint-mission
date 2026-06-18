@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.message.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.message.UserUpdatedEvent;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -54,14 +55,17 @@ public class BasicAuthService implements AuthService {
 
     Role previousRole = user.getRole();
     Role newRole = request.newRole();
+    UserDto previous = userMapper.toDto(user);
     user.updateRole(newRole);
 
     jwtRegistry.invalidateJwtInformationByUserId(userId);
+    UserDto updated = userMapper.toDto(user);
     eventPublisher.publishEvent(
         new RoleUpdatedEvent(user.getId(), previousRole, newRole, user.getUpdatedAt())
     );
+    eventPublisher.publishEvent(new UserUpdatedEvent(previous, updated, user.getUpdatedAt()));
 
-    return userMapper.toDto(user);
+    return updated;
   }
 
   @Override

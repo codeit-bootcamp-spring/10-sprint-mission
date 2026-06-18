@@ -1,0 +1,94 @@
+26-06-17 16:45:39.044 [background-preinit] [32mINFO [0;39m o.h.validator.internal.util.Version  [ |  | ] - HV000001: Hibernate Validator 8.0.1.Final
+26-06-17 16:45:39.089 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Starting DiscodeitApplication using Java 17.0.17 with PID 33568 (C:\Users\FORYOUCOM\rorm0819\0-sprint-mission-s12-v2-base\0-sprint-mission-s12-v2-base\build\classes\java\main started by FORYOUCOM in C:\Users\FORYOUCOM\rorm0819\0-sprint-mission-s12-v2-base)
+26-06-17 16:45:39.089 [main] [32mDEBUG[0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Running with Spring Boot v3.4.0, Spring v6.2.0
+26-06-17 16:45:39.090 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - The following 1 profile is active: "dev"
+26-06-17 16:45:40.462 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Multiple Spring Data modules found, entering strict repository configuration mode
+26-06-17 16:45:40.465 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+26-06-17 16:45:40.627 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Finished Spring Data repository scanning in 152 ms. Found 6 JPA repository interfaces.
+26-06-17 16:45:40.638 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Multiple Spring Data modules found, entering strict repository configuration mode
+26-06-17 16:45:40.639 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+26-06-17 16:45:40.661 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationExtensionSupport [ |  | ] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.sprint.mission.discodeit.repository.BinaryContentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+26-06-17 16:45:40.662 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationExtensionSupport [ |  | ] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.sprint.mission.discodeit.repository.ChannelRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+26-06-17 16:45:40.662 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationExtensionSupport [ |  | ] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.sprint.mission.discodeit.repository.MessageRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+26-06-17 16:45:40.662 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationExtensionSupport [ |  | ] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.sprint.mission.discodeit.repository.NotificationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+26-06-17 16:45:40.663 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationExtensionSupport [ |  | ] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.sprint.mission.discodeit.repository.ReadStatusRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+26-06-17 16:45:40.663 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationExtensionSupport [ |  | ] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.sprint.mission.discodeit.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+26-06-17 16:45:40.664 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Finished Spring Data repository scanning in 16 ms. Found 0 Redis repository interfaces.
+26-06-17 16:45:41.831 [main] [32mINFO [0;39m o.s.b.w.e.tomcat.TomcatWebServer     [ |  | ] - Tomcat initialized with port 8080 (http)
+26-06-17 16:45:41.850 [main] [32mINFO [0;39m o.a.coyote.http11.Http11NioProtocol  [ |  | ] - Initializing ProtocolHandler ["http-nio-8080"]
+26-06-17 16:45:41.852 [main] [32mINFO [0;39m o.a.catalina.core.StandardService    [ |  | ] - Starting service [Tomcat]
+26-06-17 16:45:41.853 [main] [32mINFO [0;39m o.a.catalina.core.StandardEngine     [ |  | ] - Starting Servlet engine: [Apache Tomcat/10.1.33]
+26-06-17 16:45:41.937 [main] [32mINFO [0;39m o.a.c.c.C.[Tomcat].[localhost].[/]   [ |  | ] - Initializing Spring embedded WebApplicationContext
+26-06-17 16:45:41.937 [main] [32mINFO [0;39m o.s.b.w.s.c.ServletWebServerApplicationContext [ |  | ] - Root WebApplicationContext: initialization completed in 2816 ms
+26-06-17 16:45:42.211 [main] [31mERROR[0;39m o.s.b.w.e.tomcat.TomcatStarter       [ |  | ] - Error starting Tomcat context. Exception: org.springframework.beans.factory.UnsatisfiedDependencyException. Message: Error creating bean with name 'jwtAuthenticationFilter' defined in file [C:\Users\FORYOUCOM\rorm0819\0-sprint-mission-s12-v2-base\0-sprint-mission-s12-v2-base\build\classes\java\main\com\sprint\mission\discodeit\security\jwt\JwtAuthenticationFilter.class]: Unsatisfied dependency expressed through constructor parameter 1: Error creating bean with name 'discodeitUserDetailsService' defined in file [C:\Users\FORYOUCOM\rorm0819\0-sprint-mission-s12-v2-base\0-sprint-mission-s12-v2-base\build\classes\java\main\com\sprint\mission\discodeit\security\DiscodeitUserDetailsService.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'userRepository' defined in com.sprint.mission.discodeit.repository.UserRepository defined in @EnableJpaRepositories declared on JpaRepositoriesRegistrar.EnableJpaRepositoriesConfiguration: Cannot resolve reference to bean 'jpaSharedEM_entityManagerFactory' while setting bean property 'entityManager'
+26-06-17 16:45:42.240 [main] [32mINFO [0;39m o.a.catalina.core.StandardService    [ |  | ] - Stopping service [Tomcat]
+26-06-17 16:45:42.251 [main] [33mWARN [0;39m o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext [ |  | ] - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Unable to start web server
+26-06-17 16:45:42.267 [main] [32mINFO [0;39m o.s.b.a.l.ConditionEvaluationReportLogger [ |  | ] - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+26-06-17 16:45:42.290 [main] [31mERROR[0;39m o.s.b.d.LoggingFailureAnalysisReporter [ |  | ] - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to bind properties under 'spring.data.redis.port' to int:
+
+    Property: spring.data.redis.port
+    Value: "${REDIS_PORT}"
+    Origin: class path resource [application.yaml] - 38:13
+    Reason: failed to convert java.lang.String to int (caused by java.lang.NumberFormatException: For input string: "${REDIS_PORT}")
+
+Action:
+
+Update your application's configuration
+
+26-06-17 16:46:03.791 [background-preinit] [32mINFO [0;39m o.h.validator.internal.util.Version  [ |  | ] - HV000001: Hibernate Validator 8.0.1.Final
+26-06-17 16:46:03.840 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Starting DiscodeitApplication using Java 17.0.17 with PID 32100 (C:\Users\FORYOUCOM\rorm0819\0-sprint-mission-s12-v2-base\0-sprint-mission-s12-v2-base\build\classes\java\main started by FORYOUCOM in C:\Users\FORYOUCOM\rorm0819\0-sprint-mission-s12-v2-base)
+26-06-17 16:46:03.841 [main] [32mDEBUG[0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Running with Spring Boot v3.4.0, Spring v6.2.0
+26-06-17 16:46:03.841 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - The following 1 profile is active: "dev"
+26-06-17 16:46:05.099 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Multiple Spring Data modules found, entering strict repository configuration mode
+26-06-17 16:46:05.101 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+26-06-17 16:46:05.269 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Finished Spring Data repository scanning in 160 ms. Found 6 JPA repository interfaces.
+26-06-17 16:46:05.283 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Multiple Spring Data modules found, entering strict repository configuration mode
+26-06-17 16:46:05.284 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+26-06-17 16:46:05.311 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationExtensionSupport [ |  | ] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.sprint.mission.discodeit.repository.BinaryContentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+26-06-17 16:46:05.312 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationExtensionSupport [ |  | ] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.sprint.mission.discodeit.repository.ChannelRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+26-06-17 16:46:05.312 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationExtensionSupport [ |  | ] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.sprint.mission.discodeit.repository.MessageRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+26-06-17 16:46:05.312 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationExtensionSupport [ |  | ] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.sprint.mission.discodeit.repository.NotificationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+26-06-17 16:46:05.313 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationExtensionSupport [ |  | ] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.sprint.mission.discodeit.repository.ReadStatusRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+26-06-17 16:46:05.313 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationExtensionSupport [ |  | ] - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.sprint.mission.discodeit.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+26-06-17 16:46:05.314 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Finished Spring Data repository scanning in 13 ms. Found 0 Redis repository interfaces.
+26-06-17 16:46:06.210 [main] [32mINFO [0;39m o.s.b.w.e.tomcat.TomcatWebServer     [ |  | ] - Tomcat initialized with port 8080 (http)
+26-06-17 16:46:06.220 [main] [32mINFO [0;39m o.a.coyote.http11.Http11NioProtocol  [ |  | ] - Initializing ProtocolHandler ["http-nio-8080"]
+26-06-17 16:46:06.222 [main] [32mINFO [0;39m o.a.catalina.core.StandardService    [ |  | ] - Starting service [Tomcat]
+26-06-17 16:46:06.222 [main] [32mINFO [0;39m o.a.catalina.core.StandardEngine     [ |  | ] - Starting Servlet engine: [Apache Tomcat/10.1.33]
+26-06-17 16:46:06.290 [main] [32mINFO [0;39m o.a.c.c.C.[Tomcat].[localhost].[/]   [ |  | ] - Initializing Spring embedded WebApplicationContext
+26-06-17 16:46:06.290 [main] [32mINFO [0;39m o.s.b.w.s.c.ServletWebServerApplicationContext [ |  | ] - Root WebApplicationContext: initialization completed in 2416 ms
+26-06-17 16:46:06.546 [main] [31mERROR[0;39m o.s.b.w.e.tomcat.TomcatStarter       [ |  | ] - Error starting Tomcat context. Exception: org.springframework.beans.factory.UnsatisfiedDependencyException. Message: Error creating bean with name 'jwtAuthenticationFilter' defined in file [C:\Users\FORYOUCOM\rorm0819\0-sprint-mission-s12-v2-base\0-sprint-mission-s12-v2-base\build\classes\java\main\com\sprint\mission\discodeit\security\jwt\JwtAuthenticationFilter.class]: Unsatisfied dependency expressed through constructor parameter 1: Error creating bean with name 'discodeitUserDetailsService' defined in file [C:\Users\FORYOUCOM\rorm0819\0-sprint-mission-s12-v2-base\0-sprint-mission-s12-v2-base\build\classes\java\main\com\sprint\mission\discodeit\security\DiscodeitUserDetailsService.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'userRepository' defined in com.sprint.mission.discodeit.repository.UserRepository defined in @EnableJpaRepositories declared on JpaRepositoriesRegistrar.EnableJpaRepositoriesConfiguration: Cannot resolve reference to bean 'jpaSharedEM_entityManagerFactory' while setting bean property 'entityManager'
+26-06-17 16:46:06.572 [main] [32mINFO [0;39m o.a.catalina.core.StandardService    [ |  | ] - Stopping service [Tomcat]
+26-06-17 16:46:06.580 [main] [33mWARN [0;39m o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext [ |  | ] - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Unable to start web server
+26-06-17 16:46:06.594 [main] [32mINFO [0;39m o.s.b.a.l.ConditionEvaluationReportLogger [ |  | ] - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+26-06-17 16:46:06.611 [main] [31mERROR[0;39m o.s.b.d.LoggingFailureAnalysisReporter [ |  | ] - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to bind properties under 'spring.data.redis.port' to int:
+
+    Property: spring.data.redis.port
+    Value: "${REDIS_PORT}"
+    Origin: class path resource [application.yaml] - 38:13
+    Reason: failed to convert java.lang.String to int (caused by java.lang.NumberFormatException: For input string: "${REDIS_PORT}")
+
+Action:
+
+Update your application's configuration
+

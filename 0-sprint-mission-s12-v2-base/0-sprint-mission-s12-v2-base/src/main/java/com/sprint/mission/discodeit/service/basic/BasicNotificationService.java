@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
+import com.sprint.mission.discodeit.event.message.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.exception.notification.NotificationForbiddenException;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
@@ -16,6 +17,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -29,6 +31,7 @@ public class BasicNotificationService implements NotificationService {
   private final NotificationRepository notificationRepository;
   private final NotificationMapper notificationMapper;
   private final CacheManager cacheManager;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Cacheable(value = "notifications", key = "#receiverId", unless = "#result.isEmpty()")
   @PreAuthorize("principal.userDto.id == #receiverId")
@@ -75,6 +78,10 @@ public class BasicNotificationService implements NotificationService {
         )).toList();
     notificationRepository.saveAll(notifications);
     evictNotificationCache(receiverIds);
+    notifications.stream()
+        .map(notificationMapper::toDto)
+        .map(notification -> new NotificationCreatedEvent(notification, notification.createdAt()))
+        .forEach(eventPublisher::publishEvent);
     log.info("새 알림 생성 완료: receiverIds={}", receiverIds);
   }
 
@@ -89,4 +96,4 @@ public class BasicNotificationService implements NotificationService {
       log.warn("알림 캐시가 존재하지 않습니다.");
     }
   }
-} 
+}
