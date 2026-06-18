@@ -107,7 +107,7 @@ public class SseRequiredEventListener {
     log.debug("SSE 사용자 생성 이벤트 전송 완료: userId={}", user.id());
   }
 
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
   public void on(UserUpdatedEvent event) {
     UserDto user = event.getTo();
 

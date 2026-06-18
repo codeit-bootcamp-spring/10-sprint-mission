@@ -66,8 +66,8 @@ public class SseService {
   }
 
   public void broadcast(String eventName, Object data) {
-    SseMessage message =
-        new SseMessage(UUID.randomUUID(), null, eventName, data, java.time.Instant.now());
+    // broadcast 이벤트도 저장해야 재연결 시 Last-Event-ID 기준으로 복원 가능
+    SseMessage message = sseMessageRepository.saveBroadcast(eventName, data);
 
     List<SseEmitter> emitters = sseEmitterRepository.findAll();
 
