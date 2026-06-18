@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -23,11 +25,13 @@ import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +44,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -59,16 +65,22 @@ class MessageControllerTest {
   @MockitoBean
   private MessageService messageService;
 
+  @AfterEach
+  void tearDown() {
+    SecurityContextHolder.clearContext();
+  }
+
   @Test
   @DisplayName("메시지 생성 성공 테스트")
   void createMessage_Success() throws Exception {
     // Given
     UUID channelId = UUID.randomUUID();
     UUID authorId = UUID.randomUUID();
+    UUID requestAuthorId = UUID.randomUUID();
     MessageCreateRequest createRequest = new MessageCreateRequest(
         "안녕하세요, 테스트 메시지입니다.",
         channelId,
-        authorId
+        requestAuthorId
     );
 
     MockMultipartFile messageCreateRequestPart = new MockMultipartFile(
@@ -118,6 +130,14 @@ class MessageControllerTest {
     given(messageService.create(any(MessageCreateRequest.class), any(List.class)))
         .willReturn(createdMessage);
 
+    SecurityContextHolder.getContext().setAuthentication(
+        new UsernamePasswordAuthenticationToken(
+            new DiscodeitUserDetails(author, "password"),
+            null,
+            List.of()
+        )
+    );
+
     // When & Then
     mockMvc.perform(multipart("/api/messages")
             .file(messageCreateRequestPart)
@@ -130,6 +150,13 @@ class MessageControllerTest {
         .andExpect(jsonPath("$.channelId").value(channelId.toString()))
         .andExpect(jsonPath("$.author.id").value(authorId.toString()))
         .andExpect(jsonPath("$.attachments[0].fileName").value("test.jpg"));
+
+    verify(messageService).create(
+        argThat(request -> request.content().equals(createRequest.content())
+            && request.channelId().equals(channelId)
+            && request.authorId().equals(authorId)),
+        any(List.class)
+    );
   }
 
   @Test
