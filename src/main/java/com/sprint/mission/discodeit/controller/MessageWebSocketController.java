@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.service.MessageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -16,7 +17,7 @@ public class MessageWebSocketController {
     private final MessageService messageService;
 
     @MessageMapping("/messages")
-    public void sendMessage(MessageCreateRequest request){
+    public void sendMessage(@Valid MessageCreateRequest request){
         messageService.create(request, null);
     }
 

@@ -50,6 +50,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     @Transactional
+    @PreAuthorize("#request.authorId == principal.userDto.id")
     public MessageDto create(MessageCreateRequest request, List<MultipartFile> attachments) {
         User user = userRepository.findById(request.getAuthorId())
                 .orElseThrow(() -> new UserNotFoundException(request.getAuthorId()));
