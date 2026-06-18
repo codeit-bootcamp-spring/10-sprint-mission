@@ -1,0 +1,83 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.10'
+    id 'io.spring.dependency-management' version '1.1.7'
+
+    id 'jacoco' // 테스트 커버리지 플러그인
+}
+
+group = 'com.sprint.mission'
+version = '3.0-M12'
+description = 'project for Spring Boot'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'            // Actuator
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'            // JPA
+    implementation 'org.springframework.boot:spring-boot-starter-security'            // Security
+    implementation 'org.springframework.retry:spring-retry'                           // retry
+    implementation 'org.postgresql:postgresql:42.7.3'                                 // Postgre SQL
+    runtimeOnly 'com.h2database:h2'                                                   // h2
+
+    implementation 'org.springframework.boot:spring-boot-starter-cache'               // Cache 추상화
+    implementation 'com.github.ben-manes.caffeine:caffeine'                           // Cache 엔진
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'          // redis
+    implementation 'org.springframework.kafka:spring-kafka'                           // kafka
+
+    compileOnly 'org.projectlombok:lombok'                                            // LomBock
+    annotationProcessor 'org.projectlombok:lombok'
+
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'                    // MapStruct(Lombok이후)
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15'         // Swagger
+
+    implementation 'software.amazon.awssdk:s3:2.31.7'                                 // AWS S3
+
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'                                // Jwt
+
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'           // WebSocket
+    implementation 'org.springframework.security:spring-security-messaging'           // WebSocketAuthorization
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+test {
+    finalizedBy jacocoTestReport
+    testLogging {    // 테스트 실패시 GithubActions에 로그 출력
+        events "failed"
+        exceptionFormat "full"
+        showCauses true
+        showStackTraces true
+    }
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
