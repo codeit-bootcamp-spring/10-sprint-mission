@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.JwtInformation;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.event.message.UserUpdatedEvent;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import jakarta.servlet.ServletException;
@@ -11,8 +13,11 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -26,6 +31,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final ObjectMapper objectMapper;
   private final JwtTokenProvider tokenProvider;
   private final JwtRegistry jwtRegistry;
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request,
@@ -59,6 +66,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 refreshToken
             )
         );
+        publishUserOnlineEvent(userDetails.getUserDto());
 
         log.info("JWT access and refresh tokens issued for user: {}", userDetails.getUsername());
 
@@ -79,6 +87,26 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
       );
       response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
+  }
+
+  private void publishUserOnlineEvent(UserDto user) {
+    if (eventPublisher == null) {
+      return;
+    }
+    eventPublisher.publishEvent(
+        new UserUpdatedEvent(user, withOnline(user, true), Instant.now())
+    );
+  }
+
+  private UserDto withOnline(UserDto user, boolean online) {
+    return new UserDto(
+        user.id(),
+        user.username(),
+        user.email(),
+        user.profile(),
+        online,
+        user.role()
+    );
   }
 
 }

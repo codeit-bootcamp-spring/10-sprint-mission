@@ -7,12 +7,16 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.message.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.message.UserCreatedEvent;
+import com.sprint.mission.discodeit.event.message.UserDeletedEvent;
+import com.sprint.mission.discodeit.event.message.UserUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -77,7 +81,9 @@ public class BasicUserService implements UserService {
 
     userRepository.save(user);
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
-    return userMapper.toDto(user);
+    UserDto created = userMapper.toDto(user);
+    publishEvent(new UserCreatedEvent(created, user.getCreatedAt()));
+    return created;
   }
 
   @Transactional(readOnly = true)
@@ -120,6 +126,7 @@ public class BasicUserService implements UserService {
 
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
+    UserDto previous = userMapper.toDto(user);
 
     if (userRepository.existsByEmail(newEmail)) {
       throw UserAlreadyExistsException.withEmail(newEmail);
@@ -153,7 +160,9 @@ public class BasicUserService implements UserService {
     user.update(newUsername, newEmail, encodedPassword, nullableProfile);
 
     log.info("사용자 수정 완료: id={}", userId);
-    return userMapper.toDto(user);
+    UserDto updated = userMapper.toDto(user);
+    publishEvent(new UserUpdatedEvent(previous, updated, Instant.now()));
+    return updated;
   }
 
   @CacheEvict(value = "users", key = "'all'")
@@ -166,8 +175,20 @@ public class BasicUserService implements UserService {
     if (!userRepository.existsById(userId)) {
       throw UserNotFoundException.withId(userId);
     }
+    UserDto deleted = userRepository.findById(userId)
+        .map(userMapper::toDto)
+        .orElse(null);
 
     userRepository.deleteById(userId);
+    if (deleted != null) {
+      publishEvent(new UserDeletedEvent(deleted, Instant.now()));
+    }
     log.info("사용자 삭제 완료: id={}", userId);
+  }
+
+  private void publishEvent(Object event) {
+    if (eventPublisher != null) {
+      eventPublisher.publishEvent(event);
+    }
   }
 }

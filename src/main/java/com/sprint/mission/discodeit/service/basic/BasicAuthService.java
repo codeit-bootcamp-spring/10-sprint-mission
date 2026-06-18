@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.message.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.message.UserUpdatedEvent;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -16,6 +17,7 @@ import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,16 +54,21 @@ public class BasicAuthService implements AuthService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> UserNotFoundException.withId(userId));
 
+    UserDto previous = userMapper.toDto(user);
     Role previousRole = user.getRole();
     Role newRole = request.newRole();
     user.updateRole(newRole);
 
     jwtRegistry.invalidateJwtInformationByUserId(userId);
-    eventPublisher.publishEvent(
+    publishEvent(
         new RoleUpdatedEvent(user.getId(), previousRole, newRole, user.getUpdatedAt())
     );
+    UserDto updated = userMapper.toDto(user);
+    publishEvent(
+        new UserUpdatedEvent(previous, updated, Instant.now())
+    );
 
-    return userMapper.toDto(user);
+    return updated;
   }
 
   @Override
@@ -100,6 +107,12 @@ public class BasicAuthService implements AuthService {
     } catch (JOSEException e) {
       log.error("Failed to generate new tokens for user: {}", username, e);
       throw new DiscodeitException(ErrorCode.INTERNAL_SERVER_ERROR, e);
+    }
+  }
+
+  private void publishEvent(Object event) {
+    if (eventPublisher != null) {
+      eventPublisher.publishEvent(event);
     }
   }
 }
