@@ -47,7 +47,8 @@ public class SecurityConfig {
                         .ignoringRequestMatchers(
                                 AntPathRequestMatcher.antMatcher("/api/auth/login"),
                                 AntPathRequestMatcher.antMatcher("/api/auth/refresh"),
-                                AntPathRequestMatcher.antMatcher("/api/auth/logout")
+                                AntPathRequestMatcher.antMatcher("/api/auth/logout"),
+                                AntPathRequestMatcher.antMatcher("/ws/**")
                         )
                         .csrfTokenRepository(csrfTokenRepository())
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
