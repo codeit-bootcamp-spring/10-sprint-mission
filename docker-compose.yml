@@ -22,6 +22,8 @@ services:
       - db
       - redis
       - broker
+    deploy:
+      replicas: 3
     networks:
       - sprint-network
 
