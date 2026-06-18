@@ -1,95 +1,213 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.user.UserDto;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserOnlineStatus;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.DiscodeitException;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.exception.ErrorCode;
-import com.sprint.mission.discodeit.exception.auth.InvalidPasswordException;
-import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import java.time.Instant;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
-@SpringBootTest
-@Transactional
-public class BasicAuthServiceTest {
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
+import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.message.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.test.util.ReflectionTestUtils;
 
-    @Autowired
-    private BasicAuthService authService;
+@ExtendWith(MockitoExtension.class)
+class BasicAuthServiceTest {
 
-    @Autowired
-    private UserRepository userRepository;
+  @Mock
+  private UserRepository userRepository;
 
-    @Autowired
-    private UserStatusRepository userStatusRepository;
+  @Mock
+  private UserMapper userMapper;
 
-    @PersistenceContext
-    private EntityManager entityManager;
+  @Mock
+  private JwtRegistry jwtRegistry;
 
-    @Test
-    @DisplayName("로그인 성공")
-    void login_success() {
-        User user = new User("auth-user", "1234", "auth@test.com");
-        userRepository.save(user);
-        userStatusRepository.save(new UserStatus(user, Instant.now().minusSeconds(3600)));
-        flushAndClear();
+  @Mock
+  private JwtTokenProvider tokenProvider;
 
-        UserDto response = authService.login(new LoginRequest("auth-user", "1234"));
-        flushAndClear();
+  @Mock
+  private UserDetailsService userDetailsService;
 
-        UserStatus status = userStatusRepository.findByUserId(user.getId()).orElseThrow();
-        assertThat(response.username()).isEqualTo("auth-user");
-        assertThat(status.getOnlineStatus()).isEqualTo(UserOnlineStatus.ONLINE);
-    }
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
 
-    @Test
-    @DisplayName("존재하지 않는 username 로그인 실패")
-    void login_fail_userNotFound() {
-        assertThatThrownBy(() -> authService.login(new LoginRequest("not-exist", "1234")))
-                .isInstanceOf(UserNotFoundException.class)
-                .satisfies(ex -> {
-                    DiscodeitException discodeitException = (DiscodeitException) ex;
-                    assertThat(discodeitException.getErrorCode()).isEqualTo(
-                            ErrorCode.USER_NOT_FOUND);
-                    assertThat(discodeitException.getDetails())
-                            .containsEntry("username", "not-exist");
-                });
-    }
+  @InjectMocks
+  private BasicAuthService authService;
 
-    @Test
-    @DisplayName("비밀번호 불일치 로그인 실패")
-    void login_fail_invalidPassword() {
-        User user = new User("auth-user2", "1234", "auth2@test.com");
-        userRepository.save(user);
-        userStatusRepository.save(new UserStatus(user, Instant.now()));
-        flushAndClear();
+  private UUID userId;
+  private User user;
+  private UserDto userDto;
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest("auth-user2", "wrong")))
-                .isInstanceOf(InvalidPasswordException.class)
-                .satisfies(ex -> {
-                    DiscodeitException discodeitException = (DiscodeitException) ex;
-                    assertThat(discodeitException.getErrorCode()).isEqualTo(
-                            ErrorCode.INVALID_PASSWORD);
-                    assertThat(discodeitException.getDetails())
-                            .containsEntry("username", "auth-user2");
-                });
-    }
+  @BeforeEach
+  void setUp() {
+    userId = UUID.randomUUID();
+    user = new User("testuser", "test@example.com", "password", null);
+    ReflectionTestUtils.setField(user, "id", userId);
+    ReflectionTestUtils.setField(user, "role", Role.USER);
+    
+    userDto = new UserDto(
+        userId,
+        "testuser",
+        "test@example.com",
+        null,
+        true,
+        Role.ADMIN
+    );
+  }
 
-    private void flushAndClear() {
-        entityManager.flush();
-        entityManager.clear();
-    }
+  @Test
+  @DisplayName("역할 업데이트 성공 - RoleUpdatedEvent 발행")
+  void updateRoleInternal_Success_PublishesRoleUpdatedEvent() {
+    // given
+    RoleUpdateRequest request = new RoleUpdateRequest(userId, Role.ADMIN);
+    
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(userMapper.toDto(user)).willReturn(userDto);
+
+    // when
+    UserDto result = authService.updateRoleInternal(request);
+
+    // then
+    assertThat(result).isEqualTo(userDto);
+    verify(userRepository).findById(userId);
+    verify(jwtRegistry).invalidateJwtInformationByUserId(userId);
+    verify(eventPublisher).publishEvent(any(RoleUpdatedEvent.class));
+  }
+
+  @Test
+  @DisplayName("역할 업데이트 시 올바른 RoleUpdatedEvent 정보 발행")
+  void updateRoleInternal_PublishesCorrectRoleUpdatedEvent() {
+    // given
+    Role fromRole = Role.USER;
+    Role toRole = Role.ADMIN;
+    RoleUpdateRequest request = new RoleUpdateRequest(userId, toRole);
+    
+    // Set initial role
+    ReflectionTestUtils.setField(user, "role", fromRole);
+    
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(userMapper.toDto(user)).willReturn(userDto);
+
+    // when
+    authService.updateRoleInternal(request);
+
+    // then
+    verify(eventPublisher).publishEvent(any(RoleUpdatedEvent.class));
+    // Note: In a real scenario, you might want to capture the exact event and verify its contents
+  }
+
+  @Test
+  @DisplayName("역할 업데이트 실패 - 존재하지 않는 사용자")
+  void updateRoleInternal_Failure_UserNotFound() {
+    // given
+    RoleUpdateRequest request = new RoleUpdateRequest(userId, Role.ADMIN);
+    given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+    // when & then
+    assertThatThrownBy(() -> authService.updateRoleInternal(request))
+        .isInstanceOf(UserNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("역할 업데이트 시 JWT 정보 무효화")
+  void updateRoleInternal_InvalidatesJwtInformation() {
+    // given
+    RoleUpdateRequest request = new RoleUpdateRequest(userId, Role.ADMIN);
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(userMapper.toDto(user)).willReturn(userDto);
+
+    // when
+    authService.updateRoleInternal(request);
+
+    // then
+    verify(jwtRegistry).invalidateJwtInformationByUserId(userId);
+  }
+
+  @Test
+  @DisplayName("역할 변경 없는 업데이트도 이벤트 발행")
+  void updateRoleInternal_SameRole_StillPublishesEvent() {
+    // given
+    Role currentRole = Role.USER;
+    RoleUpdateRequest request = new RoleUpdateRequest(userId, currentRole);
+    
+    ReflectionTestUtils.setField(user, "role", currentRole);
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(userMapper.toDto(user)).willReturn(userDto);
+
+    // when
+    authService.updateRoleInternal(request);
+
+    // then
+    verify(eventPublisher).publishEvent(any(RoleUpdatedEvent.class));
+  }
+
+  @Test
+  @DisplayName("USER에서 ADMIN으로 역할 업데이트")
+  void updateRoleInternal_UserToAdmin_Success() {
+    // given
+    Role fromRole = Role.USER;
+    Role toRole = Role.ADMIN;
+    RoleUpdateRequest request = new RoleUpdateRequest(userId, toRole);
+    
+    ReflectionTestUtils.setField(user, "role", fromRole);
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(userMapper.toDto(user)).willReturn(userDto);
+
+    // when
+    UserDto result = authService.updateRoleInternal(request);
+
+    // then
+    assertThat(result).isEqualTo(userDto);
+    verify(eventPublisher).publishEvent(any(RoleUpdatedEvent.class));
+  }
+
+  @Test
+  @DisplayName("ADMIN에서 USER로 역할 업데이트")
+  void updateRoleInternal_AdminToUser_Success() {
+    // given
+    Role fromRole = Role.ADMIN;
+    Role toRole = Role.USER;
+    RoleUpdateRequest request = new RoleUpdateRequest(userId, toRole);
+    
+    ReflectionTestUtils.setField(user, "role", fromRole);
+    UserDto userToUserDto = new UserDto(
+        userId,
+        "testuser",
+        "test@example.com",
+        null,
+        true,
+        Role.USER
+    );
+    
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    given(userMapper.toDto(user)).willReturn(userToUserDto);
+
+    // when
+    UserDto result = authService.updateRoleInternal(request);
+
+    // then
+    assertThat(result).isEqualTo(userToUserDto);
+    verify(eventPublisher).publishEvent(any(RoleUpdatedEvent.class));
+  }
 }

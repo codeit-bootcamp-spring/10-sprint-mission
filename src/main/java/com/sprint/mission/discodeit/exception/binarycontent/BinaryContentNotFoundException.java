@@ -1,15 +1,17 @@
 package com.sprint.mission.discodeit.exception.binarycontent;
 
 import com.sprint.mission.discodeit.exception.ErrorCode;
-import java.util.Map;
+
+import java.util.UUID;
 
 public class BinaryContentNotFoundException extends BinaryContentException {
-
-    public BinaryContentNotFoundException(String message) {
-        super(ErrorCode.BINARY_CONTENT_NOT_FOUND, message);
+    public BinaryContentNotFoundException() {
+        super(ErrorCode.BINARY_CONTENT_NOT_FOUND);
     }
-
-    public BinaryContentNotFoundException(String message, Map<String, Object> details) {
-        super(ErrorCode.BINARY_CONTENT_NOT_FOUND, message, details);
+    
+    public static BinaryContentNotFoundException withId(UUID binaryContentId) {
+        BinaryContentNotFoundException exception = new BinaryContentNotFoundException();
+        exception.addDetail("binaryContentId", binaryContentId);
+        return exception;
     }
-}
+} 
