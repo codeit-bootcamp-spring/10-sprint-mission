@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,8 @@ class UserRepositoryTest {
     void findByUsername_success() {
         // given
         String targetName = "김현재";
-        User user = new User(targetName, "fred@naver.com", "123123");
+        Role role = Role.USER;
+        User user = new User(targetName, "fred@naver.com", "123123",role);
 
         userRepository.save(user);
         // when
@@ -42,7 +44,8 @@ class UserRepositoryTest {
     void existsByEmail_true() {
         // given
         String targetEmail = "fred@naver.com";
-        User user = new User("김현재", targetEmail, "123123");
+        Role role = Role.USER;
+        User user = new User("김현재", targetEmail, "123123", role);
         userRepository.save(user);
 
         // when

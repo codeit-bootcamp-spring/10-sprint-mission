@@ -2,11 +2,11 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.readStatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readStatus.ReadStatusDto;
+import com.sprint.mission.discodeit.dto.readStatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.readStatus.ReadStatusExistException;
 import com.sprint.mission.discodeit.exception.readStatus.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -46,7 +46,8 @@ public class BasicReadStatusService implements ReadStatusService {
 
         // 중복된게 없다면 생성
         if(!readStatusRepository.existsByUserIdAndChannelId(userId,channelId)){
-            ReadStatus readStatus = new ReadStatus(user,channel);
+            boolean notificationEnabled = channel.isPrivate();
+            ReadStatus readStatus = new ReadStatus(user,channel,notificationEnabled);
             readStatusRepository.save(readStatus);
             // dto 반환
             return readStatusMapper.toDto(readStatus);
@@ -76,10 +77,15 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     @Transactional
-    public ReadStatusDto update(UUID id, Instant newLastReadAt) {
+    public ReadStatusDto update(UUID id, ReadStatusUpdateRequest request) {
         ReadStatus readStatus = getReadStatus(id);
-        readStatus.updateLastReadTime(newLastReadAt);
 
+        if(request.getNewLastReadAt() != null){
+            readStatus.updateLastReadTime(request.getNewLastReadAt());
+        }
+        if(request.getNewNotificationEnabled() != null){
+            readStatus.updateNotificationEnabled(request.getNewNotificationEnabled());
+        }
         return readStatusMapper.toDto(readStatus);
     }
 

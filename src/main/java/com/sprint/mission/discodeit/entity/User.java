@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,13 +23,15 @@ public class User extends BaseUpdatableEntity{
     @Column(name = "password", nullable = false)
     private String password;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserStatus userStatus;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role;
 
-    public User(String name, String email, String password){
+    public User(String name, String email, String password, Role role){
         this.username = name;
         this.email = email;
         this.password = password;
+        this.role = role;
     }
 
     public void addProfileImage(BinaryContent profileImg){
@@ -44,6 +47,8 @@ public class User extends BaseUpdatableEntity{
     public void updateProfileImg(BinaryContent profileImg){this.profile = profileImg;}
 
     public void updatePassword(String password){this.password = password;}
+
+    public void updateRole(Role role){this.role = role;}
 
     @Override
     public String toString() {

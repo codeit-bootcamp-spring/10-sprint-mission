@@ -9,8 +9,8 @@ import java.util.UUID;
 
 @Getter
 public class ReadStatusUpdateRequest {
-
-    @NotNull(message = "생성 시간은 필수입니다.")
     @PastOrPresent(message = "읽은 시간은 현재 또는 과거여야 합니다.")
     private Instant newLastReadAt;
+
+    private Boolean newNotificationEnabled;
 }

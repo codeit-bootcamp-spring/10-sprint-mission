@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.dto.channel;
 
 import com.sprint.mission.discodeit.dto.user.UserDto;
-import com.sprint.mission.discodeit.entity.type.ChannelType;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
