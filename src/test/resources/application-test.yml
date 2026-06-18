@@ -1,0 +1,35 @@
+spring:
+
+  config:
+    activate:
+      on-profile: test
+
+
+  datasource:
+    url: jdbc:h2:mem:discodeit;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+      show-sql: true
+      generate-ddl: true
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
+      database: h2
+  sql:
+    init:
+      mode: never
+
+  h2:
+    console:
+      enabled: true
+
+logging:
+  level:
+    root: DEBUG
+    sql: DEBUG
+
+
+

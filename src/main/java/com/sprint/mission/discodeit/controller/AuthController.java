@@ -1,59 +1,68 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.authdto.LoginRequestDTO;
+import com.sprint.mission.discodeit.dto.authdto.RoleUpdateRequest;
+import com.sprint.mission.discodeit.dto.jwtdto.JwtDto;
 import com.sprint.mission.discodeit.dto.userdto.UserDto;
-import com.sprint.mission.discodeit.service.AuthService;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import com.sprint.mission.discodeit.entity.JwtInformation;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.ErrorResponse;
+import com.sprint.mission.discodeit.service.basic.BasicAuthService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-@RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/auth")
-
+@RequiredArgsConstructor
+@Controller
 public class AuthController {
 
-    private final AuthService authService;
+  private final BasicAuthService basicAuthService;
 
-    @PostMapping(value = "/login")
-    @ApiResponses({
-        @ApiResponse(
-            responseCode = "200",
-            description = "로그인 성공",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = UserDto.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "사용자를 찾을 수 없음",
-            content = @Content(
-                mediaType = "application/json",
-                examples = @ExampleObject("User with username {username} not found")
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "비밀번호가 일치하지 않음",
-            content = @Content(
-                mediaType = "application/json",
-                examples = @ExampleObject("Wrong password")
-            )
-        )
+  @PutMapping("/role")
+  public ResponseEntity<UserDto> roleUpdate(
+      @RequestBody RoleUpdateRequest req
+  ) {
+    return ResponseEntity.ok(basicAuthService.updateRole(req));
+  }
+
+  // refresh 토큰 엔드포인트
+  // REFRESH_TOKEN 쿠키 값을 읽어들인다 (필수 아님)
+  @PostMapping("/refresh")
+  public ResponseEntity<?> refresh(
+      @CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken,
+      HttpServletResponse response
+  ) {
+    try {
+      // 토큰 응답(유저 아이디, 액세스 토큰, 리프레시 토큰)
+      JwtInformation jwtInformation = basicAuthService.refresh(refreshToken);
+      Cookie refreshCookie = new Cookie("REFRESH_TOKEN", jwtInformation.getRefreshToken());
+      refreshCookie.setHttpOnly(true);
+      refreshCookie.setPath("/");
+      refreshCookie.setMaxAge(14 * 24 * 60 * 60);
+      response.addCookie(refreshCookie);
+
+      return ResponseEntity.ok(
+          new JwtDto(jwtInformation.getUserDto(), jwtInformation.getAccessToken()));
+    } catch (IllegalArgumentException e) {
+      return invalidRefreshTokenResponse();
     }
+  }
 
-    )
-    public UserDto userLogin(@RequestBody LoginRequestDTO req) {
-        return authService.login(req); // 일단 Response DTO만 보내는걸로
-        // 추후 로그인 기능을 서비스에서 구현?
-    }
-
+  private ResponseEntity<ErrorResponse> invalidRefreshTokenResponse() {
+    ErrorCode errorCode = ErrorCode.AUTHENTICATION_FAILED;
+    ErrorResponse body = ErrorResponse.of(
+        new IllegalArgumentException("Invalid refresh token"),
+        errorCode,
+        Map.of("token", "REFRESH_TOKEN")
+    );
+    return ResponseEntity.status(errorCode.getStatus()).body(body);
+  }
 }

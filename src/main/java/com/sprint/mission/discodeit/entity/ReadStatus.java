@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 
 @Getter
 @Setter
@@ -25,41 +26,55 @@ import lombok.Setter;
 
 public class ReadStatus extends BaseUpdatableEntity {
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+  @ManyToOne
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "channel_id", nullable = false)
-    private Channel channel;
+  @ManyToOne
+  @JoinColumn(name = "channel_id", nullable = false)
+  private Channel channel;
 
-    @Column(nullable = false)
-    private Instant lastReadAt = Instant.EPOCH;
+  @Column(nullable = false)
+  private Instant lastReadAt = Instant.EPOCH;
 
-    public ReadStatus(User user, Channel channel) {
-        this.user = Objects.requireNonNull(user);
-        this.channel = Objects.requireNonNull(channel);
-        this.lastReadAt = Instant.now();
+  @Column(nullable = false)
+  private boolean notificationEnabled;
+
+  public ReadStatus(User user, Channel channel) {
+    this.user = Objects.requireNonNull(user);
+    this.channel = Objects.requireNonNull(channel);
+    this.lastReadAt = Instant.now();
+    this.notificationEnabled = channel.getType() == ChannelType.PRIVATE;
+  }
+
+  public ReadStatus() {
+
+  }
+
+
+  public void read() {
+    this.lastReadAt = Instant.now();
+    this.updatedAt = Instant.now();
+  }
+
+  public boolean isRead() {
+    return lastReadAt.isAfter(Instant.EPOCH);
+  }
+
+  public void update(Instant lastReadAt) {
+    this.lastReadAt = lastReadAt;
+    this.updatedAt = Instant.now();
+  }
+
+  public void update(Instant lastReadAt, Boolean notificationEnabled) {
+    if (lastReadAt != null) {
+      this.lastReadAt = lastReadAt;
     }
-
-    public ReadStatus() {
-
+    if (notificationEnabled != null) {
+      this.notificationEnabled = notificationEnabled;
     }
-
-
-    public void read() {
-        this.lastReadAt = Instant.now();
-        this.updatedAt = Instant.now();
-    }
-
-    public boolean isRead() {
-        return lastReadAt.isAfter(Instant.EPOCH);
-    }
-
-    public void update() {
-        this.lastReadAt = Instant.now();
-        this.updatedAt = Instant.now();
-    }
+    this.updatedAt = Instant.now();
+  }
 
 
 }
