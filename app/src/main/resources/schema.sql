@@ -1,13 +1,4 @@
-DROP TABLE IF EXISTS notifications;
-DROP TABLE IF EXISTS user_statuses;
-DROP TABLE IF EXISTS read_statuses;
-DROP TABLE IF EXISTS message_attachments;
-DROP TABLE IF EXISTS messages;
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS channels;
-DROP TABLE IF EXISTS binary_contents;
-
-CREATE TABLE binary_contents
+CREATE TABLE IF NOT EXISTS binary_contents
 (
     id           UUID PRIMARY KEY,
     created_at   timestamp with time zone NOT NULL,
@@ -18,7 +9,7 @@ CREATE TABLE binary_contents
     status       varchar(20)              NOT NULL CHECK (status IN ('PROCESSING', 'SUCCESS', 'FAIL'))
 );
 
-CREATE TABLE users
+CREATE TABLE IF NOT EXISTS users
 (
     id         UUID PRIMARY KEY,
     created_at timestamp with time zone NOT NULL,
@@ -31,7 +22,7 @@ CREATE TABLE users
     FOREIGN KEY (profile_id) REFERENCES binary_contents (id) ON DELETE SET NULL
 );
 
-CREATE TABLE channels
+CREATE TABLE IF NOT EXISTS channels
 (
     id          UUID PRIMARY KEY,
     created_at  timestamp with time zone NOT NULL,
@@ -41,7 +32,7 @@ CREATE TABLE channels
     type        VARCHAR(10)              NOT NULL CHECK (type IN ('PUBLIC', 'PRIVATE'))
 );
 
-CREATE TABLE messages
+CREATE TABLE IF NOT EXISTS messages
 (
     id         UUID PRIMARY KEY,
     created_at timestamp with time zone NOT NULL,
@@ -53,7 +44,7 @@ CREATE TABLE messages
     FOREIGN KEY (channel_id) REFERENCES channels (id) ON DELETE CASCADE
 );
 
-CREATE TABLE message_attachments
+CREATE TABLE IF NOT EXISTS message_attachments
 (
     message_id    UUID,
     attachment_id UUID,
@@ -61,7 +52,7 @@ CREATE TABLE message_attachments
     FOREIGN KEY (attachment_id) REFERENCES binary_contents (id) ON DELETE CASCADE
 );
 
-CREATE TABLE read_statuses
+CREATE TABLE IF NOT EXISTS read_statuses
 (
     id                   UUID PRIMARY KEY,
     created_at           timestamp with time zone NOT NULL,
@@ -75,7 +66,7 @@ CREATE TABLE read_statuses
     CONSTRAINT uk_user_channel UNIQUE (user_id, channel_id)
 );
 
-CREATE TABLE notifications
+CREATE TABLE IF NOT EXISTS notifications
 (
     id          UUID PRIMARY KEY,
     created_at  timestamp with time zone NOT NULL,
