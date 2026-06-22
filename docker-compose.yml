@@ -1,12 +1,14 @@
 services:
   app:
     build: .
-    image: discodeit-backend:1.2-M8
+    image: discodeit-backend:3.0-M12
     restart: always
     ports:
-      - "8081:8080"
+      - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE}
+      MAX_REQUEST_SIZE: ${MAX_REQUEST_SIZE}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       DB_USER: ${DB_USER}
@@ -19,22 +21,32 @@ services:
       AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
       STORAGE_TYPE: ${STORAGE_TYPE}
       LOCAL_STORAGE_ROOT_PATH: ${LOCAL_STORAGE_ROOT_PATH}
+      LOCAL_STORAGE_INTERNAL_PATH: ${LOCAL_STORAGE_INTERNAL_PATH}
+      S3_STORAGE_INTERNAL_PATH: ${S3_STORAGE_INTERNAL_PATH}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION}
+      JWT_REGISTRY_STORE_TYPE: ${JWT_REGISTRY_STORE_TYPE}
+      JWT_REGISTRY_MAX_CONCURRENT: ${JWT_REGISTRY_MAX_CONCURRENT}
+      JWT_REGISTRY_MAX_RETAINED: ${JWT_REGISTRY_MAX_RETAINED}
+      SPRING_CACHE_TYPE: ${SPRING_CACHE_TYPE}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
 
   web-server:
     build:
-      context: ./0-sprint-mission-front-1.2.3
-    image: discodeit-frontend:1.2.3
+      context: discodeit-front
+    image: discodeit-frontend:3.0.0
     restart: always
     depends_on:
       - app
     ports:
       - "80:80"
     volumes:
-      - local-uploads:/usr/share/nginx/html/uploads
-      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template
+      - ./.storage/local-uploads:/usr/share/nginx/html/uploads
     environment:
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
       AWS_S3_REGION: ${AWS_S3_REGION}
-
-volumes:
-  local-uploads:

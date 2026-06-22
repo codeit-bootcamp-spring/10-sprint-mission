@@ -17,6 +17,33 @@ spring:
         default_batch_fetch_size: 500
     open-in-view: false
 
+app:
+  admin:
+    username: admin
+    email: admin@test.com
+    password: adminPassword
+  storage:
+    type: local
+    local:
+      internal-path: /storage
+      root-path: build/test-storage
+  jwt:
+    secret-key: test-secret-key-that-is-long-enough-for-hs256-which-is-at-least-32-bytes
+    access-token:
+      expiration: 3600
+    refresh-token:
+      expiration: 86400
+      cookie:
+        name: refresh_token
+        path: /api
+        same-site: Lax
+        secure: false
+    registry:
+      store-type: in-memory
+      session:
+        max-concurrent: 1
+        max-retained: 1
+
 logging:
   level:
     root: info

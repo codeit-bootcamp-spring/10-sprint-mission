@@ -5,12 +5,44 @@ spring:
     enabled: true
     baseline-on-migrate: true
     fail-on-missing-locations: true
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE}
+      max-request-size: ${MAX_REQUEST_SIZE}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
 
-discodeit:
+app:
   storage:
-    type: ${STORAGE_TYPE} # local | s3
+    type: ${STORAGE_TYPE:local} # local | s3
     local:
-      root-path: ${LOCAL_STORAGE_ROOT_PATH:.discodeit/storage}
+      root-path: ${LOCAL_STORAGE_ROOT_PATH:.app/storage}
+      internal-path: ${LOCAL_STORAGE_INTERNAL_PATH}
+    s3:
+      internal-path: ${S3_STORAGE_INTERNAL_PATH}
+  admin:
+    username: ${ADMIN_USERNAME}
+    email: ${ADMIN_EMAIL}
+    password: ${ADMIN_PASSWORD}
+  jwt:
+    secret-key: ${JWT_SECRET_KEY}
+    access-token:
+      expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
+    refresh-token:
+      expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
+      cookie:
+        name: REFRESH_TOKEN
+        path: /api/auth/refresh
+        same-site: Lax
+        secure: false
+    registry:
+      store-type: ${JWT_REGISTRY_STORE_TYPE} # in-memory | db
+      session:
+        max-concurrent: ${JWT_REGISTRY_MAX_CONCURRENT}
+        max-retained: ${JWT_REGISTRY_MAX_RETAINED}
 aws:
   s3:
     access-key: ${AWS_S3_ACCESS_KEY}
@@ -18,3 +50,16 @@ aws:
     bucket: ${AWS_S3_BUCKET}
     region: ${AWS_S3_REGION}
     presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
+
+logging:
+  file:
+    name: .logs/discodeit.log
+  logback:
+    rollingpolicy:
+      file-name-pattern: ${LOG_FILE}.%d{yyyy-MM-dd}.%i.log
+      max-file-size: 10MB
+      clean-history-on-start: true
+      max-history: 30
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %clr(%-5level) [traceId: %.-8X{traceId}] [%logger{0}] - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [traceId: %X{traceId}] [%logger{0}] - %msg%n"
