@@ -1,23 +1,17 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
-import com.sprint.mission.discodeit.entity.Notification;
-import com.sprint.mission.discodeit.entity.Role;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.NotificationRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.event.message.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.Duration;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,29 +34,38 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 @Slf4j
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
 @Component
-@RequiredArgsConstructor
 public class S3BinaryContentStorage implements BinaryContentStorage {
 
-  private final UserRepository userRepository;
-  private final NotificationRepository notificationRepository;
-
-  @Value("${discodeit.storage.s3.access-key}")
-  private String accessKey;
-
-  @Value("${discodeit.storage.s3.secret-key}")
-  private String secretKey;
-
-  @Value("${discodeit.storage.s3.region}")
-  private String region;
-
-  @Value("${discodeit.storage.s3.bucket}")
-  private String bucket;
+  private final String accessKey;
+  private final String secretKey;
+  private final String region;
+  private final String bucket;
 
   @Value("${discodeit.storage.s3.presigned-url-expiration:600}") // 기본값 10분
   private long presignedUrlExpirationSeconds;
 
-  @Retryable(retryFor = { S3Exception.class,
-      RuntimeException.class }, maxAttempts = 3, backoff = @Backoff(delay = 1000))
+  private final ApplicationEventPublisher eventPublisher;
+
+  public S3BinaryContentStorage(
+      @Value("${discodeit.storage.s3.access-key}") String accessKey,
+      @Value("${discodeit.storage.s3.secret-key}") String secretKey,
+      @Value("${discodeit.storage.s3.region}") String region,
+      @Value("${discodeit.storage.s3.bucket}") String bucket,
+      ApplicationEventPublisher eventPublisher
+  ) {
+    this.accessKey = accessKey;
+    this.secretKey = secretKey;
+    this.region = region;
+    this.bucket = bucket;
+    this.eventPublisher = eventPublisher;
+  }
+
+
+  @Retryable(
+      retryFor = S3Exception.class,
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 1000, multiplier = 2)
+  )
   @Override
   public UUID put(UUID binaryContentId, byte[] bytes) {
     String key = binaryContentId.toString();
@@ -85,31 +88,13 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   }
 
   @Recover
-  public UUID recover(Exception e, UUID binaryContentId, byte[] bytes) {
-    String requestId = MDC.get("requestId");
-    log.error("S3 업로드 재시도가 모두 실패하여 복구 로직을 실행합니다. requestId={}, binaryContentId={}", requestId, binaryContentId,
-        e);
+  public UUID recover(S3Exception e, UUID binaryContentId, byte[] bytes) {
+    log.error("S3 업로드 재시도 실패: {}, key={}", e.getMessage(), binaryContentId);
+    eventPublisher.publishEvent(
+        new S3UploadFailedEvent(binaryContentId, e)
+    );
 
-    List<User> admins = userRepository.findAllByRole(Role.ADMIN);
-    if (admins.isEmpty()) {
-      log.warn("알림을 보낼 ADMIN 사용자가 존재하지 않습니다.");
-      return binaryContentId;
-    }
-
-    String title = "S3 파일 업로드 실패";
-    String content = String.format(
-        "RequestId: %s\nBinaryContentId: %s\nError: %s",
-        requestId != null ? requestId : "N/A",
-        binaryContentId,
-        e.getMessage());
-
-    for (User admin : admins) {
-      Notification notification = new Notification(admin, title, content);
-      notificationRepository.save(notification);
-      log.info("ADMIN 관리자({})에게 S3 업로드 실패 알림을 등록했습니다.", admin.getUsername());
-    }
-
-    return binaryContentId;
+    throw new RuntimeException(e);
   }
 
   @Override
@@ -136,7 +121,9 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         .region(Region.of(region))
         .credentialsProvider(
             StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(accessKey, secretKey)))
+                AwsBasicCredentials.create(accessKey, secretKey)
+            )
+        )
         .build();
   }
 
@@ -181,7 +168,9 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         .region(Region.of(region))
         .credentialsProvider(
             StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(accessKey, secretKey)))
+                AwsBasicCredentials.create(accessKey, secretKey)
+            )
+        )
         .build();
   }
-}
+} 

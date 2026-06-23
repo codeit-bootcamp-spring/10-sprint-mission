@@ -1,4 +1,5 @@
 package com.sprint.mission.discodeit.entity;
+
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -29,7 +30,7 @@ public class User extends BaseUpdatableEntity {
   @JoinColumn(name = "profile_id", columnDefinition = "uuid")
   private BinaryContent profile;
   @Enumerated(EnumType.STRING)
-  @Column(length = 20, nullable = false)
+  @Column(nullable = false)
   private Role role = Role.USER;
 
   public User(String username, String email, String password, BinaryContent profile) {
@@ -56,7 +57,7 @@ public class User extends BaseUpdatableEntity {
   }
 
   public void updateRole(Role newRole) {
-    if (newRole != null) {
+    if (this.role != newRole) {
       this.role = newRole;
     }
   }

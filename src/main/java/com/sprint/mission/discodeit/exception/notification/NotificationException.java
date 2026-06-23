@@ -12,4 +12,4 @@ public class NotificationException extends DiscodeitException {
   public NotificationException(ErrorCode errorCode, Throwable cause) {
     super(errorCode, cause);
   }
-}
+} 
