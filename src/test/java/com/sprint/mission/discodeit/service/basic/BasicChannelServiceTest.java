@@ -51,6 +51,10 @@ class BasicChannelServiceTest {
     private ReadStatusRepository readStatusRepository;
     @Mock
     private MessageRepository messageRepository;
+    @Mock
+    private com.sprint.mission.discodeit.security.JwtRegistry jwtRegistry;
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private BasicChannelService basicChannelService;

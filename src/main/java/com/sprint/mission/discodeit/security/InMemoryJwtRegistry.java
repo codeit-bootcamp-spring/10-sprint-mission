@@ -7,11 +7,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "discodeit.jwt.registry", havingValue = "memory", matchIfMissing = true)
 public class InMemoryJwtRegistry implements JwtRegistry {
 
     private final Map<UUID, Queue<JwtInformation>> origin = new ConcurrentHashMap<>();

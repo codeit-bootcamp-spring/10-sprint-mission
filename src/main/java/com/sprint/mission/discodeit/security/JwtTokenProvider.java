@@ -40,7 +40,6 @@ public class JwtTokenProvider {
     @Value("${discodeit.jwt.refresh-token-expiration-minutes}")
     private int refreshTokenExpirationMinutes;
 
-    // HS256 서명에는 최소 256비트(32바이트) 키가 필요하다. 짧은/빈 키를 첫 로그인이 아닌 기동 시점에 차단한다.
     @PostConstruct
     public void validateSecretKey() {
         if (secretKey == null || secretKey.getBytes(StandardCharsets.UTF_8).length < 32) {
@@ -124,9 +123,25 @@ public class JwtTokenProvider {
 
             return claimsSet.getClaims();
         } catch (JOSEException | ParseException e) {
-            // 서명 검증·클레임 파싱 중 라이브러리 예외 → 형식 오류로 간주
-            // (InvalidJwtSignature/ExpiredJwt 예외는 RuntimeException이라 여기서 잡히지 않고 전파된다)
             throw new MalformedJwtException();
+        }
+    }
+
+    // refresh token 검증 or access token 검증 의도 구분
+    public boolean validateAccessToken(String token) {
+        return isValid(token);
+    }
+
+    public boolean validateRefreshToken(String token) {
+        return isValid(token);
+    }
+
+    private boolean isValid(String token) {
+        try {
+            getClaims(token);
+            return true;
+        } catch (RuntimeException e) {
+            return false;
         }
     }
 }

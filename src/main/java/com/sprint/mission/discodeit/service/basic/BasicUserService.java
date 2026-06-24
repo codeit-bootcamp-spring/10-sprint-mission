@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.UserChangedEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -66,7 +67,9 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(status);
 
         log.info("사용자 가입 성공: userId={}", user.getId());
-        return userMapper.toDto(user, isOnline(user));
+        UserDto dto = userMapper.toDto(user, isOnline(user));
+        eventPublisher.publishEvent(new UserChangedEvent("created", dto));
+        return dto;
     }
 
     @Override
@@ -107,7 +110,9 @@ public class BasicUserService implements UserService {
         }
 
         log.info("사용자 정보 수정 완료: userId={}", user.getId());
-        return userMapper.toDto(user, isOnline(user));
+        UserDto dto = userMapper.toDto(user, isOnline(user));
+        eventPublisher.publishEvent(new UserChangedEvent("updated", dto));
+        return dto;
     }
 
     @Override
@@ -126,7 +131,9 @@ public class BasicUserService implements UserService {
         // 권한 변경 당사자에게 알림을 생성하기 위한 이벤트 발행
         eventPublisher.publishEvent(new RoleUpdatedEvent(user.getId(), previousRole, request.newRole()));
 
-        return userMapper.toDto(user, isOnline(user));
+        UserDto dto = userMapper.toDto(user, isOnline(user));
+        eventPublisher.publishEvent(new UserChangedEvent("updated", dto));
+        return dto;
     }
 
     @Override
@@ -135,7 +142,9 @@ public class BasicUserService implements UserService {
     public void delete(UUID userId) {
         log.info("사용자 삭제 요청: userId={}", userId);
         User user = getUserEntity(userId);
+        UserDto dto = userMapper.toDto(user, isOnline(user)); // 삭제 전 DTO 캡처
         userRepository.delete(user);
+        eventPublisher.publishEvent(new UserChangedEvent("deleted", dto));
         log.info("사용자 삭제 완료: userId={}", userId);
     }
 

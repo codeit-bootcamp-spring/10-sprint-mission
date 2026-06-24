@@ -35,6 +35,9 @@ class BasicNotificationServiceTest {
     @Mock
     private NotificationMapper notificationMapper;
 
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private BasicNotificationService notificationService;
 

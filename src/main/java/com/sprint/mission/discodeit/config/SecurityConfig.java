@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+                        .ignoringRequestMatchers("/ws/**")
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -57,6 +58,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 회원가입 (POST /api/users) 만 비인증 허용
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        // WebSocket 핸드셰이크는 HTTP 레벨 개방, 인증은 STOMP CONNECT에서 처리
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(
                                 "/api/auth/csrf-token",
                                 "/api/auth/login",

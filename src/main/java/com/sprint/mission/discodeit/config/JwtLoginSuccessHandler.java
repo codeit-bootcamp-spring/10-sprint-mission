@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.JwtInformation;
 import com.sprint.mission.discodeit.security.JwtRegistry;
 import com.sprint.mission.discodeit.security.JwtTokenProvider;
+import com.sprint.mission.discodeit.service.SseService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,6 +34,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
     private final CacheManager cacheManager;
+    private final SseService sseService;
 
     @Value("${discodeit.security.cookie.secure:false}")
     private boolean cookieSecure;
@@ -62,6 +64,11 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         if (usersCache != null) {
             usersCache.clear();
         }
+
+        // 로그인으로 online 상태가 true로 변경됨을 SSE로 통지
+        sseService.broadcast("users.updated", new UserDto(
+                userDto.id(), userDto.username(), userDto.email(),
+                userDto.profile(), userDto.role(), true));
 
         ResponseCookie refreshCookie = ResponseCookie.from(
                         JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, refreshToken)

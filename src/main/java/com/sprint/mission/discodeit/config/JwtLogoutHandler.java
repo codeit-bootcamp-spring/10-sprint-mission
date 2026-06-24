@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.JwtRegistry;
 import com.sprint.mission.discodeit.security.JwtTokenProvider;
+import com.sprint.mission.discodeit.service.SseService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,6 +25,7 @@ public class JwtLogoutHandler implements LogoutHandler {
 
     private final JwtRegistry jwtRegistry;
     private final CacheManager cacheManager;
+    private final SseService sseService;
 
     @Value("${discodeit.security.cookie.secure:false}")
     private boolean cookieSecure;
@@ -43,6 +46,11 @@ public class JwtLogoutHandler implements LogoutHandler {
                 if (usersCache != null) {
                     usersCache.clear();
                 }
+                // 로그아웃으로 online 상태가 false로 변경됨을 SSE로 통지
+                UserDto userDto = ud.getUserDto();
+                sseService.broadcast("users.updated", new UserDto(
+                        userDto.id(), userDto.username(), userDto.email(),
+                        userDto.profile(), userDto.role(), false));
             }
         }
 

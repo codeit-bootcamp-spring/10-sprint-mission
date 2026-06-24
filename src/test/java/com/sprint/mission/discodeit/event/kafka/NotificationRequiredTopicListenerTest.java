@@ -76,7 +76,8 @@ class NotificationRequiredTopicListenerTest {
         ));
 
         MessageCreatedEvent event =
-                new MessageCreatedEvent(channelId, "general", sender.getId(), "Alice", "hello");
+                new MessageCreatedEvent(java.util.UUID.randomUUID(), channelId, "general",
+                        sender.getId(), "Alice", "hello", java.time.Instant.now());
         String payload = objectMapper.writeValueAsString(event);
 
         listener.onMessageCreatedEvent(payload);

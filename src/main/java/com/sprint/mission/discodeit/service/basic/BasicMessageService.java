@@ -92,8 +92,10 @@ public class BasicMessageService implements MessageService {
         eventPublisher.publishEvent(new MessageSentEvent(request.authorId()));
         // 알림 대상에게 알림을 생성하기 위한 이벤트 발행
         eventPublisher.publishEvent(new MessageCreatedEvent(
-                channel.getId(), channel.getName(),
-                author.getId(), author.getUsername(), request.content()));
+                // WS 구독자 식별·정렬용 messageId·createdAt 포함
+                message.getId(), channel.getId(), channel.getName(),
+                author.getId(), author.getUsername(),
+                request.content(), message.getCreatedAt()));
 
         log.info("메시지 생성 성공: messageId={}", message.getId());
 

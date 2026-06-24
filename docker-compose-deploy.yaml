@@ -1,0 +1,94 @@
+services:
+  proxy:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    container_name: discodeit-proxy
+    ports:
+      - "3000:80"           # 외부 접근 가능한 유일 포트
+    depends_on:
+      - backend
+    networks: [discodeit-net]
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 3           # 다중 인스턴스(서비스명 backend 공유, Docker DNS가 3 IP 반환)
+    expose:
+      - "8080"              # 외부 미노출, proxy를 통해서만 접근
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+      - SERVER_PORT=8080
+      - DISCODEIT_JWT_REGISTRY=redis
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_BOOTSTRAP_SERVERS=broker:29092
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      broker:
+        condition: service_started
+    networks: [discodeit-net]
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [discodeit-net]      # 외부 포트 매핑 없음 — 내부 전용
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    networks: [discodeit-net]
+    restart: unless-stopped
+
+  broker:
+    image: apache/kafka:latest
+    environment:                     # KRaft 단일 노드, 내부 전용(9092 호스트 매핑 없음)
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qg
+    networks: [discodeit-net]
+    restart: unless-stopped
+
+networks:
+  discodeit-net:
+    driver: bridge
+
+volumes:
+  pg_data:
+  redis_data:

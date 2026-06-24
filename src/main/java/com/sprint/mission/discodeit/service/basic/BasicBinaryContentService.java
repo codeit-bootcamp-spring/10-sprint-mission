@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.CreateBinaryContentRequestDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.BinaryContentStatusUpdatedEvent;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -85,6 +86,8 @@ public class BasicBinaryContentService implements BinaryContentService {
                     } else {
                         content.markFail();
                     }
+                    eventPublisher.publishEvent(
+                            new BinaryContentStatusUpdatedEvent(binaryContentMapper.toDto(content)));
                     log.info("바이너리 상태 갱신: contentId={}, status={}", contentId, status);
                 },
                 () -> log.warn("상태 갱신 대상 BinaryContent 없음: contentId={}", contentId)

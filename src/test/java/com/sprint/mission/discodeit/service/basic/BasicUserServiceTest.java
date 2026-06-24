@@ -53,6 +53,13 @@ class BasicUserServiceTest {
     @Mock
     private UserMapper userMapper;
 
+    @Mock
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    @Mock
+    private com.sprint.mission.discodeit.security.JwtRegistry jwtRegistry;
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private BasicUserService basicUserService;
 

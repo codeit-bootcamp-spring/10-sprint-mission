@@ -31,6 +31,7 @@ class BasicBinaryContentServiceTest {
     @Mock private BinaryContentRepository binaryContentRepository;
     @Mock private BinaryContentMapper binaryContentMapper;
     @Mock private BinaryContentStorage binaryContentStorage;
+    @Mock private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private BasicBinaryContentService basicBinaryContentService;
@@ -58,7 +59,10 @@ class BasicBinaryContentServiceTest {
 
         // then
         assertEquals(expectedDto, result);
-        verify(binaryContentStorage).put(savedId, bytes);
+        // 실제 업로드는 비동기 리스너가 수행 → create는 이벤트 발행만 검증
+        verify(eventPublisher).publishEvent(
+                org.mockito.ArgumentMatchers.any(
+                        com.sprint.mission.discodeit.event.BinaryContentCreatedEvent.class));
     }
 
     @Test

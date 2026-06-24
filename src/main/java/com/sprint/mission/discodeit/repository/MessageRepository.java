@@ -16,6 +16,9 @@ import org.springframework.data.repository.query.Param;
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     @EntityGraph(attributePaths = {"author", "author.profile", "author.status", "attachments"})
+    Optional<Message> findWithDetailsById(UUID id);
+
+    @EntityGraph(attributePaths = {"author", "author.profile", "author.status", "attachments"})
     Slice<Message> findByChannelId(UUID channelId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"author", "author.profile", "author.status", "attachments"})

@@ -11,7 +11,7 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -32,6 +32,9 @@ spring:
       test: "common, test"
 
 discodeit:
+  kafka:
+    # 인스턴스별 고유 group-id(브로드캐스트 소비): 모든 인스턴스가 같은 이벤트를 각자 수신
+    broadcast-group: discodeit-broadcast-${random.uuid}
   storage:
     type: ${STORAGE_TYPE:local}  # local | s3 (기본값: local)
     local:

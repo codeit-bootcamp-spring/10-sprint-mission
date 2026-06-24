@@ -1,7 +1,7 @@
 HELP.md
 CLAUDE.md
-SPRINT10_PLAN.md
-SPRINT11_PLAN.md
+SPRINT*_PLAN.md
+SPRINT*_SPEC.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
