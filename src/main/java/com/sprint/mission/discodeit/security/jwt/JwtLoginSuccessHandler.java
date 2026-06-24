@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.security.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.response.JwtDto;
+import com.sprint.mission.discodeit.event.sse.UserChangedEvent;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -26,6 +28,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final ObjectMapper objectMapper;
   private final JwtRegistry jwtRegistry;
   private final CacheManager cacheManager;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   @Override
   public void onAuthenticationSuccess(
@@ -33,34 +36,32 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
       HttpServletResponse response,
       Authentication authentication
   ) throws IOException, ServletException {
-    // 인증된 사용자 정보 꺼내기
     UserDto userDto = ((DiscodeitUserDetails) authentication.getPrincipal()).getUserDto();
 
-    // 토큰 생성
     String accessToken = jwtTokenProvider.generateAccessToken(userDto);
     String refreshToken = jwtTokenProvider.generateRefreshToken(userDto);
 
-    // registry 등록
     jwtRegistry.registerJwtInformation(new JwtInformation(userDto, accessToken, refreshToken));
 
-    // 리프레시 토큰을 HttpOnly 쿠키에 담기
     Cookie cookie = new Cookie(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, refreshToken);
     cookie.setHttpOnly(true);
     cookie.setPath("/");
-    cookie.setMaxAge((int) (jwtProperties.refreshTokenExpiry() / 1000)); // '초' 단위로 변경
+    cookie.setMaxAge((int) (jwtProperties.refreshTokenExpiry() / 1000));
     response.addCookie(cookie);
 
-    // Response Body에 AccessToken 담기
     response.setStatus(HttpServletResponse.SC_OK);
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setCharacterEncoding("UTF-8");
-    objectMapper.writeValue(response.getWriter(), new JwtDto(userDto, accessToken)); // JSON 직렬화
+    objectMapper.writeValue(response.getWriter(), new JwtDto(userDto, accessToken));
 
-    // 로그인으로 online 상태가 바뀌므로 사용자 목록 캐시 무효화
     Cache userCache = cacheManager.getCache("users");
     if (userCache != null) {
-      userCache.clear(); // 캐시에 저장된 모든 항목 비우기
+      userCache.clear();
     }
 
+    UserDto onlineUser = new UserDto(userDto.id(), userDto.username(), userDto.email(),
+        userDto.profile(), true, userDto.role());
+    applicationEventPublisher.publishEvent(
+        new UserChangedEvent(UserChangedEvent.Type.STATUS_CHANGED, onlineUser));
   }
 }

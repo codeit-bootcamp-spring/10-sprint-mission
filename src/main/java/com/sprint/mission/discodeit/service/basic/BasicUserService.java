@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserRole;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.sse.UserChangedEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -77,7 +78,10 @@ public class BasicUserService implements UserService {
 
     userRepository.save(user);
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
-    return userMapper.toDto(user);
+    UserDto dto = userMapper.toDto(user);
+    applicationEventPublisher.publishEvent(
+        new UserChangedEvent(UserChangedEvent.Type.CREATED, dto));
+    return dto;
   }
 
   @Transactional(readOnly = true)
@@ -150,7 +154,10 @@ public class BasicUserService implements UserService {
     user.update(newUsername, newEmail, newPassword, nullableProfile);
 
     log.info("사용자 수정 완료: id={}", userId);
-    return userMapper.toDto(user);
+    UserDto dto = userMapper.toDto(user);
+    applicationEventPublisher.publishEvent(
+        new UserChangedEvent(UserChangedEvent.Type.UPDATED, dto));
+    return dto;
   }
 
   @CacheEvict(value = "users", allEntries = true)
@@ -165,13 +172,14 @@ public class BasicUserService implements UserService {
 
     UserRole oldRole = user.getRole();
     user.updateRole(newRole);
-    jwtRegistry.invalidateJwtInformationByUserId(userId); // JwtInformation 삭제
-    // 다음 API 요청 시 jwtRegistry에 토큰이 없으므로 인증이 실패하고 -> 강제 로그아웃 상태가 됨
-    // 재로그인하면 새 역할이 적용된 JWT가 발급된다.
+    jwtRegistry.invalidateJwtInformationByUserId(userId);
     applicationEventPublisher.publishEvent(new RoleUpdatedEvent(userId, oldRole, newRole));
 
     log.info("사용자 권한 수정 완료: id={}, newRole={}", userId, newRole);
-    return userMapper.toDto(user);
+    UserDto dto = userMapper.toDto(user);
+    applicationEventPublisher.publishEvent(
+        new UserChangedEvent(UserChangedEvent.Type.UPDATED, dto));
+    return dto;
   }
 
   @CacheEvict(value = "users", allEntries = true)
@@ -181,11 +189,13 @@ public class BasicUserService implements UserService {
   public void delete(UUID userId) {
     log.debug("사용자 삭제 시작: id={}", userId);
 
-    if (!userRepository.existsById(userId)) {
-      throw UserNotFoundException.withId(userId);
-    }
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> UserNotFoundException.withId(userId));
+    UserDto dto = userMapper.toDto(user);
 
     userRepository.deleteById(userId);
     log.info("사용자 삭제 완료: id={}", userId);
+    applicationEventPublisher.publishEvent(
+        new UserChangedEvent(UserChangedEvent.Type.DELETED, dto));
   }
 }

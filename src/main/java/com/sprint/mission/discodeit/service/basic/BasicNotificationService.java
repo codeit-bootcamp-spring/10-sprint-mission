@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
+import com.sprint.mission.discodeit.event.sse.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.exception.notification.NotificationForbiddenException;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ public class BasicNotificationService implements NotificationService {
 
   private final NotificationRepository notificationRepository;
   private final NotificationMapper notificationMapper;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   @CacheEvict(value = "userNotifications", key = "#receiverId")
   @Transactional
@@ -32,7 +35,9 @@ public class BasicNotificationService implements NotificationService {
     Notification notification = notificationRepository.save(
         new Notification(receiverId, title, content));
     log.info("알림 생성 완료: id={}, receiverId={}", notification.getId(), receiverId);
-    return notificationMapper.toDto(notification);
+    NotificationDto dto = notificationMapper.toDto(notification);
+    applicationEventPublisher.publishEvent(new NotificationCreatedEvent(dto));
+    return dto;
   }
 
   @Cacheable(value = "userNotifications", key = "#receiverId")
@@ -40,7 +45,6 @@ public class BasicNotificationService implements NotificationService {
   @Override
   public List<NotificationDto> findAllByReceiverId(UUID receiverId) {
     log.debug("알림 목록 조회 시작: receiverId={}", receiverId);
-    // 알림 조회 -> 최신순 정렬
     List<NotificationDto> dtos = notificationRepository
         .findAllByReceiverIdOrderByCreatedAtDesc(receiverId).stream()
         .map(notificationMapper::toDto)
@@ -57,7 +61,6 @@ public class BasicNotificationService implements NotificationService {
     Notification notification = notificationRepository.findById(notificationId)
         .orElseThrow(() -> NotificationNotFoundException.withId(notificationId));
 
-    // 알림 삭제 요청이 본인이 아니면
     if (!notification.getReceiverId().equals(requesterId)) {
       throw NotificationForbiddenException.forNotification(notificationId);
     }
