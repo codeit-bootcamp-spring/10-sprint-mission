@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.common.exception.notification.NotificationNo
 import com.sprint.mission.discodeit.notification.dto.NotificationDto;
 import com.sprint.mission.discodeit.notification.entity.Notification;
 import com.sprint.mission.discodeit.notification.repository.JPANotificationRepository;
+import com.sprint.mission.discodeit.sse.service.SseService;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationServiceImpl implements NotificationService {
 
   private final JPANotificationRepository jpaNotificationRepository;
+  private final SseService sseService;
 
   @Override
   @Cacheable(value = "notificationsByUser", key = "#receiverId")
@@ -63,6 +65,14 @@ public class NotificationServiceImpl implements NotificationService {
         content
     );
     jpaNotificationRepository.save(notification);
+    NotificationDto notificationDto = new NotificationDto(
+        notification.getId(),
+        notification.getCreatedAt(),
+        notification.getReceiverId(),
+        notification.getTitle(),
+        notification.getContent()
+    );
+    sseService.send(List.of(receiverId), "notifications.created", notificationDto);
     return notification;
   }
 }

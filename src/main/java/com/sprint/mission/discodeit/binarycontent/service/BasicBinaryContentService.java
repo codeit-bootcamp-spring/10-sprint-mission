@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.binarycontent.service;
 
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.binarycontent.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.binarycontent.event.BinaryContentCreatedEvent;
@@ -8,11 +9,13 @@ import com.sprint.mission.discodeit.binarycontent.repository.JPABinaryContentRep
 import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.binarycontent.entity.BinaryContent;
 import com.sprint.mission.discodeit.common.exception.binarycontent.BinaryContentNotFoundException;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.sse.service.SseService;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,6 +30,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final JPABinaryContentRepository jpaBinaryContentRepository;
   private final BinaryContentMapper binaryContentMapper;
   private final ApplicationEventPublisher eventPublisher;
+  private final SseService sseService;
 
   @Override
   @Transactional
@@ -85,6 +89,12 @@ public class BasicBinaryContentService implements BinaryContentService {
             () -> new BinaryContentNotFoundException(Map.of("binaryContentId", binaryContentId)));
 
     binaryContent.updateStatus(status);
+    DiscodeitUserDetails userDetails = (DiscodeitUserDetails) SecurityContextHolder.getContext()
+        .getAuthentication().getPrincipal();
+    UUID receiverId = userDetails.getUserDto().id();
+
+    sseService.send(List.of(receiverId), "binaryContents.updated",
+        binaryContentMapper.toDto(binaryContent));
     return binaryContentMapper.toDto(binaryContent);
   }
 

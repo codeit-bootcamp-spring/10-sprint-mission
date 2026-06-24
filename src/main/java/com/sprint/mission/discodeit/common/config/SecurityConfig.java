@@ -77,7 +77,10 @@ public class SecurityConfig {
                 "/script.js",
                 "/styles.css",
                 "/swagger-ui/**",
-                "/swagger-ui.html"
+                "/swagger-ui.html",
+                "/ws/**",
+                "/pub/**",
+                "/sub/**"
             ).permitAll()
             .anyRequest().authenticated()
         )

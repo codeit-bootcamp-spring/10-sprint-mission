@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.common.exception.channel.ChannelNotFoundExce
 import com.sprint.mission.discodeit.message.entity.ReadStatus;
 import com.sprint.mission.discodeit.message.repository.JPAMessageRepository;
 import com.sprint.mission.discodeit.message.repository.JPAReadStatusRepository;
+import com.sprint.mission.discodeit.sse.service.SseService;
 import com.sprint.mission.discodeit.user.dto.UserDto;
 import com.sprint.mission.discodeit.user.entity.User;
 import com.sprint.mission.discodeit.user.mapper.UserMapper;
@@ -40,6 +41,7 @@ public class BasicChannelService implements ChannelService {
   private final ChannelMapper channelMapper;
   private final UserMapper userMapper;
   private final CacheManager cacheManager;
+  private final SseService sseService;
 
   @Override
   @Transactional
@@ -67,7 +69,9 @@ public class BasicChannelService implements ChannelService {
       participants.forEach(user -> cache.evict(user.getId()));
     }
     log.info("[CHANNEL_CREATE] private 채널 생성 완료 channelId={}", channel.getId());
-    return channelMapper.toDto(createdChannel);
+    ChannelDto dto = channelMapper.toDto(createdChannel);
+    sseService.send(request.participantIds(), "channels.created", dto);
+    return dto;
   }
 
   @Override
@@ -87,7 +91,10 @@ public class BasicChannelService implements ChannelService {
 
     log.info("[CHANNEL_CREATE] public 채널 생성 완료 : channelId={}",
         channel.getId());
-    return channelMapper.toDto(channel);
+    ChannelDto dto = channelMapper.toDto(channel);
+    sseService.broadcast("channels.created", dto);
+
+    return dto;
   }
 
   @Override
@@ -160,7 +167,10 @@ public class BasicChannelService implements ChannelService {
     channel.update(request.newName(), request.newDescription());
     log.info("[CHANNEL_UPDATE] 채널 정보 수정 완료 : channelId={}, channelNewName={}, channelNewDesc={}"
         , channelId, channel.getName(), channel.getDescription());
-    return channelMapper.toDto(channel);
+    ChannelDto dto = channelMapper.toDto(channel);
+    sseService.broadcast("channels.updated", dto);
+
+    return dto;
   }
 
   @Override
@@ -175,12 +185,24 @@ public class BasicChannelService implements ChannelService {
 
     List<ReadStatus> readStatuses = jpaReadStatusRepository.findAllByChannelId(channelId);
 
+    List<UUID> participantIds = readStatuses.stream()
+        .map(rs -> rs.getUser().getId())
+        .toList();
+
+    ChannelDto dto = channelMapper.toDto(channel);
+
     Cache cache = cacheManager.getCache("channelsByUser");
     if (cache != null) {
       readStatuses.forEach(rs -> cache.evict(rs.getUser().getId()));
     }
     jpaChannelRepository.delete(channel);
+
     log.info("[CHANNEL_DELETE] 채널 삭제 완료 : channelId={} ", channelId);
 
+    if (channel.getType() == ChannelType.PUBLIC) {
+      sseService.broadcast("channels.deleted", dto);
+    } else {
+      sseService.send(participantIds, "channels.deleted", dto);
+    }
   }
 }

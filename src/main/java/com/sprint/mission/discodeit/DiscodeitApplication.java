@@ -22,6 +22,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class DiscodeitApplication {
 
   public static void main(String[] args) {
+    System.setProperty("spring.security.strategy", "MODE_INHERITABLETHREADLOCAL");
     ConfigurableApplicationContext context = SpringApplication.run(DiscodeitApplication.class,
         args);
 

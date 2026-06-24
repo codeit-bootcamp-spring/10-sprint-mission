@@ -1,8 +1,6 @@
 services:
   app:
     build: .
-    ports:
-      - "8081:80"
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
@@ -14,19 +12,33 @@ services:
       STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH}
       AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
       REDIS_HOST: ${REDIS_HOST}
+      KAFKA_BOOTSTRAP_SERVERS: broker:29092
     volumes:
       - app_data:/app/storage
     depends_on:
       - db
       - redis
+      - broker
+    networks:
+      - frontend
+      - backend
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "3000:80"
+    depends_on:
+      - app
+    networks:
+      - frontend
 
   redis:
     image: redis:7.2-alpine
-    ports:
-      - "6379:6379"
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes
+    networks:
+      - backend
 
   db:
     image: postgres:latest
@@ -34,13 +46,40 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - backend
+
+  broker:
+    image: apache/kafka:latest
+    hostname: broker
+    container_name: broker
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - backend
 
 volumes:
   app_data:
   db_data:
   redis-data:
+
+networks:
+  frontend:
+  backend:

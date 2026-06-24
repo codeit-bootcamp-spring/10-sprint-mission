@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.binarycontent.repository.JPABinaryContentRep
 import com.sprint.mission.discodeit.common.exception.user.UserAlreadyExistException;
 import com.sprint.mission.discodeit.common.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.sse.service.SseService;
 import com.sprint.mission.discodeit.user.Role;
 import com.sprint.mission.discodeit.user.dto.UserCreateRequest;
 import com.sprint.mission.discodeit.user.dto.UserDto;
@@ -40,6 +41,7 @@ public class BasicUserService implements UserService {
   private final UserMapper userMapper;
   private final JwtRegistry jwtRegistry;
   private final ApplicationEventPublisher eventPublisher;
+  private final SseService sseService;
 
 
   @Override
@@ -89,8 +91,10 @@ public class BasicUserService implements UserService {
 
     log.info("[USER_CREATE] 유저 생성 완료 : id={}, username={}", savedUser.getId(),
         savedUser.getUsername());
+    UserDto dto = userMapper.toDto(savedUser);
+    sseService.broadcast("users.created", dto);
 
-    return userMapper.toDto(savedUser);
+    return dto;
   }
 
   @Override
@@ -156,7 +160,10 @@ public class BasicUserService implements UserService {
     user.update(name, email, password);
     log.info("[USER_UPDATE] 유저 정보 수정 완료 : id={},newUserName={}, newEmail={}",
         user.getId(), request.newUsername(), request.newEmail());
-    return userMapper.toDto(user);
+
+    UserDto dto = userMapper.toDto(user);
+    sseService.broadcast("users.updated", dto);
+    return dto;
   }
 
   @Override
@@ -167,8 +174,10 @@ public class BasicUserService implements UserService {
     log.info("[USER_DELETE] 유저 삭제 시작 userId={}", userId);
     User user = jpaUserRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
+    UserDto dto = userMapper.toDto(user);
     jpaUserRepository.delete(user);
     log.info("[USER_DELETE] 유저 삭제 완료 userId={}", userId);
+    sseService.broadcast("users.deleted", dto);
   }
 
   @Override
