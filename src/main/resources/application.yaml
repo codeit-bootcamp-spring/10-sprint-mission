@@ -3,14 +3,31 @@ spring:
     active: dev
   config:
     import: optional:file:./.env[.properties]
+
   cache:
-    type: caffeine
+    type: redis
     cache-names:
       - userChannels
       - userNotifications
       - users
-    caffeine:
-      spec: maximumSize=100,expireAfterAccess=600s,recordStats
+    redis:
+      enable-statistics: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 logging:
   level:

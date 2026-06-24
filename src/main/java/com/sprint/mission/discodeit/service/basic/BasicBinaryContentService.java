@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.binarycontent.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.binarycontent.BinaryContentUpdatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidParameterException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -29,7 +31,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentMapper binaryContentMapper;
   private final BinaryContentStorage binaryContentStorage;
-  private final ApplicationEventPublisher applicationEventPublisher;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public UUID create(BinaryContentCreateRequest request) {
@@ -45,7 +47,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     );
 
     BinaryContent saved = binaryContentRepository.save(entity);
-    applicationEventPublisher.publishEvent(
+    eventPublisher.publishEvent(
         new BinaryContentCreatedEvent(saved.getId(), request.bytes())
     );
 
@@ -60,6 +62,10 @@ public class BasicBinaryContentService implements BinaryContentService {
         .orElseThrow(BinaryContentNotFoundException::new);
 
     binaryContent.updateStatus(status);
+
+    BinaryContentDto binaryContentDto = binaryContentMapper.toDto(binaryContent);
+
+    eventPublisher.publishEvent(new BinaryContentUpdatedEvent(binaryContentDto));
   }
 
   @Override

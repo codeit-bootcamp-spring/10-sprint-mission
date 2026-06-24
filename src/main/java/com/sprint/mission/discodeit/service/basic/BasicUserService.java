@@ -12,6 +12,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserRole;
 import com.sprint.mission.discodeit.event.binarycontent.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.event.user.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.user.UserCreatedEvent;
+import com.sprint.mission.discodeit.event.user.UserDeletedEvent;
+import com.sprint.mission.discodeit.event.user.UserUpdatedEvent;
 import com.sprint.mission.discodeit.exception.auth.PasswordEmptyException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.common.InvalidParameterException;
@@ -74,7 +77,6 @@ public class BasicUserService implements UserService {
       throw new UserEmailAlreadyExistsException();
     }
 
-    // 비밀번호 암호화
     String encryptedPassword = passwordEncoder.encode(request.password());
 
     User user = new User(
@@ -109,9 +111,18 @@ public class BasicUserService implements UserService {
       );
     }
 
+    BinaryContent savedProfileImage = findProfileImageOrNull(savedUser);
+    BinaryContentDto profileImageDto = savedProfileImage == null
+        ? null
+        : binaryContentMapper.toDto(savedProfileImage);
+
     boolean online = isOnline(savedUser.getId());
 
-    return userMapper.toResponse(savedUser, online, savedUser.getProfileImage());
+    UserDto userDto = userMapper.toDto(savedUser, online, profileImageDto);
+
+    eventPublisher.publishEvent(new UserCreatedEvent(userDto));
+
+    return userMapper.toResponse(savedUser, online, savedProfileImage);
   }
 
   @Override
@@ -218,7 +229,15 @@ public class BasicUserService implements UserService {
     }
 
     BinaryContent profileImage = findProfileImageOrNull(savedUser);
+    BinaryContentDto profileImageDto = profileImage == null
+        ? null
+        : binaryContentMapper.toDto(profileImage);
+
     boolean online = isOnline(savedUser.getId());
+
+    UserDto userDto = userMapper.toDto(savedUser, online, profileImageDto);
+
+    eventPublisher.publishEvent(new UserUpdatedEvent(userDto));
 
     return userMapper.toResponse(savedUser, online, profileImage);
   }
@@ -241,7 +260,9 @@ public class BasicUserService implements UserService {
 
     User savedUser = userRepository.save(user);
 
-    if (oldRole != newRole) {
+    boolean roleChanged = oldRole != newRole;
+
+    if (roleChanged) {
       eventPublisher.publishEvent(
           new RoleUpdatedEvent(
               savedUser.getId(),
@@ -254,7 +275,16 @@ public class BasicUserService implements UserService {
     jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
 
     BinaryContent profileImage = findProfileImageOrNull(savedUser);
+    BinaryContentDto profileImageDto = profileImage == null
+        ? null
+        : binaryContentMapper.toDto(profileImage);
+
     boolean online = isOnline(savedUser.getId());
+
+    if (roleChanged) {
+      UserDto userDto = userMapper.toDto(savedUser, online, profileImageDto);
+      eventPublisher.publishEvent(new UserUpdatedEvent(userDto));
+    }
 
     return userMapper.toResponse(savedUser, online, profileImage);
   }
@@ -268,8 +298,12 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(userId));
 
-    readStatusRepository.deleteByUserId(userId);
+    UUID deletedUserId = user.getId();
+
+    readStatusRepository.deleteByUserId(deletedUserId);
     userRepository.delete(user);
+
+    eventPublisher.publishEvent(new UserDeletedEvent(deletedUserId));
   }
 
   @Override
@@ -295,7 +329,6 @@ public class BasicUserService implements UserService {
       throw new InvalidParameterException(name);
     }
   }
-
 
   private boolean isOnline(UUID userId) {
     return jwtRegistry.hasActiveJwtInformationByUserId(userId);
