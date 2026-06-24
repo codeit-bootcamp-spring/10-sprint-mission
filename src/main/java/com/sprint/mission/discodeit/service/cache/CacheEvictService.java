@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.cache;
+package com.sprint.mission.discodeit.service.cache;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;

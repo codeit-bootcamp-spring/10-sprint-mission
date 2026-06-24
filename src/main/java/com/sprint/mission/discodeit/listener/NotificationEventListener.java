@@ -20,6 +20,11 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import java.util.List;
 import java.util.UUID;
 
+/*
+    NotificationEventListener
+    -------------------------
+    메인 트랜잭션이 성공적으로 커밋됐을 때만, 알림을 발행하는 리스너
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor

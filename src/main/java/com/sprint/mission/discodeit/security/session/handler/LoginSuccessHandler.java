@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.security.session.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.cache.CacheEvictService;
+import com.sprint.mission.discodeit.service.cache.CacheEvictService;
 import com.sprint.mission.discodeit.security.auth.DiscodeitUserDetails;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '2.2-M11'
+version = '3.0-M12'
 description = 'Demo project for Spring Boot'
 
 java {
@@ -33,6 +33,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
 	// Lombok 설정
 	compileOnly 'org.projectlombok:lombok'
