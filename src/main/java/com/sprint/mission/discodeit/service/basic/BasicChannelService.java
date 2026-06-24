@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
@@ -15,15 +16,16 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.SseService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -31,11 +33,11 @@ import lombok.extern.slf4j.Slf4j;
 public class BasicChannelService implements ChannelService {
 
   private final ChannelRepository channelRepository;
-  //
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
   private final ChannelMapper channelMapper;
+  private final SseService sseService;
 
   @Transactional
   @Override
@@ -48,8 +50,10 @@ public class BasicChannelService implements ChannelService {
     Channel channel = new Channel(ChannelType.PUBLIC, name, description);
 
     channelRepository.save(channel);
+    ChannelDto createdChannel = channelMapper.toDto(channel);
+    sseService.broadcast("channels.created", createdChannel);
     log.info("채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
-    return channelMapper.toDto(channel);
+    return createdChannel;
   }
 
   @Transactional
@@ -65,8 +69,10 @@ public class BasicChannelService implements ChannelService {
         .toList();
     readStatusRepository.saveAll(readStatuses);
 
+    ChannelDto createdChannel = channelMapper.toDto(channel);
+    sseService.send(resolveReceiverIds(createdChannel), "channels.created", createdChannel);
     log.info("채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
-    return channelMapper.toDto(channel);
+    return createdChannel;
   }
 
   @Transactional(readOnly = true)
@@ -106,8 +112,11 @@ public class BasicChannelService implements ChannelService {
       throw PrivateChannelUpdateException.forChannel(channelId);
     }
     channel.update(newName, newDescription);
+
+    ChannelDto updatedChannel = channelMapper.toDto(channel);
+    sseService.broadcast("channels.updated", updatedChannel);
     log.info("채널 수정 완료: id={}, name={}", channelId, channel.getName());
-    return channelMapper.toDto(channel);
+    return updatedChannel;
   }
 
   @Transactional
@@ -116,14 +125,26 @@ public class BasicChannelService implements ChannelService {
   @CacheEvict(cacheNames = "channels", allEntries = true)
   public void delete(UUID channelId) {
     log.debug("채널 삭제 시작: id={}", channelId);
-    if (!channelRepository.existsById(channelId)) {
-      throw ChannelNotFoundException.withId(channelId);
-    }
+    Channel channel = channelRepository.findById(channelId)
+        .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
+    ChannelDto deletedChannel = channelMapper.toDto(channel);
 
     messageRepository.deleteAllByChannelId(channelId);
     readStatusRepository.deleteAllByChannelId(channelId);
-
     channelRepository.deleteById(channelId);
+
+    if (deletedChannel.type().equals(ChannelType.PUBLIC)) {
+      sseService.broadcast("channels.deleted", deletedChannel);
+    } else {
+      sseService.send(resolveReceiverIds(deletedChannel), "channels.deleted", deletedChannel);
+    }
+
     log.info("채널 삭제 완료: id={}", channelId);
+  }
+
+  private List<UUID> resolveReceiverIds(ChannelDto channelDto) {
+    return channelDto.participants().stream()
+        .map(UserDto::id)
+        .toList();
   }
 }

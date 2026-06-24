@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.Role;
@@ -10,9 +11,11 @@ import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.SseService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +33,9 @@ public class NotificationRequiredTopicListener {
     private final NotificationRepository notificationRepository;
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
+    private final NotificationMapper notificationMapper;
     private final CacheManager cacheManager;
+    private final SseService sseService;
 
     @KafkaListener(topics = "discodeit.MessageCreatedEvent")
     @Transactional
@@ -51,8 +56,9 @@ public class NotificationRequiredTopicListener {
                 .map(user -> new Notification(user, title, event.content()))
                 .toList();
 
-        notificationRepository.saveAll(notifications);
+        List<Notification> savedNotifications = notificationRepository.saveAll(notifications);
         receivers.forEach(user -> evictNotificationCache(user.getId()));
+        savedNotifications.forEach(this::sendNotificationCreatedEvent);
     }
 
     @KafkaListener(topics = "discodeit.RoleUpdatedEvent")
@@ -69,8 +75,9 @@ public class NotificationRequiredTopicListener {
                 event.oldRole() + " -> " + event.newRole()
         );
 
-        notificationRepository.save(notification);
+        Notification savedNotification = notificationRepository.save(notification);
         evictNotificationCache(receiver.getId());
+        sendNotificationCreatedEvent(savedNotification);
     }
 
     @KafkaListener(topics = "discodeit.S3UploadFailedEvent")
@@ -90,8 +97,9 @@ public class NotificationRequiredTopicListener {
                 .map(admin -> new Notification(admin, "S3 파일 업로드 실패", content))
                 .toList();
 
-        notificationRepository.saveAll(notifications);
+        List<Notification> savedNotifications = notificationRepository.saveAll(notifications);
         admins.forEach(admin -> evictNotificationCache(admin.getId()));
+        savedNotifications.forEach(this::sendNotificationCreatedEvent);
     }
 
     private <T> T read(String kafkaEvent, Class<T> type) {
@@ -107,5 +115,14 @@ public class NotificationRequiredTopicListener {
         if (cache != null) {
             cache.evict(receiverId);
         }
+    }
+
+    private void sendNotificationCreatedEvent(Notification notification) {
+        NotificationDto dto = notificationMapper.toDto(notification);
+        sseService.send(
+                List.of(notification.getReceiver().getId()),
+                "notifications.created",
+                dto
+        );
     }
 }

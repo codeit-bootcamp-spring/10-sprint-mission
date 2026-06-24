@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.SseService;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,7 @@ public class BasicUserService implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final JwtRegistry jwtRegistry;
   private final ApplicationEventPublisher eventPublisher;
+  private final SseService sseService;
 
   @Transactional
   @Override
@@ -74,13 +76,15 @@ public class BasicUserService implements UserService {
           return binaryContent;
         })
         .orElse(null);
+
     String password = passwordEncoder.encode(userCreateRequest.password());
-
     User user = new User(username, email, password, nullableProfile);
-
     userRepository.save(user);
+
+    UserDto createdUser = userMapper.toDto(user);
+    sseService.broadcast("users.created", createdUser);
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
-    return userMapper.toDto(user);
+    return createdUser;
   }
 
   @Transactional(readOnly = true)
@@ -127,7 +131,6 @@ public class BasicUserService implements UserService {
     if (userRepository.existsByEmail(newEmail)) {
       throw UserAlreadyExistsException.withEmail(newEmail);
     }
-
     if (userRepository.existsByUsername(newUsername)) {
       throw UserAlreadyExistsException.withUsername(newUsername);
     }
@@ -152,8 +155,10 @@ public class BasicUserService implements UserService {
         .orElse(null);
     user.update(newUsername, newEmail, newPassword, nullableProfile);
 
+    UserDto updatedUser = userMapper.toDto(user);
+    sseService.broadcast("users.updated", updatedUser);
     log.info("사용자 수정 완료: id={}", userId);
-    return userMapper.toDto(user);
+    return updatedUser;
   }
 
   @Transactional
@@ -163,11 +168,12 @@ public class BasicUserService implements UserService {
   public void delete(UUID userId) {
     log.debug("사용자 삭제 시작: id={}", userId);
 
-    if (!userRepository.existsById(userId)) {
-      throw UserNotFoundException.withId(userId);
-    }
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> UserNotFoundException.withId(userId));
+    UserDto deletedUser = userMapper.toDto(user);
 
     userRepository.deleteById(userId);
+    sseService.broadcast("users.deleted", deletedUser);
     log.info("사용자 삭제 완료: id={}", userId);
   }
 
@@ -188,9 +194,11 @@ public class BasicUserService implements UserService {
     }
 
     int invalidatedJwtCount = jwtRegistry.invalidateJwtInformationByUserId(userId);
+    UserDto updatedUser = userMapper.toDto(user);
+    sseService.broadcast("users.updated", updatedUser);
 
-    log.info("사용자 권한 수정 완료: id={}, role={}, invalidatedJwtCount={}", userId, newRole,
-        invalidatedJwtCount);
-    return userMapper.toDto(user);
+    log.info("사용자 권한 수정 완료: id={}, role={}, invalidatedJwtCount={}",
+        userId, newRole, invalidatedJwtCount);
+    return updatedUser;
   }
 }

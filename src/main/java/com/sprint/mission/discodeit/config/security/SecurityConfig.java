@@ -50,6 +50,7 @@ public class SecurityConfig {
             .requestMatchers("/", "/index.html", "/favicon.ico", "/assets/**").permitAll()
             .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
             .requestMatchers("/actuator/**").permitAll()
+            .requestMatchers("/ws/**").permitAll()
             // 권한 수정 요청은 ADMIN 권한 필요
             .requestMatchers(HttpMethod.PUT, "/api/auth/role").hasRole("ADMIN")
             // 그 외 모든 요청은 인증 필요

@@ -1,0 +1,21 @@
+services:
+  db:
+    ports:
+      - "5432:5432"
+    networks:
+      - private-network
+      - public-network
+
+  redis:
+    ports:
+      - "6379:6379"
+    networks:
+      - private-network
+      - public-network
+
+  broker:
+    ports:
+      - "9092:9092"
+    networks:
+      - private-network
+      - public-network

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.JwtDto;
+import com.sprint.mission.discodeit.service.SseService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,6 +27,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
     private final CacheManager cacheManager;
+    private final SseService sseService;
 
     @Override
     public void onAuthenticationSuccess(
@@ -70,6 +72,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         if (usersCache != null) {
             usersCache.clear();
         }
+        sseService.broadcast("users.updated", userDetails.toAuthenticatedUserDto());
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
