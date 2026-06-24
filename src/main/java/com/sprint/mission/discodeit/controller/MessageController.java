@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
@@ -16,13 +17,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -46,11 +49,17 @@ public class MessageController implements MessageApi {
   @Timed("message.create.async")
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<MessageDto> create(
+      @AuthenticationPrincipal DiscodeitUserDetails principal,
       @RequestPart("messageCreateRequest") @Valid MessageCreateRequest messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
     log.info("메시지 생성 요청: request={}, attachmentCount={}",
         messageCreateRequest, attachments != null ? attachments.size() : 0);
+
+    MessageCreateRequest authenticatedRequest = withAuthenticatedAuthor(
+        messageCreateRequest,
+        principal
+    );
 
     List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
         .map(files -> files.stream()
@@ -67,7 +76,7 @@ public class MessageController implements MessageApi {
             })
             .toList())
         .orElse(new ArrayList<>());
-    MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+    MessageDto createdMessage = messageService.create(authenticatedRequest, attachmentRequests);
     log.debug("메시지 생성 응답: {}", createdMessage);
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -114,5 +123,19 @@ public class MessageController implements MessageApi {
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(messages);
+  }
+
+  private MessageCreateRequest withAuthenticatedAuthor(
+      MessageCreateRequest request,
+      DiscodeitUserDetails principal
+  ) {
+    if (principal == null) {
+      throw new AuthorizationDeniedException("Authentication is required to create a message.");
+    }
+    return new MessageCreateRequest(
+        request.content(),
+        request.channelId(),
+        principal.getUserDto().id()
+    );
   }
 }

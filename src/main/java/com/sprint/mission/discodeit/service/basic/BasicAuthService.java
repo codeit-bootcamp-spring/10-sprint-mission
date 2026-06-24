@@ -1,13 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.nimbusds.jose.JOSEException;
-import com.sprint.mission.discodeit.config.CacheNames;
 import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.message.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.message.UserUpdatedEvent;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -17,10 +17,10 @@ import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,7 +41,6 @@ public class BasicAuthService implements AuthService {
   private final ApplicationEventPublisher eventPublisher;
 
   @PreAuthorize("hasRole('ADMIN')")
-  @CacheEvict(cacheNames = CacheNames.USERS, allEntries = true)
   @Transactional
   @Override
   public UserDto updateRole(RoleUpdateRequest request) {
@@ -49,23 +48,27 @@ public class BasicAuthService implements AuthService {
   }
 
   @Transactional
-  @CacheEvict(cacheNames = CacheNames.USERS, allEntries = true)
   @Override
   public UserDto updateRoleInternal(RoleUpdateRequest request) {
     UUID userId = request.userId();
     User user = userRepository.findById(userId)
         .orElseThrow(() -> UserNotFoundException.withId(userId));
 
+    UserDto previous = userMapper.toDto(user);
     Role previousRole = user.getRole();
     Role newRole = request.newRole();
     user.updateRole(newRole);
 
     jwtRegistry.invalidateJwtInformationByUserId(userId);
-    if (!previousRole.equals(newRole)) {
-      eventPublisher.publishEvent(new RoleUpdatedEvent(userId, previousRole, newRole));
-    }
+    publishEvent(
+        new RoleUpdatedEvent(user.getId(), previousRole, newRole, user.getUpdatedAt())
+    );
+    UserDto updated = userMapper.toDto(user);
+    publishEvent(
+        new UserUpdatedEvent(previous, updated, Instant.now())
+    );
 
-    return userMapper.toDto(user);
+    return updated;
   }
 
   @Override
@@ -104,6 +107,12 @@ public class BasicAuthService implements AuthService {
     } catch (JOSEException e) {
       log.error("Failed to generate new tokens for user: {}", username, e);
       throw new DiscodeitException(ErrorCode.INTERNAL_SERVER_ERROR, e);
+    }
+  }
+
+  private void publishEvent(Object event) {
+    if (eventPublisher != null) {
+      eventPublisher.publishEvent(event);
     }
   }
 }

@@ -9,8 +9,8 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
-import com.sprint.mission.discodeit.event.MessageCreatedEvent;
+import com.sprint.mission.discodeit.event.message.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.message.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -43,9 +43,9 @@ public class BasicMessageService implements MessageService {
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
   private final MessageMapper messageMapper;
-  private final ApplicationEventPublisher eventPublisher;
   private final BinaryContentRepository binaryContentRepository;
   private final PageResponseMapper pageResponseMapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   @Override
@@ -69,7 +69,11 @@ public class BasicMessageService implements MessageService {
           BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
               contentType);
           binaryContentRepository.save(binaryContent);
-          eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+          eventPublisher.publishEvent(
+              new BinaryContentCreatedEvent(
+                  binaryContent, binaryContent.getCreatedAt(), bytes
+              )
+          );
           return binaryContent;
         })
         .toList();
@@ -83,16 +87,15 @@ public class BasicMessageService implements MessageService {
     );
 
     messageRepository.save(message);
-    eventPublisher.publishEvent(new MessageCreatedEvent(
-        message.getId(),
-        channel.getId(),
-        channel.getName(),
-        author.getId(),
-        author.getUsername(),
-        content
-    ));
+
     log.info("메시지 생성 완료: id={}, channelId={}", message.getId(), channelId);
-    return messageMapper.toDto(message);
+    MessageDto dto = messageMapper.toDto(message);
+    eventPublisher.publishEvent(
+        new MessageCreatedEvent(
+            dto, dto.createdAt()
+        )
+    );
+    return dto;
   }
 
   @Transactional(readOnly = true)

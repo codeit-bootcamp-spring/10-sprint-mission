@@ -4,6 +4,7 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password:
+
   jpa:
     hibernate:
       ddl-auto: create
@@ -11,14 +12,17 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  cache:
-    type: simple
-  kafka:
-    listener:
-      auto-startup: false
+
   sql:
     init:
       mode: never
+
+  cache:
+    type: simple
+
+  kafka:
+    listener:
+      auto-startup: false
 
 discodeit:
   jwt:

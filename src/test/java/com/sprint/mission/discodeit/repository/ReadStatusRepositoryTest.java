@@ -131,8 +131,7 @@ class ReadStatusRepositoryTest {
     entityManager.clear();
 
     // when
-    Boolean exists = readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId())
-        .isPresent();
+    Boolean exists = readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId()).isPresent();
 
     // then
     assertThat(exists).isTrue();
@@ -152,8 +151,7 @@ class ReadStatusRepositoryTest {
     // 읽음 상태를 생성하지 않음
 
     // when
-    Boolean exists = readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId())
-        .isPresent();
+    Boolean exists = readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId()).isPresent();
 
     // then
     assertThat(exists).isFalse();

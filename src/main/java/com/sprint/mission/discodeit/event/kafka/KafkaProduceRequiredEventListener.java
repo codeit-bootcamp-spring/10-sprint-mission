@@ -2,9 +2,9 @@ package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.event.MessageCreatedEvent;
-import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
-import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
+import com.sprint.mission.discodeit.event.message.MessageCreatedEvent;
+import com.sprint.mission.discodeit.event.message.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.message.S3UploadFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -24,28 +24,28 @@ public class KafkaProduceRequiredEventListener {
   @Async("eventTaskExecutor")
   @TransactionalEventListener
   public void on(MessageCreatedEvent event) {
-    send(KafkaTopics.MESSAGE_CREATED, event.messageId().toString(), event);
+    sendToKafka(event);
   }
 
   @Async("eventTaskExecutor")
   @TransactionalEventListener
   public void on(RoleUpdatedEvent event) {
-    send(KafkaTopics.ROLE_UPDATED, event.userId().toString(), event);
+    sendToKafka(event);
   }
 
   @Async("eventTaskExecutor")
   @EventListener
   public void on(S3UploadFailedEvent event) {
-    send(KafkaTopics.S3_UPLOAD_FAILED, event.binaryContentId().toString(), event);
+    sendToKafka(event);
   }
 
-  private void send(String topic, String key, Object event) {
+  private <T> void sendToKafka(T event) {
     try {
       String payload = objectMapper.writeValueAsString(event);
-      kafkaTemplate.send(topic, key, payload);
-      log.info("Kafka event published: topic={}, key={}", topic, key);
+      kafkaTemplate.send("discodeit.".concat(event.getClass().getSimpleName()), payload);
     } catch (JsonProcessingException e) {
-      throw new RuntimeException("Failed to serialize Kafka event: topic=" + topic, e);
+      log.error("Failed to send event to Kafka", e);
+      throw new RuntimeException(e);
     }
   }
 }

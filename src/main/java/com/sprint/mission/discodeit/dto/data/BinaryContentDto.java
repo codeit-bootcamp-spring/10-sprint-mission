@@ -11,7 +11,4 @@ public record BinaryContentDto(
     BinaryContentStatus status
 ) {
 
-  public BinaryContentDto(UUID id, String fileName, Long size, String contentType) {
-    this(id, fileName, size, contentType, BinaryContentStatus.PROCESSING);
-  }
 }

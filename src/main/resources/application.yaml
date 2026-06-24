@@ -11,6 +11,11 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+  profiles:
+    active:
+      - dev
+  config:
+    import: optional:file:.env[.properties]
   cache:
     type: redis
     cache-names:
@@ -29,7 +34,7 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -38,17 +43,12 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-  profiles:
-    active:
-      - dev
-  config:
-    import: optional:file:.env[.properties]
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,loggers,caches
+        include: health,info,metrics,loggers
   endpoint:
     health:
       show-details: always

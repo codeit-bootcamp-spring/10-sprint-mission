@@ -1,19 +1,22 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.config.CacheNames;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.message.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.message.UserCreatedEvent;
+import com.sprint.mission.discodeit.event.message.UserDeletedEvent;
+import com.sprint.mission.discodeit.event.message.UserUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,10 +38,10 @@ public class BasicUserService implements UserService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
   private final BinaryContentRepository binaryContentRepository;
-  private final ApplicationEventPublisher eventPublisher;
   private final PasswordEncoder passwordEncoder;
+  private final ApplicationEventPublisher eventPublisher;
 
-  @CacheEvict(cacheNames = CacheNames.USERS, allEntries = true)
+  @CacheEvict(value = "users", key = "'all'")
   @Transactional
   @Override
   public UserDto create(UserCreateRequest userCreateRequest,
@@ -63,7 +66,11 @@ public class BasicUserService implements UserService {
           BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
               contentType);
           binaryContentRepository.save(binaryContent);
-          eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+          eventPublisher.publishEvent(
+              new BinaryContentCreatedEvent(
+                  binaryContent, binaryContent.getCreatedAt(), bytes
+              )
+          );
           return binaryContent;
         })
         .orElse(null);
@@ -74,7 +81,9 @@ public class BasicUserService implements UserService {
 
     userRepository.save(user);
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
-    return userMapper.toDto(user);
+    UserDto created = userMapper.toDto(user);
+    publishEvent(new UserCreatedEvent(created, user.getCreatedAt()));
+    return created;
   }
 
   @Transactional(readOnly = true)
@@ -88,7 +97,7 @@ public class BasicUserService implements UserService {
     return userDto;
   }
 
-  @Cacheable(cacheNames = CacheNames.USERS, key = "'all'")
+  @Cacheable(value = "users", key = "'all'", unless = "#result.isEmpty()")
   @Transactional(readOnly = true)
   @Override
   public List<UserDto> findAll() {
@@ -101,8 +110,8 @@ public class BasicUserService implements UserService {
     return userDtos;
   }
 
+  @CacheEvict(value = "users", key = "'all'")
   @PreAuthorize("principal.userDto.id == #userId")
-  @CacheEvict(cacheNames = CacheNames.USERS, allEntries = true)
   @Transactional
   @Override
   public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
@@ -117,6 +126,7 @@ public class BasicUserService implements UserService {
 
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
+    UserDto previous = userMapper.toDto(user);
 
     if (userRepository.existsByEmail(newEmail)) {
       throw UserAlreadyExistsException.withEmail(newEmail);
@@ -135,7 +145,11 @@ public class BasicUserService implements UserService {
           BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
               contentType);
           binaryContentRepository.save(binaryContent);
-          eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
+          eventPublisher.publishEvent(
+              new BinaryContentCreatedEvent(
+                  binaryContent, binaryContent.getCreatedAt(), bytes
+              )
+          );
           return binaryContent;
         })
         .orElse(null);
@@ -146,11 +160,13 @@ public class BasicUserService implements UserService {
     user.update(newUsername, newEmail, encodedPassword, nullableProfile);
 
     log.info("사용자 수정 완료: id={}", userId);
-    return userMapper.toDto(user);
+    UserDto updated = userMapper.toDto(user);
+    publishEvent(new UserUpdatedEvent(previous, updated, Instant.now()));
+    return updated;
   }
 
+  @CacheEvict(value = "users", key = "'all'")
   @PreAuthorize("principal.userDto.id == #userId")
-  @CacheEvict(cacheNames = CacheNames.USERS, allEntries = true)
   @Transactional
   @Override
   public void delete(UUID userId) {
@@ -159,8 +175,20 @@ public class BasicUserService implements UserService {
     if (!userRepository.existsById(userId)) {
       throw UserNotFoundException.withId(userId);
     }
+    UserDto deleted = userRepository.findById(userId)
+        .map(userMapper::toDto)
+        .orElse(null);
 
     userRepository.deleteById(userId);
+    if (deleted != null) {
+      publishEvent(new UserDeletedEvent(deleted, Instant.now()));
+    }
     log.info("사용자 삭제 완료: id={}", userId);
+  }
+
+  private void publishEvent(Object event) {
+    if (eventPublisher != null) {
+      eventPublisher.publishEvent(event);
+    }
   }
 }

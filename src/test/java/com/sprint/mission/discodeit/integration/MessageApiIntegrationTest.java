@@ -83,12 +83,13 @@ class MessageApiIntegrationTest {
     );
 
     UserDto user = userService.create(userRequest, Optional.empty());
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(user, "Password1!");
 
     // 메시지 생성 요청
     MessageCreateRequest createRequest = new MessageCreateRequest(
         "테스트 메시지 내용입니다.",
         channel.id(),
-        user.id()
+        UUID.randomUUID()
     );
 
     MockMultipartFile messageCreateRequestPart = new MockMultipartFile(
@@ -109,7 +110,8 @@ class MessageApiIntegrationTest {
     mockMvc.perform(multipart("/api/messages")
             .file(messageCreateRequestPart)
             .file(attachmentPart)
-            .with(csrf()))
+            .with(csrf())
+            .with(user(userDetails)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id", notNullValue()))
         .andExpect(jsonPath("$.content", is("테스트 메시지 내용입니다.")))
@@ -252,14 +254,14 @@ class MessageApiIntegrationTest {
   void updateMessage_Failure_MessageNotFound() throws Exception {
     // Given
     UUID nonExistentMessageId = UUID.randomUUID();
-
+    
     // 테스트 사용자 생성 (권한 검증을 위해)
     UserCreateRequest userRequest = new UserCreateRequest(
         "testuser",
         "test@example.com",
         "Password1!"
     );
-
+    
     UserDto user = userService.create(userRequest, Optional.empty());
     DiscodeitUserDetails userDetails = new DiscodeitUserDetails(user, "Password1!");
 
@@ -330,14 +332,14 @@ class MessageApiIntegrationTest {
   void deleteMessage_Failure_MessageNotFound() throws Exception {
     // Given
     UUID nonExistentMessageId = UUID.randomUUID();
-
+    
     // 테스트 사용자 생성 (권한 검증을 위해)
     UserCreateRequest userRequest = new UserCreateRequest(
         "testuser",
         "test@example.com",
         "Password1!"
     );
-
+    
     UserDto user = userService.create(userRequest, Optional.empty());
     DiscodeitUserDetails userDetails = new DiscodeitUserDetails(user, "Password1!");
 

@@ -4,12 +4,12 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
@@ -31,11 +31,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.test.context.support.WithMockUser;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -187,7 +187,8 @@ class ReadStatusApiIntegrationTest {
     // 읽음 상태 업데이트 요청
     Instant newLastReadAt = Instant.now();
     ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(
-        newLastReadAt
+        newLastReadAt,
+        true  // Enable notifications
     );
 
     String requestBody = objectMapper.writeValueAsString(updateRequest);
@@ -201,7 +202,8 @@ class ReadStatusApiIntegrationTest {
         .andExpect(jsonPath("$.id", is(readStatusId.toString())))
         .andExpect(jsonPath("$.userId", is(user.id().toString())))
         .andExpect(jsonPath("$.channelId", is(channel.id().toString())))
-        .andExpect(jsonPath("$.lastReadAt", is(newLastReadAt.toString())));
+        .andExpect(jsonPath("$.lastReadAt", is(newLastReadAt.toString())))
+        .andExpect(jsonPath("$.notificationEnabled", is(true)));
   }
 
   @Test
@@ -212,7 +214,8 @@ class ReadStatusApiIntegrationTest {
     UUID nonExistentReadStatusId = UUID.randomUUID();
 
     ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(
-        Instant.now()
+        Instant.now(),
+        false  // Disable notifications for this test
     );
 
     String requestBody = objectMapper.writeValueAsString(updateRequest);
@@ -223,6 +226,66 @@ class ReadStatusApiIntegrationTest {
             .content(requestBody)
             .with(csrf()))
         .andExpect(status().isNotFound());
+  }
+
+  @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
+  @DisplayName("알림 설정을 포함한 읽음 상태 업데이트 API 통합 테스트")
+  void updateReadStatus_WithNotificationSettings_Success() throws Exception {
+    // Given
+    UserCreateRequest userRequest = new UserCreateRequest(
+        "notificationuser",
+        "notification@example.com",
+        "Password1!"
+    );
+    UserDto user = userService.create(userRequest, Optional.empty());
+
+    PublicChannelCreateRequest channelRequest = new PublicChannelCreateRequest(
+        "알림 테스트 채널",
+        "알림 테스트 채널 설명입니다."
+    );
+    ChannelDto channel = channelService.create(channelRequest);
+
+    ReadStatusCreateRequest createRequest = new ReadStatusCreateRequest(
+        user.id(),
+        channel.id(),
+        Instant.now().minusSeconds(3600)
+    );
+
+    ReadStatusDto createdReadStatus = readStatusService.create(createRequest);
+    UUID readStatusId = createdReadStatus.id();
+
+    // When - Update with notification disabled
+    ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(
+        Instant.now(),
+        false  // Disable notifications
+    );
+
+    String requestBody = objectMapper.writeValueAsString(updateRequest);
+
+    // Then
+    mockMvc.perform(patch("/api/readStatuses/{readStatusId}", readStatusId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestBody)
+            .with(csrf()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.notificationEnabled", is(false)));
+
+    // When - Update with notification enabled
+    ReadStatusUpdateRequest enabledUpdateRequest = new ReadStatusUpdateRequest(
+        Instant.now(),
+        true  // Enable notifications
+    );
+
+    String enabledRequestBody = objectMapper.writeValueAsString(enabledUpdateRequest);
+
+    // Then
+    mockMvc.perform(patch("/api/readStatuses/{readStatusId}", readStatusId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(enabledRequestBody)
+            .with(csrf()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.notificationEnabled", is(true)));
   }
 
   @Test
