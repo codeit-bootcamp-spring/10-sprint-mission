@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.event.listener;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.service.SseService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ public class BinaryContentCreatedEventListener {
     // Binary 파일을 저장하는 저장소
     private final BinaryContentStorage binaryContentStorage;
     private final BinaryContentService binaryContentService;
+    private final SseService sseService;
 
     // 이전 로직 트랜잭션이 성공적으로 Commit된 뒤 Binary 파일을 저장하는 Listener
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -36,7 +39,7 @@ public class BinaryContentCreatedEventListener {
 
         } catch (Exception e) {
             // 저장(put) 실패 시
-            binaryContentService.updateStatus(binaryContentId, BinaryContentStatus.FAIL);
+            updateStatusAndBroadcast(binaryContentId, BinaryContentStatus.FAIL);
 
             log.error("[BINARY_CONTENT_UPLOAD_FAIL] Binary 파일 저장 실패: binaryContentId={}, status={}, size={}",
                     binaryContentId, BinaryContentStatus.FAIL, bytes.length, e);
@@ -45,9 +48,21 @@ public class BinaryContentCreatedEventListener {
         }
 
         // 저장(put) 성공 시 BinaryContent status를 SUCCESS로 업데이트
-        binaryContentService.updateStatus(binaryContentId, BinaryContentStatus.SUCCESS);
+        updateStatusAndBroadcast(binaryContentId, BinaryContentStatus.SUCCESS);
 
         log.debug("[BINARY_CONTENT_UPLOAD_SUCCESS] Binary 파일 저장 완료: binaryContentId={}, status={}, size={}",
                 binaryContentId, BinaryContentStatus.SUCCESS, bytes.length);
+    }
+
+    private void updateStatusAndBroadcast(UUID binaryContentId, BinaryContentStatus status) {
+        // BinaryContent status 업데이트
+        BinaryContentDto binaryContentDto =
+                binaryContentService.updateStatus(binaryContentId, status);
+
+        // SSE를 이용해 서버에서 실시간으로 알림 전송
+        sseService.broadcast(
+                "binaryContents.updated",
+                binaryContentDto
+        );
     }
 }

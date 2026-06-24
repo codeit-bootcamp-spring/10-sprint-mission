@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.event.listener;
 
 import com.sprint.mission.discodeit.config.init.AdminProperties;
+import com.sprint.mission.discodeit.dto.notification.NotificationDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
@@ -8,6 +9,7 @@ import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
+import com.sprint.mission.discodeit.service.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -29,6 +32,7 @@ public class NotificationRequiredEventListener {
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
     private final NotificationService notificationService;
+    private final SseService sseService;
 
     // 관리자 Username
     private final AdminProperties adminProperties;
@@ -37,7 +41,6 @@ public class NotificationRequiredEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async(value = "eventTaskExecutor")
     public void on(MessageCreatedEvent event) {
-
         // 채널 알림 여부를 활성화(true)한 ReadStatus 조회한 후 사용자 ID Set(중복 방지)
         Set<UUID> receiverIds = readStatusRepository
                 .findAllByChannelIdAndNotificationEnabledIsTrue(event.getChannelId())
@@ -55,8 +58,8 @@ public class NotificationRequiredEventListener {
         // 메시지 내용 (content)
         String content = event.getMessageContent();
 
-        // 해당 정보를 notificationService로 전송해 알림 생성
-        notificationService.create(receiverIds, title, content);
+        // SSE를 이용해 서버로 알림 전송
+        sendNotification(receiverIds, title, content);
     }
 
     // 권한(role)이 변경된 사용자에게 알림을 보내는 Listener
@@ -70,7 +73,8 @@ public class NotificationRequiredEventListener {
         String title = "권한이 변경되었습니다.";
         String content = String.format("%s -> %s", oldRole, newRole);
 
-        notificationService.create(Set.of(userId), title, content);
+        // SSE를 이용해 서버로 알림 전송
+        sendNotification(Set.of(userId), title, content);
     }
 
     // S3에 파일 업로드 실패 시 알림을 보내는 Listener
@@ -100,6 +104,22 @@ public class NotificationRequiredEventListener {
                 errorMessage
         );
 
-        notificationService.create(receiverIds, title, content);
+        // SSE를 이용해 서버로 알림 전송
+        sendNotification(receiverIds, title, content);
+    }
+
+    private void sendNotification(Set<UUID> receiverIds, String title, String content) {
+        // 해당 정보를 notificationService로 전송해 알림 전송
+        List<NotificationDto> notificationDtoList =
+                notificationService.create(receiverIds, title, content);
+
+        // SSE를 이용해 서버에서 실시간으로 알림 전송
+        for (NotificationDto notificationDto : notificationDtoList) {
+            sseService.send(
+                    Set.of(notificationDto.receiverId()),
+                    "notifications.created",
+                    notificationDto
+            );
+        }
     }
 }

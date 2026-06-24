@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.event;
 
 import com.sprint.mission.discodeit.config.web.interceptor.MDCLoggingInterceptor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.slf4j.MDC;
 
 import java.time.Instant;
@@ -9,6 +10,7 @@ import java.util.UUID;
 
 // S3에 파일 업로드 실패 시 알림 발생을 요청하는 이벤트 클래스
 @Getter
+@NoArgsConstructor(force = true)
 public class S3UploadFailedEvent {
 
     private final String requestId;

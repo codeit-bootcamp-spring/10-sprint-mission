@@ -6,6 +6,9 @@ import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequ
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.event.ChannelChangeEvent;
+import com.sprint.mission.discodeit.event.PrivateChannelChangeEvent;
+import com.sprint.mission.discodeit.event.enums.ChangeType;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelCannotBeUpdatedException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelParticipantRequiredException;
@@ -20,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +45,8 @@ public class BasicChannelService implements ChannelService {
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
 
+    private final ApplicationEventPublisher applicationEventPublisher;
+
     @CacheEvict(value = "channelList", allEntries = true)
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
@@ -58,7 +64,11 @@ public class BasicChannelService implements ChannelService {
         log.info("[PUBLIC_CHANNEL_CREATE] 공개 채널 생성 완료: channelId={}, type={}, name={}, description={}",
                 channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
 
-        return channelMapper.toDto(channel);
+        ChannelDto channelDto = channelMapper.toDto(channel);
+
+        changeEventPublish(channel.getType(), ChangeType.CREATED, channelDto);
+
+        return channelDto;
     }
 
     @CacheEvict(value = "channelList", allEntries = true)
@@ -88,7 +98,11 @@ public class BasicChannelService implements ChannelService {
         log.info("[PRIVATE_CHANNEL_CREATE] 비공개 채널 생성 완료: channelId={}, type={}, count={}",
                 channel.getId(), channel.getType(), participants.size());
 
-        return channelMapper.toDto(channel);
+        ChannelDto channelDto = channelMapper.toDto(channel);
+
+        changeEventPublish(channel.getType(), ChangeType.CREATED, channelDto);
+
+        return channelDto;
     }
 
     @Transactional(readOnly = true)
@@ -197,7 +211,11 @@ public class BasicChannelService implements ChannelService {
         log.info("[CHANNEL_UPDATE] 채널 정보 수정 완료: channelId={}, type={}, name={}, description={}",
                 channel.getId(), channel.getType(), channel.getName(), channel.getDescription());
 
-        return channelMapper.toDto(channel);
+        ChannelDto channelDto = channelMapper.toDto(channel);
+
+        changeEventPublish(channel.getType(), ChangeType.UPDATED, channelDto);
+
+        return channelDto;
     }
 
     @CacheEvict(value = "channelList", allEntries = true)
@@ -207,9 +225,15 @@ public class BasicChannelService implements ChannelService {
         log.debug("[CHANNEL_DELETE] 채널 삭제 시작: channelId={}", channelId);
 
         // Channel ID null & channel 객체 존재 확인
-        validateAndGetChannelByChannelId(channelId);
+        Channel channel = validateAndGetChannelByChannelId(channelId);
+        ChannelDto channelDto = channelMapper.toDto(channel);
 
-        channelRepository.deleteById(channelId);
+        // 채널 삭제 전 ReadStatus 삭제하여 참조 상태 해제(private channel)
+        readStatusRepository.deleteByChannelId(channelId);
+        // 채널 삭제
+        channelRepository.delete(channel);
+
+        changeEventPublish(channel.getType(), ChangeType.DELETED, channelDto);
 
         log.info("[CHANNEL_DELETE] 채널 삭제 완료: channelId={}", channelId);
     }
@@ -244,5 +268,29 @@ public class BasicChannelService implements ChannelService {
         if (newName == null && newDescription == null) {
             throw new NoChangeValueException("All UpdateRequestField", null);
         }
+    }
+
+    private void changeEventPublish(
+            ChannelType channelType,
+            ChangeType changeType,
+            ChannelDto channelDto
+    ) {
+        if (ChannelType.PRIVATE.equals(channelType)) {
+            applicationEventPublisher.publishEvent(
+                    new PrivateChannelChangeEvent(
+                            changeType,
+                            channelDto
+                    )
+            );
+
+            return;
+        }
+
+        applicationEventPublisher.publishEvent(
+                new ChannelChangeEvent(
+                        changeType,
+                        channelDto
+                )
+        );
     }
 }

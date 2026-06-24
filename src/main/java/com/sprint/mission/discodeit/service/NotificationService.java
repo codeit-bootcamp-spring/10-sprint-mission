@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface NotificationService {
 
-    void create(Set<UUID> receiverIds, String title, String content);
+    List<NotificationDto> create(Set<UUID> receiverIds, String title, String content);
 
     List<NotificationDto> findAllByReceiverId(UUID receiverId);
 

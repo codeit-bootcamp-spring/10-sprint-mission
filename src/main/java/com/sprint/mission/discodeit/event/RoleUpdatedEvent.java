@@ -3,12 +3,14 @@ package com.sprint.mission.discodeit.event;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
 
 // 권한 변경시 알림 발생을 요청하는 이벤트 클래스
 @Getter
+@NoArgsConstructor(force = true)
 public class RoleUpdatedEvent {
 
     private final UUID userId;

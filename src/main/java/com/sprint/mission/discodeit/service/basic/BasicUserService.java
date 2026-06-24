@@ -6,6 +6,8 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.UserChangeEvent;
+import com.sprint.mission.discodeit.event.enums.ChangeType;
 import com.sprint.mission.discodeit.exception.common.InvalidInputException;
 import com.sprint.mission.discodeit.exception.common.NoChangeValueException;
 import com.sprint.mission.discodeit.exception.user.*;
@@ -96,7 +98,11 @@ public class BasicUserService implements UserService {
         log.info("[USER_CREATE] 사용자 등록 완료: userId={}, profileId={}",
                 user.getId(), user.getProfile() != null ? user.getProfile().getId() : null);
 
-        return userMapper.toDto(user);
+        UserDto userDto = userMapper.toDto(user);
+
+        changeEventPublish(ChangeType.CREATED, userDto);
+
+        return userDto;
     }
 
     @Transactional(readOnly = true)
@@ -204,7 +210,11 @@ public class BasicUserService implements UserService {
         log.info("[USER_UPDATE] 사용자 정보 수정 완료: userId={}, profileId={}",
                 user.getId(), user.getProfile() != null ? user.getProfile().getId() : null);
 
-        return userMapper.toDto(user);
+        UserDto userDto = userMapper.toDto(user);
+
+        changeEventPublish(ChangeType.UPDATED, userDto);
+
+        return userDto;
     }
 
     @CacheEvict(value = "userList", allEntries = true)
@@ -215,8 +225,11 @@ public class BasicUserService implements UserService {
 
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
+        UserDto userDto = userMapper.toDto(user);
 
         userRepository.delete(user);
+
+        changeEventPublish(ChangeType.DELETED, userDto);
 
         log.info("[USER_DELETE] 사용자 삭제 완료: userId={}", userId);
     }
@@ -312,5 +325,14 @@ public class BasicUserService implements UserService {
         if (userRepository.isUsernameUsedByOther(userId, username)) {
             throw new DuplicatedUsernameException(userId, username);
         }
+    }
+
+    private void changeEventPublish(ChangeType changeType, UserDto userDto) {
+        applicationEventPublisher.publishEvent(
+                new UserChangeEvent(
+                        changeType,
+                        userDto
+                )
+        );
     }
 }

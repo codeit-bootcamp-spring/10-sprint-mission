@@ -78,6 +78,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
                         // 그 외 나머지 `/api/**` 요청
                         .requestMatchers("/api/**").authenticated()
+                        .requestMatchers("/ws/**").permitAll()
                         // 그 외 나머지 `/api/**` 가 아닌 요청
                         .anyRequest().authenticated()
                 )

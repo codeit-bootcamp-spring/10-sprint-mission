@@ -106,6 +106,7 @@ public class BasicMessageService implements MessageService {
 
         applicationEventPublisher.publishEvent(
                 new MessageCreatedEvent(
+                        message.getId(),
                         message.getContent(),
                         channel.getId(),
                         channel.getType(),
@@ -128,6 +129,7 @@ public class BasicMessageService implements MessageService {
 
         // Message ID `null` 및 존재 검증
         Message message = validateAndGetMessageByMessageId(messageId);
+
         log.debug("[MESSAGE_FIND] 메시지 조회 완료: messageId={}, authorId={}, channelId={}, attachmentsCount={}",
                 message.getId(), message.getAuthor().getId(), message.getChannel().getId(), message.getAttachments().size());
 

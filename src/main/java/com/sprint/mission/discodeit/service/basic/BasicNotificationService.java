@@ -40,7 +40,7 @@ public class BasicNotificationService implements NotificationService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public void create(Set<UUID> receiverIds, String title, String content) {
+    public List<NotificationDto> create(Set<UUID> receiverIds, String title, String content) {
         log.debug("[NOTIFICATION_CREATE] 알림 생성 시작: title={}, content={}, count={}",
                 title, content, receiverIds.size());
 
@@ -49,13 +49,18 @@ public class BasicNotificationService implements NotificationService {
                 .map(receiver -> new Notification(receiver, title, content))
                 .toList();
 
-        notificationRepository.saveAll(notificationList);
+        List<NotificationDto> notificationDtoList = notificationRepository.saveAll(notificationList)
+                .stream()
+                .map(notification -> notificationMapper.toDto(notification))
+                .toList();
 
         // 각 receiverId 별로 캐시 삭제
         evictNotificationListCache(receiverIds);
 
-        log.info("[NOTIFICATION_CREATE] 알림 생성 완료: title={}, content={}, count={}",
+        log.debug("[NOTIFICATION_CREATE] 알림 생성 완료: title={}, content={}, count={}",
                 title, content, notificationList.size());
+
+        return notificationDtoList;
     }
 
     @Cacheable(value = "notificationList", key = "#receiverId", unless = "#result.isEmpty()")

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.security.registry.inmemory;
 
+import com.sprint.mission.discodeit.event.UserOnlineStatusUpdateEvent;
 import com.sprint.mission.discodeit.exception.security.InvalidJwtInformationException;
 import com.sprint.mission.discodeit.exception.security.InvalidJwtTokenException;
 import com.sprint.mission.discodeit.exception.security.InvalidRefreshTokenException;
@@ -10,6 +11,7 @@ import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +29,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class InMemoryJwtRegistry implements JwtRegistry {
 
     private final JwtTokenProvider jwtTokenProvider;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     // 사용자 ID별 JwtInformation Queue
     private final Map<UUID, Queue<JwtInformation>> origin = new ConcurrentHashMap<>();
@@ -264,6 +268,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         // 위에서 Refresh Token 삭제 후 남은 JwtInformation이 없다면 Map에서 userId 삭제
         if (jwtInformationQueue.isEmpty()) {
             origin.remove(userId);
+            changeEventPublish(userId);
             return false;
         }
 
@@ -278,5 +283,14 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private void changeEventPublish(UUID userId) {
+        applicationEventPublisher.publishEvent(
+                new UserOnlineStatusUpdateEvent(
+                        userId,
+                        null
+                )
+        );
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.config.jwt.JwtProperties;
 import com.sprint.mission.discodeit.dto.auth.JwtDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.event.UserOnlineStatusUpdateEvent;
 import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.registry.JwtRegistry;
@@ -13,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,6 +36,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtProperties jwtProperties;
     private final JwtRegistry jwtRegistry;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public void onAuthenticationSuccess(
@@ -67,6 +71,9 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         );
         jwtRegistry.registerJwtInformation(jwtInformation);
 
+        // 사용자 로그인 상태 변경으로 이벤트 전송
+        changeEventPublish(refreshUserDto);
+
         // Refresh Token을 Cookie에 저장
         ResponseCookie refreshTokenCookie = ResponseCookie
                 .from("REFRESH_TOKEN", refreshToken)
@@ -96,5 +103,14 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         objectMapper.writeValue(response.getWriter(), jwtDto);
 
         log.info("[AUTH_LOGIN_SUCCESS] 로그인 성공: userId={}", refreshUserDto.id());
+    }
+
+    private void changeEventPublish(UserDto userDto) {
+        applicationEventPublisher.publishEvent(
+                new UserOnlineStatusUpdateEvent(
+                        null,
+                        userDto
+                )
+        );
     }
 }

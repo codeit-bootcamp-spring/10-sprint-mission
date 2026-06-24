@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.security.filter.jwt;
+package com.sprint.mission.discodeit.security.interceptor;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.sprint.mission.discodeit.exception.security.InvalidJwtTokenException;
@@ -6,68 +6,80 @@ import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.registry.JwtRegistry;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetailsService;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.simp.stomp.StompCommand;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
 import java.text.ParseException;
 
-// 요청의 Access Token을 검증하고 Spring Security에 인증 객체를 등록하는 Filter
+/**
+ * STOMP 메시지가 서버 내부 채널로 들어올 때 실행되는 인터셉터
+ *
+ * Controller보다 먼저 실행되기에 아래와 같은 공통 처리를 넣기 좋다.
+ * - CONNECT 시점에 인증 토큰 검사
+ * - SEND 메시지의 헤더/본문 검사
+ * - SUBSCRIBE 권한 검사
+ * - DISCONNECT 로그 기록
+ */
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationChannelInterceptor implements ChannelInterceptor {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
 
     private final DiscodeitUserDetailsService discodeitUserDetailsService;
 
-    // Bearer Access Token이 있으면 인증 시도
+    // CONNECT 프레임일 때 엑세스 토큰을 검증하고, 인증된 사용자 정보를 STOMP 메시지의 simpUser 헤더에 저장
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException
-    {
-        try {
-            String accessToken = resolveAccessToken(request);
+    public @Nullable Message<?> preSend(Message<?> message, MessageChannel channel) {
+        StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(
+                message,
+                StompHeaderAccessor.class
+        );
 
-            // Authorization 헤더에 Bearer 토큰이 없을 경우, accessToken이 `null`
-            if (accessToken != null) {
-                // 검증된 사용자 정보 + 권한으로 인증 객체 생성
-                UsernamePasswordAuthenticationToken authentication = createAuthentication(accessToken);
-
-                // 인증 객체를 SecurityContext에 저장하여 현재 요청을 인증된 상태로 처리
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
-        } catch (AuthenticationException e) {
-            // 토큰 검증이나 사용자 조회에 실패할 경우
-            // 현재 요청의 인증 상태를 제거
-            SecurityContextHolder.clearContext();
-            throw e;
+        if (accessor == null) {
+            return message;
         }
 
-        // 다음 filter로 이동
-        filterChain.doFilter(request, response);
+        // CONNECT 프레임일 경우 검증 시작
+        if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+            authenticate(accessor);
+        }
+
+        return message;
     }
 
-    private String resolveAccessToken(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
+    private void authenticate(StompHeaderAccessor accessor) {
+        // `CONNECT` 프레임의 헤더에서 Access Token 추출
+        String accessToken = resolveAccessToken(accessor);
 
-        // Authorization 헤더에 Bearer 토큰이 없을 경우, AccessToken을 null로 반환
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return null;
+        // 검증된 사용자 정보 + 권한으로 인증 객체 생성
+        UsernamePasswordAuthenticationToken authentication = createAuthentication(accessToken);
+
+        // 인증된 사용자 정보를 STOMP 메시지의 simpUser 헤더에 저장
+        accessor.setUser(authentication);
+    }
+
+    // `CONNECT` 프레임의 헤더에서 Access Token 추출
+    private String resolveAccessToken(StompHeaderAccessor accessor) {
+        // `CONNECT` 프레임의 헤더 중 Authorization 헤더 추출
+        String authorizationHeader = accessor.getFirstNativeHeader("Authorization");
+
+
+        if (authorizationHeader == null
+                || !authorizationHeader.startsWith("Bearer ")
+        ) {
+            throw new InvalidJwtTokenException();
         }
 
         // "Bearer "을 제외한 나머지(Access Token)를 가져옴
@@ -87,7 +99,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 예외 발생 시, 실패 원인 추가를 위해 "try...catch"문 안에 포함
             JWTClaimsSet jwtClaimsSet = jwtTokenProvider.getAndValidateAccessToken(accessToken);
 
-            // Registry에서 Access Token이 Active인지 확인
+            // Access Token이 Active인지 확인
             validateActiveAccessToken(accessToken);
 
             // claims에서 username 조회
@@ -97,15 +109,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             DiscodeitUserDetails userDetails =
                     (DiscodeitUserDetails) discodeitUserDetailsService.loadUserByUsername(username);
 
-            // 검증된 사용자 정보 + 권한으로 인증 객체 생성
             return new UsernamePasswordAuthenticationToken(
                     userDetails,
                     null,
                     userDetails.getAuthorities()
             );
-
         } catch (InvalidJwtTokenException | UsernameNotFoundException | ParseException e) {
-            throw new BadCredentialsException("유효하지 않은 Access Token입니다.", e);
+            // 토큰 검증이나 사용자 조회에 실패할 경우
+            throw new BadCredentialsException("유효하지 않음 Access Token입니다.", e);
         }
     }
 

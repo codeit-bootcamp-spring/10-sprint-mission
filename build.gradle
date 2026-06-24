@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '2.2-M11'
+version = '3.0-M12'
 description = 'Codeit Backend Bootcamp Sprint Mission'
 
 java {
@@ -38,38 +38,55 @@ jacocoTestReport {
 }
 
 dependencies {
+	// Spring Boot
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'org.springframework.retry:spring-retry'
-	implementation 'org.springframework.kafka:spring-kafka'
+
+	// Persistence & DB
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	runtimeOnly 'org.postgresql:postgresql'
+	runtimeOnly 'com.h2database:h2'
+
+	// Security & JWT
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+	implementation 'org.springframework.security:spring-security-messaging'
+
+	// Cache
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 	implementation 'com.github.ben-manes.caffeine:caffeine'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	testImplementation 'org.springframework.security:spring-security-test'
-	implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+	// event message
+	implementation 'org.springframework.kafka:spring-kafka'
 
+	// retry
+	implementation 'org.springframework.retry:spring-retry'
+
+	// websocket
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	// lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
+	// mapstruct
 	implementation 'org.mapstruct:mapstruct:1.6.3'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
+	// AWS
 	implementation 'software.amazon.awssdk:s3:2.31.7'
 
-	runtimeOnly 'com.h2database:h2'
-	runtimeOnly 'org.postgresql:postgresql'
-	testImplementation 'org.testcontainers:postgresql'
+	// OpenAPI & Swagger
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.testcontainers:junit-jupiter'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
-
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15'
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:postgresql'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {

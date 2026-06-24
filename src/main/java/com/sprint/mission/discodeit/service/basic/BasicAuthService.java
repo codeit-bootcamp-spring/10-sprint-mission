@@ -8,6 +8,8 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.UserChangeEvent;
+import com.sprint.mission.discodeit.event.enums.ChangeType;
 import com.sprint.mission.discodeit.exception.security.InvalidJwtInformationException;
 import com.sprint.mission.discodeit.exception.security.InvalidJwtTokenException;
 import com.sprint.mission.discodeit.exception.security.InvalidRefreshTokenException;
@@ -64,9 +66,7 @@ public class BasicAuthService implements AuthService {
             user.updateRole(newRole);
 
             // 권한 변경 시 알림 이벤트 발행
-            applicationEventPublisher.publishEvent(
-                    new RoleUpdatedEvent(userId, oldRole, newRole)
-            );
+            roleUpdateEventPublish(userId, oldRole, newRole);
 
             // 권한이 변경된 사용자가 로그인 상태 시 강제 로그아웃 처리
             if (jwtRegistry.hasActiveJwtInformationByUserId(userId)) {
@@ -76,6 +76,13 @@ public class BasicAuthService implements AuthService {
 
             log.debug("[USER_ROLE_UPDATE] 사용자 권한 수정 완료: userId={}, role={}",
                     user.getId(), user.getRole());
+
+            UserDto userDto = userMapper.toDto(user);
+
+            // 권한 변경 시 UI 랜더링을 위한 이벤트 발행
+            changeEventPublish(ChangeType.UPDATED, userDto);
+
+            return userDto;
         } else {
             log.debug("[USER_ROLE_UPDATE] 기존 권한과 요청 권한이 동일: userId={}, role={}",
                     userId, oldRole);
@@ -165,5 +172,21 @@ public class BasicAuthService implements AuthService {
     private User validateAndGetUserByUserIdWithProfile(UUID userId) {
         return userRepository.findByIdWithProfile(userId)
                 .orElseThrow(() -> new UserNotFoundException("userId", userId));
+    }
+
+    private void roleUpdateEventPublish(UUID userId, Role oldRole, Role newRole) {
+        // 권한 변경 시 알림 이벤트 발행
+        applicationEventPublisher.publishEvent(
+                new RoleUpdatedEvent(userId, oldRole, newRole)
+        );
+    }
+
+    private void changeEventPublish(ChangeType changeType, UserDto userDto) {
+        applicationEventPublisher.publishEvent(
+                new UserChangeEvent(
+                        changeType,
+                        userDto
+                )
+        );
     }
 }

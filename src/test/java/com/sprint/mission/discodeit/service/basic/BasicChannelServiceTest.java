@@ -30,6 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
@@ -60,6 +61,9 @@ class BasicChannelServiceTest {
 
     @Mock
     private UserMapper userMapper;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private BasicChannelService basicChannelService;
@@ -549,7 +553,7 @@ class BasicChannelServiceTest {
 
             // then(검증)
             verify(channelRepository).findById(channelId);
-            verify(channelRepository).deleteById(channelId);
+            verify(channelRepository).delete(channel);
         }
 
         @Test
@@ -561,6 +565,7 @@ class BasicChannelServiceTest {
 
             verify(channelRepository, never()).findById(any());
             verify(channelRepository, never()).deleteById(any());
+            verify(channelRepository, never()).delete(any(Channel.class));
         }
 
         @Test
@@ -574,7 +579,7 @@ class BasicChannelServiceTest {
                     () -> basicChannelService.delete(channelId));
 
             verify(channelRepository).findById(channelId);
-            verify(channelRepository, never()).deleteById(channelId);
+            verify(channelRepository, never()).delete(any(Channel.class));
         }
     }
 }

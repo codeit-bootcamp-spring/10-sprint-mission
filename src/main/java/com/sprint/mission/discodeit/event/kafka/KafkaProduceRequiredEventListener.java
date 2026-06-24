@@ -55,7 +55,7 @@ public class KafkaProduceRequiredEventListener {
                             log.error("[KAFKA_EVENT_PUBLISH_FAULED] Kafka 이벤트 발행 실패: topic={}, event={}",
                                     topic, event.getClass().getSimpleName(), e);
                         } else {
-                            log.info("[KAFKA_EVENT_PUBLISH_SUCCESS] Kafka 이벤트 발행 성공: topic={}, event={}",
+                            log.debug("[KAFKA_EVENT_PUBLISH_SUCCESS] Kafka 이벤트 발행 성공: topic={}, event={}",
                                     topic, event.getClass().getSimpleName());
                         }
                     });
