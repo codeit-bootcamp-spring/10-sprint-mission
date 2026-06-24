@@ -37,10 +37,6 @@ public enum ErrorCode {
     READ_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "READ_STATUS_001", "해당 ReadStatus를 찾을 수 없습니다"),
     READ_STATUS_ALREADY_EXISTS(HttpStatus.CONFLICT, "READ_STATUS_002", "이미 해당 유저와 채널 간 ReadStatus가 존재합니다"),
 
-    // UserStatus
-    USER_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_STATUS_001", "해당 UserStatus를 찾을 수 없습니다"),
-    USER_STATUS_ALREADY_EXISTS(HttpStatus.CONFLICT, "USER_STATUS_002", "이미 해당 유저는 UserStatus를 가지고 있습니다"),
-
     // File
     FILE_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "FILE_001", "파일 처리 중 오류가 발생했습니다"),
     INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "FILE_002", "잘못된 파일 타입입니다"),

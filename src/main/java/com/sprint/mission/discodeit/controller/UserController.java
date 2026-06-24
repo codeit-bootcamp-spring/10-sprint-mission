@@ -3,9 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.UserRoleUpdateRequest;
-import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.service.facade.UserFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +24,6 @@ import java.util.UUID;
 public class UserController implements UserApi {
 
     private final UserService userService;
-    private final UserStatusService userStatus;
     private final UserFacade userFacade;
 
     @Override
@@ -53,11 +50,6 @@ public class UserController implements UserApi {
     @Override
     public ResponseEntity<List<UserDto.Response>> findAllUser() {
         return ResponseEntity.ok(userService.findAll());
-    }
-
-    @Override
-    public ResponseEntity<UserStatusDto.Response> patchUserStatus(UUID userId, UserStatusDto.UpdateRequest request) {
-        return ResponseEntity.ok(userStatus.updateByUserId(userId, request));
     }
 
     @Override

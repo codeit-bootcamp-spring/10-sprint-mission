@@ -9,6 +9,5 @@ import java.util.UUID;
 public interface NotificationEventService {
   void sendByMessageCreated(UUID messageId);
   void sendByRoleUpdated(UUID userId, Role oldRole, Role newRole);
-
-  void sendS3UploadFailedNotification(UUID binaryContentId, String mdcRequestId, String errorMessage);
+  void sendAsyncErrorNotification(String requestId, String methodName, String errorMessage);
 }

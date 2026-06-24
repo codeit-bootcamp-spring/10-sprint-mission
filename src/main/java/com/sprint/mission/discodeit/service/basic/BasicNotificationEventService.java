@@ -59,18 +59,18 @@ public class BasicNotificationEventService implements NotificationEventService {
 
   @Transactional
   @Override
-  public void sendS3UploadFailedNotification(UUID binaryContentId, String mdcRequestId, String errorMessage) {
+  public void sendAsyncErrorNotification(String requestId, String methodName, String errorMessage) {
     String messageContent = String.format(
             """
             RequestId: %s
-            BinaryContentId: %s
+            Method: %s
             Error: %s
             """,
-        mdcRequestId, binaryContentId, errorMessage
+        requestId, methodName, errorMessage
     );
 
     userRepository.findByRole(Role.ADMIN).forEach(admin -> 
-      notificationService.create(admin.getId(), "S3 파일 업로드 실패", messageContent)
+      notificationService.create(admin.getId(), "시스템 비동기 에러 발생", messageContent)
     );
   }
 }

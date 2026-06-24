@@ -28,6 +28,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation' // 유효성 검사 (Annotaion 기반)
     implementation 'org.springframework.boot:spring-boot-starter-actuator'   // 애플리케이션 모니터링/상태 체크
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'  // 웹소켓 활성화
+
 
     // 2. Database & Persistence (데이터 저장 및 ORM)
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'   // JPA/Hibernate

@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.event.listener.notification;
 
-import com.sprint.mission.discodeit.event.BinaryContentEvents;
 import com.sprint.mission.discodeit.event.MessageEvents;
+import com.sprint.mission.discodeit.event.SystemEvents;
 import com.sprint.mission.discodeit.event.UserEvents;
 import com.sprint.mission.discodeit.service.NotificationEventService;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +38,10 @@ public class LocalNotificationListener {
 
   @Async("ioTaskExecutor")
   @EventListener
-  public void on(BinaryContentEvents.S3UploadFailed event) {
-    notificationEventService.sendS3UploadFailedNotification(
-        event.binaryContentId(), 
-        event.mdcRequestId(), 
+  public void on(SystemEvents.AsyncErrorAlarm event) {
+    notificationEventService.sendAsyncErrorNotification(
+        event.requestId(),
+        event.methodName(), 
         event.errorMessage()
     );
   }

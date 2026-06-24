@@ -5,13 +5,13 @@ import com.sprint.mission.discodeit.auth.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.auth.jwt.JwtCookieManager;
 import com.sprint.mission.discodeit.auth.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.auth.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.event.UserEvents;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -27,8 +27,8 @@ public class JwtLogoutHandler implements LogoutHandler {
 
   private final JwtRegistry jwtRegistry;
   private final JwtTokenProvider jwtTokenProvider;
-  private final CacheManager cacheManager;
   private final JwtCookieManager jwtCookieManager;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public void logout(HttpServletRequest request, HttpServletResponse response,
@@ -42,10 +42,10 @@ public class JwtLogoutHandler implements LogoutHandler {
           .ifPresent(cookie -> {
             String refreshToken = cookie.getValue();
 
-            // 유효한 토큰인 경우 레지스트리에서 즉시 삭제 (DB 조회 없이 최적화)
+            // 유효한 토큰인 경우 레지스트리에서 즉시 삭제
             if (jwtTokenProvider.validateToken(refreshToken)) {
-              jwtRegistry.invalidateJwtInformationByRefreshToken(refreshToken);
-              evictUsersCache(); // 유저 목록 실시간 상태 갱신
+              jwtRegistry.invalidateJwtInformationByRefreshToken(refreshToken)
+                  .ifPresent(userId -> eventPublisher.publishEvent(new UserEvents.OnlineStatusChanged(userId, false)));
             }
           });
     }
@@ -54,12 +54,5 @@ public class JwtLogoutHandler implements LogoutHandler {
     jwtCookieManager.deleteRefreshTokenCookie(response);
 
     response.setStatus(HttpStatus.NO_CONTENT.value());
-  }
-
-  private void evictUsersCache() {
-    Cache cache = cacheManager.getCache("usersCache");
-    if (cache != null) {
-      cache.clear();
-    }
   }
 }

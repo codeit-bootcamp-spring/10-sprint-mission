@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.event.listener.notification.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.event.BinaryContentEvents;
 import com.sprint.mission.discodeit.event.MessageEvents;
+import com.sprint.mission.discodeit.event.SystemEvents;
 import com.sprint.mission.discodeit.event.UserEvents;
 import com.sprint.mission.discodeit.exception.etc.InternalServerException;
 import com.sprint.mission.discodeit.service.NotificationEventService;
@@ -34,10 +34,10 @@ public class NotificationRequiredTopicListener {
         notificationEventService.sendByRoleUpdated(event.userId(), event.oldRole(), event.newRole());
     }
 
-    @KafkaListener(topics = "discodeit.S3UploadFailedEvent")
-    public void onS3UploadFailedEvent(String kafkaEvent) {
-        BinaryContentEvents.S3UploadFailed event = fromJson(kafkaEvent, BinaryContentEvents.S3UploadFailed.class);
-        notificationEventService.sendS3UploadFailedNotification(event.binaryContentId(), event.mdcRequestId(), event.errorMessage());
+    @KafkaListener(topics = "discodeit.AsyncErrorAlarmEvent")
+    public void onAsyncErrorAlarmEvent(String kafkaEvent) {
+        SystemEvents.AsyncErrorAlarm event = fromJson(kafkaEvent, SystemEvents.AsyncErrorAlarm.class);
+        notificationEventService.sendAsyncErrorNotification(event.requestId(), event.methodName(), event.errorMessage());
     }
 
     private <T> T fromJson(String json, Class<T> clazz) {

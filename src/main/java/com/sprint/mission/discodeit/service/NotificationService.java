@@ -9,6 +9,7 @@ import java.util.UUID;
  */
 public interface NotificationService {
   List<NotificationDto> findAllByUserId(UUID userId);
+  NotificationDto find(UUID notificationId);
   void create(UUID userId, String title, String content);
   void delete(UUID userId, UUID notificationId);
 }

@@ -32,6 +32,7 @@ public class BinaryContentListener {
     } catch (Exception e) {
       log.error("[BinaryContentListener] 업로드 실패: ID={}, Error={}", event.binaryContentId(), e.getMessage());
       binaryContentService.updateStatus(event.binaryContentId(), BinaryContentStatus.FAIL);
+      throw new RuntimeException(e); // 글로벌 비동기 에러 핸들러로 전달
     }
   }
 }

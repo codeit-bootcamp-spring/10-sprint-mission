@@ -7,9 +7,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 도메인 이벤트를 구독하여 관련 캐시를 무효화하는 리스너입니다.
@@ -17,6 +24,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class CacheListener {
 
     private final CacheManager cacheManager;
@@ -26,7 +34,7 @@ public class CacheListener {
         if (event.type() == ChannelType.PUBLIC) {
             evictAll("userChannelsCache");
         } else {
-            evictSpecificUsers("userChannelsCache", event.participantIds());
+            evictSpecificUsers(event.participantIds());
         }
     }
 
@@ -35,7 +43,7 @@ public class CacheListener {
         if (event.type() == ChannelType.PUBLIC) {
             evictAll("userChannelsCache");
         } else {
-            evictSpecificUsers("userChannelsCache", event.participantIds());
+            evictSpecificUsers(event.participantIds());
         }
     }
 
@@ -47,7 +55,7 @@ public class CacheListener {
             log.info("[CacheListener] 채널 삭제(Type={})로 인해 전체 채널 캐시 무효화", event.type());
         } else {
             // 비공개 채널 참여자들만 타겟팅 삭제
-            evictSpecificUsers("userChannelsCache", event.participantIds());
+            evictSpecificUsers(event.participantIds());
             log.info("[CacheListener] 비공개 채널 삭제로 인해 참여자({}) 캐시 무효화", event.participantIds().size());
         }
     }
@@ -58,15 +66,15 @@ public class CacheListener {
         evictAll("userChannelsCache"); // 참여자 정보 동기화를 위해 채널 캐시도 초기화
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleUserStatusUpdated(UserEvents.StatusUpdated event) {
+    @EventListener
+    public void handleUserOnlineStatusChanged(UserEvents.OnlineStatusChanged event) {
         evictAll("usersCache");
         evictAll("userChannelsCache"); // 상태 정보 동기화를 위해 채널 캐시도 초기화
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleUserChannelAccessChanged(ChannelEvents.AccessChanged event) {
-        evictSpecificUsers("userChannelsCache", java.util.List.of(event.userId()));
+        evictSpecificUsers(List.of(event.userId()));
         log.info("[CacheListener] 사용자({})의 접근 권한 변경으로 채널 캐시 무효화", event.userId());
     }
 
@@ -78,11 +86,11 @@ public class CacheListener {
         }
     }
 
-    private void evictSpecificUsers(String cacheName, java.util.Collection<java.util.UUID> userIds) {
-        Cache cache = cacheManager.getCache(cacheName);
+    private void evictSpecificUsers(Collection<UUID> userIds) {
+        Cache cache = cacheManager.getCache("userChannelsCache");
         if (cache != null && userIds != null) {
             userIds.forEach(cache::evict);
-            log.debug("[Cache Evicted] Specific users {} in {}", userIds, cacheName);
+            log.debug("[Cache Evicted] Specific users {} in {}", userIds, "userChannelsCache");
         }
     }
 }

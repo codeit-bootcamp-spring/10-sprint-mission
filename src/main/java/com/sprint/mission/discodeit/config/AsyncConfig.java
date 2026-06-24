@@ -1,14 +1,27 @@
 package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.config.decorator.ContextCopyingDecorator;
+import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 @EnableAsync
-public class AsyncConfig {
+public class AsyncConfig implements AsyncConfigurer {
+
+  private final CustomAsyncExceptionHandler customAsyncExceptionHandler;
+
+  public AsyncConfig(CustomAsyncExceptionHandler customAsyncExceptionHandler) {
+    this.customAsyncExceptionHandler = customAsyncExceptionHandler;
+  }
+
+  @Override
+  public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+    return customAsyncExceptionHandler;
+  }
 
   // 1. I/O Bound 전용 스레드 풀 (DB 접근, 파일 업로드, 외부 API 호출 등)
   // 특징: 넉넉한 스레드 수

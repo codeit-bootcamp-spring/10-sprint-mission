@@ -17,13 +17,13 @@ import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-  @EntityGraph(attributePaths = {"author", "author.status", "author.profile", "channel"})
+  @EntityGraph(attributePaths = {"author", "author.profile", "channel"})
   Page<Message> findAllByChannelId(UUID channelId, Pageable pageable);
 
-  @EntityGraph(attributePaths = {"author", "author.status", "author.profile", "channel"})
+  @EntityGraph(attributePaths = {"author", "author.profile", "channel"})
   Optional<Message> findById(@NonNull UUID messageId);
 
-  @EntityGraph(attributePaths = {"author", "author.status", "author.profile", "channel"})
+  @EntityGraph(attributePaths = {"author", "author.profile", "channel"})
   @Query("""
       select m
       from Message m
@@ -32,7 +32,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
       """)
   Slice<Message> findLatestByChannelId(UUID channelId, Pageable pageable);
 
-  @EntityGraph(attributePaths = {"author", "author.status", "author.profile", "channel"})
+  @EntityGraph(attributePaths = {"author", "author.profile", "channel"})
   @Query("""
       select m
       from Message m

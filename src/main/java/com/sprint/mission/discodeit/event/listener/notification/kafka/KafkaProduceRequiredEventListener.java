@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.event.listener.notification.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.event.BinaryContentEvents;
 import com.sprint.mission.discodeit.event.MessageEvents;
+import com.sprint.mission.discodeit.event.SystemEvents;
 import com.sprint.mission.discodeit.event.UserEvents;
 import com.sprint.mission.discodeit.exception.etc.InternalServerException;
 import lombok.RequiredArgsConstructor;
@@ -38,8 +38,8 @@ public class KafkaProduceRequiredEventListener {
 
     @Async("ioTaskExecutor")
     @EventListener
-    public void on(BinaryContentEvents.S3UploadFailed event) {
-        kafkaTemplate.send("discodeit.S3UploadFailedEvent", toJson(event));
+    public void on(SystemEvents.AsyncErrorAlarm event) {
+        kafkaTemplate.send("discodeit.AsyncErrorAlarmEvent", toJson(event));
     }
 
     private String toJson(Object event) {

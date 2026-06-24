@@ -42,14 +42,17 @@ public class InMemoryJwtRegistry implements JwtRegistry {
   }
 
   @Override
-  public void invalidateJwtInformationByRefreshToken(String refreshToken) {
-    origin.values().removeIf(info -> {
-      if (info.getRefreshToken().equals(refreshToken)) {
+  public java.util.Optional<UUID> invalidateJwtInformationByRefreshToken(String refreshToken) {
+    for (Map.Entry<UUID, JwtInformation> entry : origin.entrySet()) {
+      if (entry.getValue().getRefreshToken().equals(refreshToken)) {
+        UUID userId = entry.getKey();
+        JwtInformation info = entry.getValue();
         removeTokenIndex(info.getAccessToken(), info.getRefreshToken());
-        return true;
+        origin.remove(userId);
+        return java.util.Optional.of(userId);
       }
-      return false;
-    });
+    }
+    return java.util.Optional.empty();
   }
 
   @Override

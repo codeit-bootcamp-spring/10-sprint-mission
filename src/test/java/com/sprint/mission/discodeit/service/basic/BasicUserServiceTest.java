@@ -9,15 +9,12 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.etc.DatabaseConflictException;
-import com.sprint.mission.discodeit.exception.etc.InternalServerException;
 import com.sprint.mission.discodeit.exception.user.DuplicationUserException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
-import java.time.Instant;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +34,6 @@ class BasicUserServiceTest {
 
     @Mock private UserRepository userRepository;
     @Mock private BinaryContentRepository binaryContentRepository;
-    @Mock private UserStatusRepository userStatusRepository;
     @Mock private ReadStatusRepository readStatusRepository;
     @Mock private ChannelRepository channelRepository;
     @Mock private UserMapper userMapper;
@@ -61,7 +57,6 @@ class BasicUserServiceTest {
 
         user = new User("tester", "test@test.com", "hashedPassword", null);
         ReflectionTestUtils.setField(user, "id", userId);
-        user.setStatus(new UserStatus(user, Instant.now()));
 
         userResponse = new UserDto.Response(userId, "tester", "test@test.com", null, true, Role.USER);
 
@@ -284,28 +279,17 @@ class BasicUserServiceTest {
         }
     }
 
-    @Nested
-    @DisplayName("데이터 변환 (toDto)")
-    class ToDto {
-        @Test
-        @DisplayName("성공: 정상적인 유저 엔티티")
-        void toDto_Success() {
-            // when
-            userService.toDto(user);
-
-            // then
-            verify(userMapper).toResponse(user);
-        }
-
-        @Test
-        @DisplayName("실패: 유저 상태(UserStatus) 정보가 누락된 경우")
-        void toDto_Fail_StatusMissing() {
-            // given
-            user.setStatus(null);
-
-            // when & then
-            assertThatThrownBy(() -> userService.toDto(user))
-                    .isInstanceOf(InternalServerException.class);
-        }
-    }
+    // @Nested
+    // @DisplayName("데이터 변환 (toDto)")
+    // class ToDto {
+    //     @Test
+    //     @DisplayName("성공: 정상적인 유저 엔티티")
+    //     void toDto_Success() {
+    //         // when
+    //         userService.toDto(user);
+    //
+    //         // then
+    //         verify(userMapper).toResponse(user);
+    //     }
+    // }
 }

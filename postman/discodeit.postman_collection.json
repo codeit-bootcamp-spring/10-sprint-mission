@@ -160,34 +160,6 @@
       "response": []
     },
     {
-      "name": "유저 상태 업데이트",
-      "request": {
-        "method": "PATCH",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"newLastActiveAt\": \"2026-02-07T14:30:01Z\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{baseUrl}}/users/e9507ad4-d128-4633-976a-ac58fb4d8ac5/userStatus",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "users",
-            "e9507ad4-d128-4633-976a-ac58fb4d8ac5",
-            "userStatus"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
       "name": "단건 유저 조회",
       "request": {
         "method": "GET",
@@ -199,24 +171,6 @@
           ],
           "path": [
             "users",
-            "e9507ad4-d128-4633-976a-ac58fb4d8ac5"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "UserStatus 조회",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/userStatuses/e9507ad4-d128-4633-976a-ac58fb4d8ac5",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "userStatuses",
             "e9507ad4-d128-4633-976a-ac58fb4d8ac5"
           ]
         }

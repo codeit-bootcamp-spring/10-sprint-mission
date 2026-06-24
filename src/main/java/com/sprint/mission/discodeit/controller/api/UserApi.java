@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.UserRoleUpdateRequest;
-import com.sprint.mission.discodeit.dto.UserStatusDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -74,13 +73,6 @@ public interface UserApi {
     @Operation(summary = "전체 사용자 목록 조회")
     @GetMapping
     ResponseEntity<List<UserDto.Response>> findAllUser();
-
-    @Operation(summary = "사용자 온라인 상태 업데이트", description = "사용자의 마지막 활동 시간을 수동으로 업데이트합니다.")
-    @PatchMapping("/{userId}/userStatus")
-    ResponseEntity<UserStatusDto.Response> patchUserStatus(
-            @Parameter(description = "사용자 ID") @PathVariable("userId") UUID userId,
-            @RequestBody @Valid UserStatusDto.UpdateRequest request
-    );
 
     @Operation(summary = "사용자 권한 변경", description = "특정 사용자의 권한을 변경합니다. (관리자 전용)")
     @PutMapping("/{userId}/role")

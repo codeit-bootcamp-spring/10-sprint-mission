@@ -7,8 +7,7 @@ import com.sprint.mission.discodeit.auth.jwt.JwtInformation;
 import com.sprint.mission.discodeit.auth.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.auth.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.dto.JwtDto;
-import com.sprint.mission.discodeit.dto.UserStatusDto;
-import com.sprint.mission.discodeit.service.UserStatusService;
+import com.sprint.mission.discodeit.event.UserEvents;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,8 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -39,9 +37,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final JwtTokenProvider jwtTokenProvider;
   private final JwtRegistry jwtRegistry;
   private final ObjectMapper objectMapper;
-  private final UserStatusService userStatusService;
-  private final CacheManager cacheManager;
   private final JwtCookieManager jwtCookieManager;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public void onAuthenticationSuccess(
@@ -70,9 +67,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         .build();
     jwtRegistry.registerJwtInformation(jwtInformation);
 
-    // 3. 사용자 상태 업데이트 및 목록 캐시 무효화 (실시간 On/Off 상태 반영)
-    userStatusService.updateByUserId(userDetails.getUserDto().id(), new UserStatusDto.UpdateRequest(Instant.now()));
-    evictUsersCache();
+    // 3. 온라인 상태 변경 이벤트 발행 (실시간 On/Off 상태 반영)
+    eventPublisher.publishEvent(new UserEvents.OnlineStatusChanged(userDetails.getUserDto().id(), true));
 
     // 4. 전용 매니저를 통해 쿠키 설정
     jwtCookieManager.addRefreshTokenCookie(response, refreshToken);
@@ -87,10 +83,5 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setCharacterEncoding(StandardCharsets.UTF_8.name());
     response.getWriter().write(objectMapper.writeValueAsString(jwtDto));
-  }
-
-  private void evictUsersCache() {
-    Cache cache = cacheManager.getCache("usersCache");
-    if (cache != null) cache.clear();
   }
 }

@@ -10,9 +10,11 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import com.sprint.mission.discodeit.auth.jwt.JwtInformation;
 import com.sprint.mission.discodeit.auth.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.event.UserEvents;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ public class BasicAuthService implements AuthService {
   private final JwtTokenProvider jwtTokenProvider;
   private final JwtRegistry jwtRegistry;
   private final UserDetailsService userDetailsService;
+  private final ApplicationEventPublisher eventPublisher;
 
   /**
    * 리프레시 토큰을 검증하고 새로운 액세스 토큰과 리프레시 토큰을 발급합니다. (Token Rotation)
@@ -63,6 +66,7 @@ public class BasicAuthService implements AuthService {
   @Override
   public void expireUserSessions(UUID userId) {
     jwtRegistry.invalidateJwtInformationByUserId(userId);
+    eventPublisher.publishEvent(new UserEvents.OnlineStatusChanged(userId, false));
     log.info("[Auth] 사용자 세션 강제 만료: UserId={}", userId);
   }
 

@@ -117,9 +117,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
       mdcRequestId = "N/A";
     }
 
-    // ⭐️ 의존성 없이 이벤트만 발행합니다.
-    eventPublisher.publishEvent(new BinaryContentEvents.S3UploadFailed(uuid, mdcRequestId, e.getMessage()));
-
+    // @Async 메서드 내부의 예외는 글로벌 AsyncUncaughtExceptionHandler가 잡아 알림을 보냅니다.
     throw handleWriteException(uuid, e);
   }
 

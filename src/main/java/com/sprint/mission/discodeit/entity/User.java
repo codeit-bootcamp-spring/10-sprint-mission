@@ -31,9 +31,6 @@ public class User extends BaseUpdateEntity {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private BinaryContent profile;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserStatus status;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
@@ -67,18 +64,5 @@ public class User extends BaseUpdateEntity {
 
     public void updateRole(Role newRole) {
         this.role = newRole;
-    }
-
-    // UserStatus와 User의 연관관계 편의 메서드
-    public void setStatus(UserStatus status) {
-        if (this.status != null) {
-            this.status.setUser(null);
-        }
-
-        this.status = status;
-
-        if (status != null && status.getUser() != this) {
-            status.setUser(this);
-        }
     }
 }

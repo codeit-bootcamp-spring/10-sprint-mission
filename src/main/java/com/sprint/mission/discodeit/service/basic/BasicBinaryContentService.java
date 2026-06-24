@@ -128,6 +128,8 @@ public class BasicBinaryContentService implements BinaryContentService {
         binaryContent.updateStatus(status);
         log.info("[BinaryContent] 상태 변경: ID={}, Status={}", binaryContentId, status);
         
+        eventPublisher.publishEvent(new BinaryContentEvents.Updated(binaryContentId));
+
         return binaryContentMapper.toResponse(binaryContent);
     }
 

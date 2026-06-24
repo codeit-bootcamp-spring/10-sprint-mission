@@ -64,6 +64,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
             .requestMatchers("/actuator/**").permitAll()
+            .requestMatchers("/ws/**").permitAll()
             .requestMatchers(antMatcher("/h2-console/**")).permitAll()
             .requestMatchers(HttpMethod.GET, "/api/auth/csrf-token").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/binaryContents/*").permitAll()

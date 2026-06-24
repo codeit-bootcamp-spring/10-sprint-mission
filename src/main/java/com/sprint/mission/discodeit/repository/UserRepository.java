@@ -12,13 +12,13 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-  @EntityGraph(attributePaths = {"status", "profile"})
+  @EntityGraph(attributePaths = {"profile"})
   Optional<User> findById(@NonNull UUID userId);
 
-  @EntityGraph(attributePaths = {"status", "profile"})
+  @EntityGraph(attributePaths = {"profile"})
   List<User> findAll();
 
-  @EntityGraph(attributePaths = {"status", "profile"})
+  @EntityGraph(attributePaths = {"profile"})
   Optional<User> findByUsername(String username);
 
   boolean existsByUsername(String username);
@@ -27,6 +27,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   boolean existsByRole(Role role);
 
-  @EntityGraph(attributePaths = {"status", "profile"})
+  @EntityGraph(attributePaths = {"profile"})
   List<User> findByRole(Role role);
 }

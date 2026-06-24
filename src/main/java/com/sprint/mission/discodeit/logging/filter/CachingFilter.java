@@ -20,7 +20,9 @@ public class CachingFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
-        return path.contains("/download") || path.startsWith("/api/files");
+        return path.contains("/download") || 
+               path.startsWith("/api/files") || 
+               path.equals("/api/sse");
     }
 
     @Override

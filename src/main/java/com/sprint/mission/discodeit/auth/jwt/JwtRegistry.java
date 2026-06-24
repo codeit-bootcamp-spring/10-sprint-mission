@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.auth.jwt;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -15,7 +16,7 @@ public interface JwtRegistry {
   void invalidateJwtInformationByUserId(UUID userId);
 
   // 리프레시 토큰 기반 세션 만료 (로그아웃 최적화용)
-  void invalidateJwtInformationByRefreshToken(String refreshToken);
+  Optional<UUID> invalidateJwtInformationByRefreshToken(String refreshToken);
 
   // 사용자 온라인 여부 확인
   boolean hasActiveJwtInformationByUserId(UUID userId);

@@ -24,19 +24,6 @@ CREATE TABLE IF NOT EXISTS users (
         ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS user_statuses (
-    id UUID PRIMARY KEY,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    user_id UUID NOT NULL UNIQUE,
-    last_active_at TIMESTAMP WITH TIME ZONE NOT NULL,
-
-    CONSTRAINT fk_user_statuses_user
-        FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS channels (
     id UUID PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
