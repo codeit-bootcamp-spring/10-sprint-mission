@@ -4,9 +4,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.mapstruct.Named;
 import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 @RequiredArgsConstructor
 public class UserSessionService {
   private final SessionRegistry sessionRegistry;

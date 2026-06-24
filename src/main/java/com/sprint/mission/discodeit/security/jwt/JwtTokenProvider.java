@@ -62,30 +62,31 @@ public class JwtTokenProvider {
     return generateToken(userDetails, refreshTokenExpirationMs, refreshTokenSigner, "refresh");
   }
 
-  private String generateToken(DiscodeitUserDetails userDetails, int expirationMs, JWSSigner signer,
-      String tokenType) throws JOSEException {
+  private String generateToken(
+      DiscodeitUserDetails userDetails, int expirationMs, JWSSigner signer, String tokenType)
+      throws JOSEException {
     String tokenId = UUID.randomUUID().toString();
     UserDto user = userDetails.getUserDto();
 
     Date now = new Date();
     Date expiryDate = new Date(now.getTime() + expirationMs);
 
-    JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-        .subject(user.username())
-        .jwtID(tokenId)
-        .claim("userId", user.id().toString())
-        .claim("type", tokenType)
-        .claim("roles", userDetails.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .collect(Collectors.toList()))
-        .issueTime(now)
-        .expirationTime(expiryDate)
-        .build();
+    JWTClaimsSet claimsSet =
+        new JWTClaimsSet.Builder()
+            .subject(user.username())
+            .jwtID(tokenId)
+            .claim("userId", user.id().toString())
+            .claim("type", tokenType)
+            .claim(
+                "roles",
+                userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList()))
+            .issueTime(now)
+            .expirationTime(expiryDate)
+            .build();
 
-    SignedJWT signedJWT = new SignedJWT(
-        new JWSHeader(JWSAlgorithm.HS256),
-        claimsSet
-    );
+    SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
 
     signedJWT.sign(signer);
     String token = signedJWT.serialize();
@@ -168,7 +169,8 @@ public class JwtTokenProvider {
     // Set refresh token in HttpOnly cookie
     Cookie refreshCookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken);
     refreshCookie.setHttpOnly(true);
-    refreshCookie.setSecure(true); // Use HTTPS in production
+    // Docker compose 에서 http로 접근하므로
+    refreshCookie.setSecure(false);
     refreshCookie.setPath("/");
     refreshCookie.setMaxAge(refreshTokenExpirationMs / 1000);
     return refreshCookie;
